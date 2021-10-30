@@ -1,17 +1,31 @@
 #!/usr/bin/env python
 import os
 import subprocess
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-a', help = 'add packages', action='store_true')
+parser.add_argument('-r', help = 'fetch cms release', action='store_true')
+parser.add_argument('-t', help = 'print ED tutorial', action='store_true')
+args = parser.parse_args()
 
-cmssw = "CMSSW_12_1_X_2021-09-19-2300"
+cmssw = "CMSSW_12_1_X_2021-10-16-1100"
+cmssw = "CMSSW_12_2_X_2021-10-29-2300"
 
-def add_pkg(): #{{{
-    subprocess.call('pwd', shell=True)
-    subprocess.call("git cms-addpkg Geometry/HGCalGeometry", shell=True)
-    subprocess.call("git cms-addpkg Geometry/HGCalCommonData", shell=True)
-    subprocess.call("git cms-addpkg Geometry/HGCalSimData", shell=True)
-    subprocess.call("git cms-addpkg Geometry/CMSCommonData", shell=True)
-    subprocess.call("git cms-addpkg DataFormats/ForwardDetId", shell=True)
+arch = "slc7_amd64_gcc700"
+arch = "slc7_amd64_gcc900"
+
+def fetch_cms_release(): #{{{
+    print "scram list -a"
+    print "scram list CMSSW"
+    print "export SCRAM_ARCH=%s" % arch
+    print "cmsrel %s" % cmssw
+    print "cd %s/src" % cmssw
+    print "cmsenv"
+    print "git cms-init"
+    print "cd $CMSSW_BASE/src"
+
 #}}}
+
 def get_cmssw_path(): #{{{
     log = "tmp_cmssw_path.txt"
     subprocess.call("echo $CMSSW_BASE > %s" % log, shell=True)
@@ -20,17 +34,18 @@ def get_cmssw_path(): #{{{
         for line in f.readlines():
             return line.strip()
 #}}}
-def fetch_cms_release(): #{{{
-    subprocess.call("/cvmfs/cms.cern.ch/common/scramv1 %s" % cmssw, shell=True) # cmsrel
+def add_pkg(): #{{{
+    path = get_cmssw_path()
+    os.chdir(path + '/src')
+    print ">>>", os.getcwd()
 
-    #os.chdir("%s/src" % cmssw)
-    #subprocess.call("eval `scramv1 runtime -sh`", shell=True) # cmsenv
-    #subprocess.call("git cms-init", shell=True)
-
-    #path = get_cmssw_path()
-    #os.chdir(path + '/src')
-
-    #add_pkg()
+    subprocess.call('pwd', shell=True)
+    subprocess.call("git cms-addpkg Geometry/HGCalGeometry", shell=True)
+    subprocess.call("git cms-addpkg Geometry/HGCalCommonData", shell=True)
+    subprocess.call("git cms-addpkg Geometry/HGCalSimData", shell=True)
+    subprocess.call("git cms-addpkg Geometry/CMSCommonData", shell=True)
+    subprocess.call("git cms-addpkg DataFormats/ForwardDetId", shell=True)
+    subprocess.call("git cms-addpkg Validation/HGCalValidation", shell=True) # newly added, to be checked
 #}}}
 def print_common_xml(): #{{{
     path = get_cmssw_path()
@@ -60,12 +75,31 @@ def print_common_xml(): #{{{
     subprocess.call("ls Geometry/CMSCommonData/data/materials/2021/v2/materials.xml", shell=True)
 #}}}
 
+def print_tutorial():
+    print ""
+    print "--- ED Producer ---"
+    print "cd $CMSSW_BASE/src"
+    print "cmsenv"
+    print "mkdir ProdTutorial"
+    print "cd ProdTutorial"
+    print "mkedprod ProducerTest"
+    print ""
+    print "--- ED Analyzer ---"
+    print "git clone git@github.com:ZhengGang85129/CLUE_FLATTUPLE.git"
+    print ""
+
 if __name__ == "__main__":
-    #subprocess.call("scram list -a | grep CMSSW_12_1", shell=True)
 
-    #fetch_cms_release()
-    add_pkg()
-    #print_common_xml()
+    if args.r:
+        fetch_cms_release()
 
-    #grep DDHGCalSiliconModule Geometry/HGCalCommonData/data/*/*/*xml
-    #grep DDHGCalMixedLayer Geometry/HGCalCommonData/data/*/*/*xml
+    if args.t:
+        print_tutorial()
+
+    if args.a:
+        add_pkg()
+        print_common_xml()
+        #grep DDHGCalSiliconModule Geometry/HGCalCommonData/data/*/*/*xml
+        #grep DDHGCalMixedLayer Geometry/HGCalCommonData/data/*/*/*xml
+
+    print ">>> finished!"
