@@ -12,6 +12,7 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TH1D.h>
+#include <TCanvas.h>
 
 // Header file for the classes stored in the TTree if any.
 #include "vector"
@@ -171,8 +172,15 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   virtual void     MakePlot(TString output);
+   virtual void     Report(TString input);
 
+   TCanvas *c1;
    TH1D *h_hits_layer;
+
+   double myEntries;
+   double mean_pdgID;
+   double mean_energy;
 };
 
 #endif
@@ -198,7 +206,7 @@ hits::~hits()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
-   delete h_hits_layer;
+   //delete h_hits_layer;
 }
 
 Int_t hits::GetEntry(Long64_t entry)
@@ -362,7 +370,12 @@ void hits::Init(TTree *tree)
    fChain->SetBranchAddress("rechit_time_mc_sm_vtx", &rechit_time_mc_sm_vtx, &b_rechit_time_mc_sm_vtx);
    Notify();
    //}}}
+   c1 = new TCanvas("c1", "", 800, 600);
    h_hits_layer = new TH1D("h_hits_layer", ";layer;Enties", 100, 0, 100);
+
+   myEntries = 0;
+   mean_pdgID = 0;
+   mean_energy = 0;
 }
 
 Bool_t hits::Notify()
@@ -389,5 +402,17 @@ Int_t hits::Cut(Long64_t entry)
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
+}
+void hits::MakePlot(TString output)
+{
+    c1->SetTicks(1,1);
+    h_hits_layer->Draw();
+    c1->SaveAs(output);
+}
+void hits::Report(TString input)
+{
+    mean_pdgID /= myEntries;
+    mean_energy /= myEntries;
+    printf("%s: pdgID = %.0f, energy = %.2f\n", input.Data(), mean_pdgID, mean_energy);
 }
 #endif // #ifdef hits_cxx

@@ -26,29 +26,31 @@ void hits::Loop()
 // METHOD1:
     fChain->SetBranchStatus("*",0);  // disable all branches
     fChain->SetBranchStatus("rechit_layer",1);  // activate branchname
+    fChain->SetBranchStatus("pdgID",1);  // activate branchname
+    fChain->SetBranchStatus("beamEnergy",1);  // activate branchname
 // METHOD2: replace line
 //    fChain->GetEntry(jentry);       //read all branches
 //by  b_branchname->GetEntry(ientry); //read only this branch
    if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
+   myEntries = (double) nentries;
 
    Long64_t nbytes = 0, nb = 0;
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
 
-      // consider only 10 events first
-      if (!(ientry<10)) break;
-
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       // if (Cut(ientry) < 0) continue;
-
-      for (int i=0; i<rechit_layer->size(); ++i)
-          printf("%2d, value = %u\n", i, rechit_layer->at(i));
-
-      //h_hits_layer->Add();
       
-      printf("\n");
-   }
+      mean_pdgID += pdgID;
+      mean_energy += beamEnergy;
+
+      for (int i=0; i<rechit_layer->size(); ++i) {
+          h_hits_layer->Fill(rechit_layer->at(i));
+          if(debug) printf("%2d, value = %u\n", i, rechit_layer->at(i));
+      }
+      
+   } // end of event loop
 }
