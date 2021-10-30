@@ -134,18 +134,15 @@ clue_performance::~clue_performance() {
 void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
   ++evt;
-  std::cout<<"-------------------------Event "<<evt<<"--------------------"<<std::endl;
+
+  // LayerCluster Collection
   Handle<reco::CaloClusterCollection> layerclusters;
   iEvent.getByToken(layerclustersToken_,layerclusters);
-  std::cout<<"LayerCluster Collection: "<<std::endl;
-  int id = 0;
   layercluster_number = 0;
-  for(reco::CaloClusterCollection::const_iterator c = layerclusters->begin(); c != layerclusters->end(); c++){
-      if(TMath::Abs(c->z())>367.699 && tool.getLayer(c->seed()) <28 )
-      {
+  for(reco::CaloClusterCollection::const_iterator c = layerclusters->begin(); c != layerclusters->end(); c++) {
+      if (TMath::Abs(c->z())>367.699 && tool.getLayer(c->seed())<28) {
           layercluster_layer[layercluster_number] = tool.getLayer(c->seed())+28;
-      }
-      else{
+      } else {
           layercluster_layer[layercluster_number] = tool.getLayer(c->seed());
       }
       thickness_type[layercluster_number] = tool.getSiThickIndex(c->seed());
@@ -156,6 +153,7 @@ void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       layercluster_number++;
   }
   mytree->Fill();
+
   /*
   Handle<reco::PFCandidateCollection> ticlcands;
   iEvent.getByToken(pfcandsticlToken_,ticlcands);
@@ -178,7 +176,6 @@ void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& 
      std::cout<<std::endl;
   }
 
- 
   Handle<reco::PFCandidateCollection> cands;
   iEvent.getByToken(pfcandsToken_,cands);
   std::cout<<"ParticleFlow Collection:"<<std::endl;
@@ -267,9 +264,9 @@ void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   auto pSetup = iSetup.getHandle(setupToken_);
 #endif
 }
+
 // ------------ method called once each job just before starting event loop  ------------
 void clue_performance::beginJob() {
-  // please remove this method if not needed
     mytree->Branch("layercluster_number",&layercluster_number,"layercluster_number/I");
     mytree->Branch("thickness_type",thickness_type,"thickness_type[layercluster_number]/I");
     mytree->Branch("layercluster_energy",layercluster_energy,"layercluster_energy[layercluster_number]/D");
