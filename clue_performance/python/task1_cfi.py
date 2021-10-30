@@ -9,7 +9,10 @@ process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True),Skip
 process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring(
             #'file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R80To100_E100/step3.root'
-            'file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R120To140_E100/step3.root'
+            #'file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R120To140_E100/step3.root'
+            #'file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R35To60_E100/step3.root'
+            'file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D83_R120To140_E100/step3.root'
+            #'file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D83_R35To60_E100/step3.root'
             )
         )
 process.analyzer = cms.EDAnalyzer('clue_performance',
@@ -21,5 +24,8 @@ process.analyzer = cms.EDAnalyzer('clue_performance',
         pfcands = cms.untracked.InputTag('particleFlow') ,
         tracksters = cms.untracked.InputTag('ticlTrackstersMerge')
         )
-process.TFileService = cms.Service("TFileService", fileName = cms.string("mix_density_D86_R120To140_E100.root"))
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("mix_density_D86_R120To140_E100.root"))
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("mix_density_D86_R35To60_E100.root"))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("mix_density_D83_R120To140_E100.root"))
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("mix_density_D83_R35To60_E100.root"))
 process.p = cms.Path(process.analyzer)
