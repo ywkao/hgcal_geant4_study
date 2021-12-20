@@ -139,10 +139,10 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
         struct hitsinfo {
             hitsinfo() {
-                u_cor = v_cor = type = layer = 0;
+                u_cor = v_cor = type = layer = eta = 0;
                 hitid = nhits = 0;
             }
-            int u_cor, v_cor, type, layer;
+            int u_cor, v_cor, type, layer,eta;
             unsigned int hitid, nhits;
         };
 
@@ -160,7 +160,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
         //const std::string name;
-        
+
         const std::string nameDetector_; 
         const bool ifNose_;
         const int verbosity_, SampleIndx_;
@@ -168,12 +168,6 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         const edm::ESGetToken<HGCalGeometry, IdealGeometryRecord> tok_hgcalg_;
         int firstLayer_; 
         edm::EDGetTokenT<edm::PCaloHitContainer> tSimCaloHitContainer; 
-        //edm::EDGetTokenT<HGCalDigiCollection> eeDigiCollection_;     // collection of HGCEE digis
-        //edm::EDGetTokenT<HGCalDigiCollection> hefDigiCollection_;    // collection of HGCHEF digis
-        //edm::EDGetTokenT<HGCalDigiCollection> hebDigiCollection_;    // collection of HGCHEB digis
-        //edm::EDGetTokenT<HGCalDigiCollection> hfnoseDigiCollection_; // collection of HGCHFNose digis
-        //std::unique_ptr<HGCalUncalibRecHitWorkerBaseClass> worker_;
-
         hgcal::RecHitTools rhtools_;
         edm::EDGetToken digiSource_;
         //edm::ConsumesCollector iC;
@@ -196,7 +190,10 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
 };
 // }}}
-DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
+
+
+DigiSim::DigiSim(const edm::ParameterSet& iconfig)
+    :
         //auto temp = iConfig.getUntrackedParameter<edm::InputTag>("digihits");
         nameDetector_(iconfig.getParameter<std::string>("Detector")),
         ifNose_(iconfig.getUntrackedParameter<bool>("ifNose")),
@@ -205,13 +202,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tok_hgcalg_(esConsumes<HGCalGeometry, IdealGeometryRecord>(edm::ESInputTag{"", nameDetector_})), 
         firstLayer_(1), 
         tSimCaloHitContainer(consumes<edm::PCaloHitContainer>(iconfig.getUntrackedParameter<edm::InputTag>("simhits")))
-        //eeDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCEEdigiCollection"))),
-        //hefDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHEFdigiCollection"))),
-        //hebDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHEBdigiCollection"))),
-        //hfnoseDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHFNosedigiCollection"))),
-        //worker_{HGCalUncalibRecHitWorkerFactory::get()->create(
-        //        iconfig.getParameter<std::string>("algo"), iconfig, consumesCollector())}
 {
+
     auto temp = iconfig.getUntrackedParameter<edm::InputTag>("digihits");
     if ((nameDetector_ == "HGCalEESensitive") || (nameDetector_ == "HGCalHESiliconSensitive") ||
             (nameDetector_ == "HGCalHEScintillatorSensitive") || (nameDetector_ == "HGCalHFNoseSensitive")) {
@@ -224,99 +216,118 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
             << "\"HGCalEESensitive\", \"HGCalHESiliconSensitive\", or "
             << "\"HGCalHEScintillatorSensitive\", \"HGCalHFNoseSensitive\"!";
     }
+    //}
 
     // tSimCaloHitContainer(consumes<edm::PCaloHitContainer>(iconfig.getUntrackedParameter<edm::InputTag>("simhits")))
+    //{
     //now do what ever initialization is needed
     //name = iconfig.getParameter<std::string>("Detector");
+usesResource("TFileService");
+edm::Service<TFileService> fs; 
+hELossEE = fs->make<TH1D>("hELossEE","hELossEE", 1000, 0., 1000.); 
+hELossEEF = fs->make<TH1D>("hELossEEF","hELossEEF", 1000, 0., 1000.); 
+hELossEECN = fs->make<TH1D>("hELossEECN","hELossEECN", 1000, 0., 1000.); 
+hELossEECK = fs->make<TH1D>("hELossEECK","hELossEECK", 1000, 0., 1000.);
+hELossHEF = fs->make<TH1D>("hELossHEF","hELossHEF", 1000, 0., 1000.);
+hELossHEFF = fs->make<TH1D>("hELossHEFF","hELossHEFF", 1000, 0., 1000.);
+hELossHEFCN = fs->make<TH1D>("hELossHEFCN","hELossHEFCN", 1000, 0., 1000.);
+hELossHEFCK = fs->make<TH1D>("hELossHEFCK","hELossHEFCK", 1000, 0., 1000.);
+std::ostringstream hnamestr (std::ostringstream::ate);
+for(int i=0;i<26;i++){
+    hnamestr.str("ADC_120mum_layer_");
+    hnamestr<<i+1;
+    ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024., 0, 1024.);
+    hnamestr.clear();
 
-    usesResource("TFileService");
-    edm::Service<TFileService> fs; 
-    hELossEE = fs->make<TH1D>("hELossEE","hELossEE", 1000, 0., 1000.); 
-    hELossEEF = fs->make<TH1D>("hELossEEF","hELossEEF", 1000, 0., 1000.); 
-    hELossEECN = fs->make<TH1D>("hELossEECN","hELossEECN", 1000, 0., 1000.); 
-    hELossEECK = fs->make<TH1D>("hELossEECK","hELossEECK", 1000, 0., 1000.);
-    hELossHEF = fs->make<TH1D>("hELossHEF","hELossHEF", 1000, 0., 1000.);
-    hELossHEFF = fs->make<TH1D>("hELossHEFF","hELossHEFF", 1000, 0., 1000.);
-    hELossHEFCN = fs->make<TH1D>("hELossHEFCN","hELossHEFCN", 1000, 0., 1000.);
-    hELossHEFCK = fs->make<TH1D>("hELossHEFCK","hELossHEFCK", 1000, 0., 1000.);
-    std::ostringstream hnamestr (std::ostringstream::ate);
-    for(int i=0;i<26;i++){
-        hnamestr.str("ADC_120mum_layer_");
-        hnamestr<<i+1;
-        ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024., 0, 1024.);
-        hnamestr.clear();
+    hnamestr.str("ADC_SimhitE_120mum_layer_");
+    hnamestr<<i+1;
+    adc_Simhit_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
+    hnamestr.clear();
 
-        hnamestr.str("ADC_SimhitE_120mum_layer_");
-        hnamestr<<i+1;
-        adc_Simhit_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
-        hnamestr.clear();
-
-        hnamestr.str("SimhitE_ADC_120mum_layer_");
-        hnamestr<<i+1;
-        Simhit_adc_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1000., 0., 1000.,0, 1024.);
-        hnamestr.clear();
-
-
-        hnamestr.str("ADC_200mum_layer_");
-        hnamestr<<i+1;
-        ADC_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024., 0, 1024.);
-        hnamestr.clear();
-
-        hnamestr.str("ADC_SimhitE_200mum_layer_");
-        hnamestr<<i+1;
-        adc_Simhit_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
-        hnamestr.clear();
-
-        hnamestr.str("SimhitE_ADC_200mum_layer_");
-        hnamestr<<i+1;
-        Simhit_adc_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1000., 0., 1000.,0, 1024.);
-        hnamestr.clear();
+    hnamestr.str("SimhitE_ADC_120mum_layer_");
+    hnamestr<<i+1;
+    Simhit_adc_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1000., 0., 1000.,0, 1024.);
+    hnamestr.clear();
 
 
-        hnamestr.str("ADC_300mum_layer_");
-        hnamestr<<i+1;
-        ADC_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024., 0, 1024.);
-        hnamestr.clear();		    
+    hnamestr.str("ADC_200mum_layer_");
+    hnamestr<<i+1;
+    ADC_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024., 0, 1024.);
+    hnamestr.clear();
 
-        hnamestr.str("ADC_SimhitE_300mum_layer_");
-        hnamestr<<i+1;
-        adc_Simhit_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
-        hnamestr.clear();
+    hnamestr.str("ADC_SimhitE_200mum_layer_");
+    hnamestr<<i+1;
+    adc_Simhit_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
+    hnamestr.clear();
 
-        hnamestr.str("SimhitE_ADC_300mum_layer_");
-        hnamestr<<i+1;
-        Simhit_adc_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1000., 0., 1000.,0, 1024.);
-        hnamestr.clear();
+    hnamestr.str("SimhitE_ADC_200mum_layer_");
+    hnamestr<<i+1;
+    Simhit_adc_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1000., 0., 1000.,0, 1024.);
+    hnamestr.clear();
 
-    }
-    //ADC_ = fs->make<TH1D>("ADC_","ADC", 1024., 0, 1024.);
-    //for(int i=0; i<5;i++)
-    //vechist.push_back(iB.book1D(histoname.str().c_str(), "ADCDigiOccupancy_300mum", 1024, 0, 1024));
+
+    hnamestr.str("ADC_300mum_layer_");
+    hnamestr<<i+1;
+    ADC_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024., 0, 1024.);
+    hnamestr.clear();		    
+
+    hnamestr.str("ADC_SimhitE_300mum_layer_");
+    hnamestr<<i+1;
+    adc_Simhit_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
+    hnamestr.clear();
+
+    hnamestr.str("SimhitE_ADC_300mum_layer_");
+    hnamestr<<i+1;
+    Simhit_adc_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1000., 0., 1000.,0, 1024.);
+    hnamestr.clear();
+
+
+}
+//ADC_ = fs->make<TH1D>("ADC_","ADC", 1024., 0, 1024.);
+//for(int i=0; i<5;i++){
+//vechist.push_back(iB.book1D(histoname.str().c_str(), "ADCDigiOccupancy_300mum", 1024, 0, 1024));
 
 #ifdef this_is_an_eventsetup_example
-    setupdatatoken_ = esConsumes<setupdata, setuprecord>();
+setupdatatoken_ = esConsumes<setupdata, setuprecord>();
 #endif
-} //}}}
-DigiSim::~DigiSim() //{{{
+}
+
+DigiSim::~DigiSim()
 {
+
     // do anything here that needs to be done at desctruction time
     // (e.g. close files, deallocate resources etc.)
+
 }
-//}}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+// member functions
+//
 
 // ------------ method called for each event  ------------
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    bool debug = false;
 
+    std::cout<<"----------------------------------  new track  -----------------"<<std::endl;
     using namespace edm;
     //int geomType(0);
     //const HGCalGeometry* geom0 = &iSetup.getData(tok_hgcalg_);
     //std::cout<<geom0->topology().waferHexagon8()<<std::endl;
-    
-    //----------------------------------------------------------------------------------------------------
-    // SimHit Handle {{{
-    //----------------------------------------------------------------------------------------------------
+    ////////////////////////////////////////////////////----------- Simhit Hnadle -----------------///////////////
     std::map<uint32_t, std::pair<hitsinfo, energysum> > map_Simhits;
     map_Simhits.clear();
     unsigned int nofSiHits = 0;
@@ -362,6 +373,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 hinfo.v_cor = rhtools_.getCell(detId).second ;
                 hinfo.type = id.type();
                 hinfo.layer = rhtools_.getLayerWithOffset(detId);
+                //hinfo.eta = itHit->momentum().eta()
             }	
             esum.etotal += energy;
             esum.eTime[0] = energy;
@@ -370,11 +382,16 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
     //std::cout<<"map size = "<< map_Simhits.size()<<std::endl;
 
-    //----------------------------------------------------------------------------------------------------}}}
-    // Digi Handle {{{
-    //----------------------------------------------------------------------------------------------------
-    std::map<uint32_t, std::pair<digisinfo,adcinfo > > map_digihits;
 
+
+
+
+
+
+
+    //////////////////////////////////////////////////////------------ Digi Handle ------------------////////////
+    std::map<uint32_t, std::pair<digisinfo,adcinfo > > map_digihits;
+    map_digihits.clear();
     Handle<HGCalDigiCollection> digicollection;
     iEvent.getByToken(digiSource_, digicollection);
     if (digicollection.isValid()) {
@@ -419,118 +436,77 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             }
         }
     }
+    ////////////////////////////////////////////////////////////////////////////////////////////
 
-    //----------------------------------------------------------------------------------------------------}}}
-    /*
-    // Convert Digis to Uncalibrated RecHits (amplitude in unit of MIPs) //{{{
-    //----------------------------------------------------------------------------------------------------
-    // tranparently get things from event setup
-    worker_->set(iSetup);
 
-    // prepare output
-    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
-    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
-    auto eeUncalibRechits = std::make_unique<HGCeeUncalibratedRecHitCollection>();
-    auto hefUncalibRechits = std::make_unique<HGChefUncalibratedRecHitCollection>();
-    auto hebUncalibRechits = std::make_unique<HGChebUncalibratedRecHitCollection>();
-    auto hfnoseUncalibRechits = std::make_unique<HGChfnoseUncalibratedRecHitCollection>();
 
-    // loop over HGCEE digis
-    edm::Handle<HGCalDigiCollection> pHGCEEDigis;
-    //iEvent.getByToken(eeDigiCollection_, pHGCEEDigis);
-    iEvent.getByToken(digiSource_, pHGCEEDigis);
-    const HGCalDigiCollection* eeDigis = pHGCEEDigis.product();
-    eeUncalibRechits->reserve(eeDigis->size());
-    for (auto itdg = eeDigis->begin(); itdg != eeDigis->end(); ++itdg) {
-      worker_->runHGCEE(itdg, *eeUncalibRechits);
-    }
 
-    for (auto itdg = eeUncalibRechits->begin(); itdg != eeUncalibRechits->end(); ++itdg) {
-      //std::cout<<"id_digi = "<<(*itdg).id()<<" amplitude = "<< (*itdg).amplitude()<<std::endl;
-      std::cout<<"id_digi = "<<(*itdg).id().rawId();
-      std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
-    }
-
-    //// loop over HGCHEsil digis
-    //edm::Handle<HGCalDigiCollection> pHGCHEFDigis;
-    //iEvent.getByToken(hefDigiCollection_, pHGCHEFDigis);
-    //const HGCalDigiCollection* hefDigis = pHGCHEFDigis.product();
-    //hefUncalibRechits->reserve(hefDigis->size());
-    //for (auto itdg = hefDigis->begin(); itdg != hefDigis->end(); ++itdg) {
-    //  worker_->runHGCHEsil(itdg, *hefUncalibRechits);
-    //}
-
-    //// loop over HGCHEscint digis
-    //edm::Handle<HGCalDigiCollection> pHGCHEBDigis;
-    //iEvent.getByToken(hebDigiCollection_, pHGCHEBDigis);
-    //const HGCalDigiCollection* hebDigis = pHGCHEBDigis.product();
-    //hebUncalibRechits->reserve(hebDigis->size());
-    //for (auto itdg = hebDigis->begin(); itdg != hebDigis->end(); ++itdg) {
-    //  worker_->runHGCHEscint(itdg, *hebUncalibRechits);
-    //}
-
-    //// loop over HFNose digis
-    //edm::Handle<HGCalDigiCollection> pHGCHFNoseDigis;
-    //iEvent.getByToken(hfnoseDigiCollection_, pHGCHFNoseDigis);
-    //if (pHGCHFNoseDigis.isValid()) {
-    //  const HGCalDigiCollection* hfnoseDigis = pHGCHFNoseDigis.product();
-    //  if (!(hfnoseDigis->empty())) {
-    //    hfnoseUncalibRechits->reserve(hfnoseDigis->size());
-    //    for (auto itdg = hfnoseDigis->begin(); itdg != hfnoseDigis->end(); ++itdg)
-    //      worker_->runHGCHFNose(itdg, *hfnoseUncalibRechits);
-    //  }
-    //}
-    //}}}
-    */
-
-    //----------------------------------------------------------------------------------------------------
-    // Matching digiHits to simHits {{{
-    //----------------------------------------------------------------------------------------------------
+    std::map<uint32_t, std::pair<hitsinfo, energysum> > map_Simhits_matched;
     std::map<uint32_t, std::pair<digisinfo, adcinfo>>::iterator itr_digi;
     std::map<uint32_t, std::pair<hitsinfo, energysum> >::iterator itr_sim;
     Double_t max_energy=0; 
+    uint32_t matched_id=0;
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
         energysum esum = (*itr_sim).second.second;
-        //std::cout<<"energy = "<<esum.eTime[0]*1.e6<<std::endl;
-        if(max_energy<esum.eTime[0]*1.e6)   max_energy=esum.eTime[0]*1.e6;
-    }
-    //std::cout<<"Max energy = "<<max_energy<<std::endl;
-
-    for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
-        energysum esum = (*itr_sim).second.second;
-        if(esum.etotal>0) // && esum.eTime[0]*1.e6==max_energy)
-        {
-            //std::cout<<max_energy<<std::endl; 
-            for (itr_digi = map_digihits.begin(); itr_digi != map_digihits.end(); ++itr_digi) {
-                digisinfo dinfo = (*itr_digi).second.first;
-                adcinfo ainfo = (*itr_digi).second.second;
-                if((*itr_sim).first==(*itr_digi).first){
-                    if(debug) std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
-                    if(dinfo.layer < 26 && dinfo.type==0){
-                        //std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
-                        ADC_120mum_[dinfo.layer-1]->Fill(ainfo.adc);
-                        adc_Simhit_120mum_[dinfo.layer-1]->Fill(ainfo.adc,esum.eTime[0]*1.e6);
-                        Simhit_adc_120mum_[dinfo.layer-1]->Fill(esum.eTime[0]*1.e6,ainfo.adc);
-                    }
-                    if(dinfo.layer < 26 && dinfo.type==1){
-                        //std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
-                        ADC_200mum_[dinfo.layer-1]->Fill(ainfo.adc);
-                        adc_Simhit_200mum_[dinfo.layer-1]->Fill(ainfo.adc,esum.eTime[0]*1.e6);
-                        Simhit_adc_200mum_[dinfo.layer-1]->Fill(esum.eTime[0]*1.e6,ainfo.adc);
-                    }
-                    if(dinfo.layer < 26 && dinfo.type==2){
-                        //std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
-                        ADC_300mum_[dinfo.layer-1]->Fill(ainfo.adc);
-                        adc_Simhit_300mum_[dinfo.layer-1]->Fill(ainfo.adc,esum.eTime[0]*1.e6);
-                        Simhit_adc_300mum_[dinfo.layer-1]->Fill(esum.eTime[0]*1.e6,ainfo.adc);
-                    }
+        hitsinfo simhitinfo = (*itr_sim).second.first;
+        if(simhitinfo.layer==1){
+            if(max_energy<esum.etotal*1.e6){
+                max_energy=esum.etotal*1.e6;
+                if(matched_id!=0){
+                    map_Simhits_matched.erase(matched_id);
                 }
-            } // end of digihits for loop
+                matched_id = (*itr_sim).first;
+                map_Simhits_matched[matched_id] = std::pair<hitsinfo, energysum>(simhitinfo,esum);
+            }
         }
-    } // end of simhits for loop
-    //}}}
+    }
 
-} // end of analyze
+    /*std::map<uint32_t, std::pair<hitsinfo, energysum> >::iterator itr_sim_matched;
+      for (itr_sim_matched = map_Simhits_matched.begin(); itr_sim_matched != map_Simhits_matched.end(); ++itr_sim_matched) {
+//energysum esum = (*itr_sim).second.second;
+//hitsinfo simhitinfo = (*itr_sim).second.first;
+std::cout<<"id_digi from new map = "<<(*itr_sim_matched).first<<std::endl;
+}*/
+//std::cout<<"for loop for id removel end "<<std::endl;
+
+for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
+    energysum esum = (*itr_sim).second.second;
+    //hitsinfo simhitinfo = (*itr_sim).second.first;
+    if(esum.etotal>0 && (*itr_sim).first==matched_id){//simhitinfo.layer==1){// && esum.etotal*1.e6==max_energy){
+        //std::cout<<max_energy<<std::endl; 
+        //std::cout<<"maxenergy = "<<esum.etotal*1.e6<<std::endl;
+        for (itr_digi = map_digihits.begin(); itr_digi != map_digihits.end(); ++itr_digi) {
+            digisinfo dinfo = (*itr_digi).second.first;
+            adcinfo ainfo = (*itr_digi).second.second;
+            if((*itr_sim).first==(*itr_digi).first){
+                std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
+                if(dinfo.layer < 26 && dinfo.type==0){
+                    //std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
+                    ADC_120mum_[dinfo.layer-1]->Fill(ainfo.adc);
+                    adc_Simhit_120mum_[dinfo.layer-1]->Fill(ainfo.adc,esum.eTime[0]*1.e6);
+                    Simhit_adc_120mum_[dinfo.layer-1]->Fill(esum.eTime[0]*1.e6,ainfo.adc);
+                }
+                if(dinfo.layer < 26 && dinfo.type==1){
+                    //std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
+                    ADC_200mum_[dinfo.layer-1]->Fill(ainfo.adc);
+                    adc_Simhit_200mum_[dinfo.layer-1]->Fill(ainfo.adc,esum.eTime[0]*1.e6);
+                    Simhit_adc_200mum_[dinfo.layer-1]->Fill(esum.eTime[0]*1.e6,ainfo.adc);
+                }
+                if(dinfo.layer < 26 && dinfo.type==2){
+                    //std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
+                    ADC_300mum_[dinfo.layer-1]->Fill(ainfo.adc);
+                    adc_Simhit_300mum_[dinfo.layer-1]->Fill(ainfo.adc,esum.eTime[0]*1.e6);
+                    Simhit_adc_300mum_[dinfo.layer-1]->Fill(esum.eTime[0]*1.e6,ainfo.adc);
+                }
+            }
+        }
+    }
+    }
+
+    //std::cout<<"for loop for sim digi maching end "<<std::endl;
+
+
+
 
 
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
@@ -539,6 +515,9 @@ auto setup = iSetup.getData(setupToken_);
 // if need the ESHandle to check if the SetupData was there or not
 auto pSetup = iSetup.getHandle(setupToken_);
 #endif
+    }  
+
+
 
 
 // ------------ method called once each job just before starting event loop  ------------
