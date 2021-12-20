@@ -135,6 +135,10 @@ void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   using namespace edm;
   ++evt;
 
+  // RecHit Collection
+  Handle<reco::PCaloHitCollection> hgcalSimHitEE;
+  iEvent.getByToken(hgcalSimHitEEToken_, hgcalSimHitEE);
+
   // LayerCluster Collection
   Handle<reco::CaloClusterCollection> layerclusters;
   iEvent.getByToken(layerclustersToken_,layerclusters);
@@ -153,6 +157,11 @@ void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& 
       layercluster_number++;
   }
   mytree->Fill();
+
+//vector<reco::CaloCluster>             "hgcalLayerClusters"        ""                "RECO"    
+//vector<PCaloHit>                      "g4SimHits"                 "HGCHitsEE"       "SIM"     
+//edm::SortedCollection<HGCRecHit,edm::StrictWeakOrdering<HGCRecHit> >    "HGCalRecHit"               "HGCEERecHits"    "RECO"    
+//edm::SortedCollection<HGCDataFrame<DetId,HGCSample>,edm::StrictWeakOrdering<HGCDataFrame<DetId,HGCSample> > >    "simHGCalUnsuppressedDigis"   "HEfront"         "HLT"     
 
   /*
   Handle<reco::PFCandidateCollection> ticlcands;
@@ -257,6 +266,7 @@ void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   std::cout<<"Total Energy: "<<energy<<std::endl;
   std::cout<<std::endl;
   */
+
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
   // if the SetupData is always needed
   auto setup = iSetup.getData(setupToken_);
