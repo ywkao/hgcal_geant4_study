@@ -12,6 +12,7 @@
 <!-- //In additon one may also book at the buildfile of Geometry/HGCalGeometry/test/BuildfFile.xml -->
 <use name="CommonTools/UtilAlgos"/>
 <use name="DataFormats/HcalDetId"/>
+<use name="DataFormats/HGCRecHit"/>
 <use name="DataFormats/ForwardDetId"/>
 <use name="DataFormats/GeometryVector"/>
 <!-- <use name="FWCore/ParameterSet"/> -->
@@ -22,5 +23,6 @@
 <use name="MagneticField/Engine"/>
 <use name="MagneticField/Records"/>
 <use name="RecoLocalCalo/HGCalRecAlgos"/>
+<use name="RecoLocalCalo/HGCalRecProducers"/>
 <use name="CoralBase"/>
 <flags EDM_PLUGIN="1"/>
