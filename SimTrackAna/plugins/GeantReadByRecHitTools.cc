@@ -412,7 +412,7 @@ GeantReadByRecHitTools::analyze(const edm::Event& iEvent, const edm::EventSetup&
     
     DetId id1 = static_cast<DetId>(itHit->id());
     GlobalPoint global2 = rhtools_.getPosition(id1);
-     std::cout << "DetId (" << det << ": position ("<< global2.x() << ", " << global2.y() << ", " << global2.z()<< "), Si thickness "<< rhtools_.getSiThickness(id1) << ", IsSi "<< rhtools_.isSilicon(id1)<< ", IsSci "<< rhtools_.isScintillator(id1) << ", Layer1 "<< rhtools_.getLayer(id1)<<std::endl;
+     //std::cout << "DetId (" << det << ": position ("<< global2.x() << ", " << global2.y() << ", " << global2.z()<< "), Si thickness "<< rhtools_.getSiThickness(id1) << ", IsSi "<< rhtools_.isSilicon(id1)<< ", IsSci "<< rhtools_.isScintillator(id1) << ", Layer1 "<< rhtools_.getLayer(id1)<<std::endl;
     if(rhtools_.getLayer(id1)==1){x_layer1_tack->Fill(global2.x()); y_layer1_tack->Fill(global2.y());}
     else if(rhtools_.getLayer(id1)==2){x_layer2_tack->Fill(global2.x()); y_layer2_tack->Fill(global2.y());}
     else if(rhtools_.getLayer(id1)==3){x_layer3_tack->Fill(global2.x()); y_layer3_tack->Fill(global2.y());}

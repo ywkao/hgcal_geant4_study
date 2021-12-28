@@ -5,7 +5,6 @@
 #include <map>
 #include <cmath>
 #include <iostream>
-
 // user include files {{{
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/ConsumesCollector.h"
@@ -25,7 +24,6 @@
 #include "SimDataFormats/Track/interface/SimTrack.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHit.h"
 #include "SimDataFormats/CaloHit/interface/PCaloHit.h"
-
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 #include "SimDataFormats/CaloHit/interface/PCaloHitContainer.h"
 
@@ -36,25 +34,12 @@
 
 #include "Geometry/Records/interface/IdealGeometryRecord.h"
 #include "Geometry/HGCalGeometry/interface/HGCalGeometry.h"
-#include "DataFormats/ForwardDetId/interface/ForwardSubdetector.h"
-#include "DataFormats/ForwardDetId/interface/HGCalDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCScintillatorDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCSiliconDetId.h"
 
 #include "CoralBase/Exception.h"
 
 #include "FWCore/Framework/interface/ModuleFactory.h"
 #include "FWCore/Framework/interface/ESProducer.h"
 #include "Geometry/CaloGeometry/interface/CaloSubdetectorGeometry.h"
-
-#include "DataFormats/ForwardDetId/interface/HGCScintillatorDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCSiliconDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCalTriggerDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCSiliconDetIdToModule.h"
-#include "DataFormats/ForwardDetId/interface/HGCSiliconDetIdToROC.h"
-#include "DataFormats/DetId/interface/DetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCalDetId.h"
-#include "DataFormats/HGCDigi/interface/HGCDigiCollections.h"
 
 #include "RecoLocalCalo/HGCalRecAlgos/interface/RecHitTools.h"
 #include "Geometry/CaloGeometry/interface/CaloGeometry.h"
@@ -80,15 +65,19 @@
 #include <vector>
 
 #include "DataFormats/DetId/interface/DetId.h"
-#include "DataFormats/ForwardDetId/interface/ForwardSubdetector.h"
-#include "DataFormats/ForwardDetId/interface/HFNoseDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCalDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCScintillatorDetId.h"
-#include "DataFormats/ForwardDetId/interface/HGCSiliconDetId.h"
 #include "DataFormats/HGCDigi/interface/HGCDigiCollections.h"
 
 //#include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 //#include "DQMServices/Core/interface/DQMStore.h"
+#include "DataFormats/ForwardDetId/interface/ForwardSubdetector.h"
+#include "DataFormats/ForwardDetId/interface/HGCalDetId.h"
+#include "DataFormats/ForwardDetId/interface/HGCalTriggerDetId.h"
+#include "DataFormats/ForwardDetId/interface/HGCScintillatorDetId.h"
+#include "DataFormats/ForwardDetId/interface/HGCSiliconDetId.h"
+#include "DataFormats/ForwardDetId/interface/HGCSiliconDetIdToModule.h"
+#include "DataFormats/ForwardDetId/interface/HGCSiliconDetIdToROC.h"
+#include "DataFormats/ForwardDetId/interface/HGCScintillatorDetId.h"
+#include "DataFormats/ForwardDetId/interface/HFNoseDetId.h"
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/ESTransientHandle.h"
@@ -106,7 +95,7 @@
 
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 //}}}
-
+//
 #include "RecoLocalCalo/HGCalRecProducers/interface/HGCalUncalibRecHitWorkerFactory.h"
 #include "DataFormats/HGCRecHit/interface/HGCRecHitCollections.h"
 
@@ -231,14 +220,14 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 
     usesResource("TFileService");
     edm::Service<TFileService> fs; 
-    hELossEE = fs->make<TH1D>("hELossEE","hELossEE", 1000, 0., 1000.); 
-    hELossEEF = fs->make<TH1D>("hELossEEF","hELossEEF", 1000, 0., 1000.); 
-    hELossEECN = fs->make<TH1D>("hELossEECN","hELossEECN", 1000, 0., 1000.); 
-    hELossEECK = fs->make<TH1D>("hELossEECK","hELossEECK", 1000, 0., 1000.);
-    hELossHEF = fs->make<TH1D>("hELossHEF","hELossHEF", 1000, 0., 1000.);
-    hELossHEFF = fs->make<TH1D>("hELossHEFF","hELossHEFF", 1000, 0., 1000.);
-    hELossHEFCN = fs->make<TH1D>("hELossHEFCN","hELossHEFCN", 1000, 0., 1000.);
-    hELossHEFCK = fs->make<TH1D>("hELossHEFCK","hELossHEFCK", 1000, 0., 1000.);
+    hELossEE    = fs->make<TH1D>("hELossEE"    , "hELossEE"    , 1000 , 0. , 1000.);
+    hELossEEF   = fs->make<TH1D>("hELossEEF"   , "hELossEEF"   , 1000 , 0. , 1000.);
+    hELossEECN  = fs->make<TH1D>("hELossEECN"  , "hELossEECN"  , 1000 , 0. , 1000.);
+    hELossEECK  = fs->make<TH1D>("hELossEECK"  , "hELossEECK"  , 1000 , 0. , 1000.);
+    hELossHEF   = fs->make<TH1D>("hELossHEF"   , "hELossHEF"   , 1000 , 0. , 1000.);
+    hELossHEFF  = fs->make<TH1D>("hELossHEFF"  , "hELossHEFF"  , 1000 , 0. , 1000.);
+    hELossHEFCN = fs->make<TH1D>("hELossHEFCN" , "hELossHEFCN" , 1000 , 0. , 1000.);
+    hELossHEFCK = fs->make<TH1D>("hELossHEFCK" , "hELossHEFCK" , 1000 , 0. , 1000.);
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++){
         hnamestr.str("ADC_120mum_layer_");
@@ -308,12 +297,11 @@ DigiSim::~DigiSim() //{{{
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     bool debug = false;
-    printf(">>> Entering DigiSim::analyze\n");
-
     using namespace edm;
-    //int geomType(0);
+    //int geomType(0); {{{
     //const HGCalGeometry* geom0 = &iSetup.getData(tok_hgcalg_);
     //std::cout<<geom0->topology().waferHexagon8()<<std::endl;
+    //}}}
     
     //----------------------------------------------------------------------------------------------------
     // SimHit Handle {{{
@@ -424,36 +412,36 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //----------------------------------------------------------------------------------------------------}}}
     
     printf(">>> start coverting Digis to uncalibrated Rechits\n");
-    // Convert Digis to Uncalibrated RecHits (amplitude in unit of MIPs) //{{{
+    // Convert Digis to Uncalibrated RecHits (amplitude in unit of MIPs)
     //----------------------------------------------------------------------------------------------------
     // tranparently get things from event setup
-    worker_->set(iSetup);
+    //worker_->set(iSetup);
 
-    // prepare output
-    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
-    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
-    auto eeUncalibRechits = std::make_unique<HGCeeUncalibratedRecHitCollection>();
-    auto hefUncalibRechits = std::make_unique<HGChefUncalibratedRecHitCollection>();
-    auto hebUncalibRechits = std::make_unique<HGChebUncalibratedRecHitCollection>();
-    auto hfnoseUncalibRechits = std::make_unique<HGChfnoseUncalibratedRecHitCollection>();
+    //// prepare output
+    //// $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
+    //// $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
+    //auto eeUncalibRechits     = std::make_unique<HGCeeUncalibratedRecHitCollection>();
+    //auto hefUncalibRechits    = std::make_unique<HGChefUncalibratedRecHitCollection>();
+    //auto hebUncalibRechits    = std::make_unique<HGChebUncalibratedRecHitCollection>();
+    //auto hfnoseUncalibRechits = std::make_unique<HGChfnoseUncalibratedRecHitCollection>();
 
-    // loop over HGCEE digis
-    edm::Handle<HGCalDigiCollection> pHGCEEDigis;
-    //iEvent.getByToken(eeDigiCollection_, pHGCEEDigis);
-    iEvent.getByToken(digiSource_, pHGCEEDigis);
-    const HGCalDigiCollection* eeDigis = pHGCEEDigis.product();
-    eeUncalibRechits->reserve(eeDigis->size());
-    for (auto itdg = eeDigis->begin(); itdg != eeDigis->end(); ++itdg) {
-      std::cout<<"id_digi = "<<(*itdg).id().rawId();
-      worker_->runHGCEE(itdg, *eeUncalibRechits);
-    }
+    //// loop over HGCEE digis
+    //edm::Handle<HGCalDigiCollection> pHGCEEDigis;
+    ////iEvent.getByToken(eeDigiCollection_, pHGCEEDigis);
+    //iEvent.getByToken(digiSource_, pHGCEEDigis);
+    //const HGCalDigiCollection* eeDigis = pHGCEEDigis.product();
+    //eeUncalibRechits->reserve(eeDigis->size());
+    //for (auto itdg = eeDigis->begin(); itdg != eeDigis->end(); ++itdg) {
+    //  std::cout<<"id_digi = "<<(*itdg).id().rawId();
+    //  worker_->runHGCEE(itdg, *eeUncalibRechits);
+    //}
 
-    for (auto itdg = eeUncalibRechits->begin(); itdg != eeUncalibRechits->end(); ++itdg) {
-      //std::cout<<"id_digi = "<<(*itdg).id()<<" amplitude = "<< (*itdg).amplitude()<<std::endl;
-      std::cout<<"id_digi = "<<(*itdg).id().rawId();
-      std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
-    }
-
+    //for (auto itdg = eeUncalibRechits->begin(); itdg != eeUncalibRechits->end(); ++itdg) {
+    //  //std::cout<<"id_digi = "<<(*itdg).id()<<" amplitude = "<< (*itdg).amplitude()<<std::endl;
+    //  std::cout<<"id_digi = "<<(*itdg).id().rawId();
+    //  std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
+    //}
+    // skip tmp {{{
     //// loop over HGCHEsil digis
     //edm::Handle<HGCalDigiCollection> pHGCHEFDigis;
     //iEvent.getByToken(hefDigiCollection_, pHGCHEFDigis);
@@ -534,7 +522,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 } // end of analyze
 
-
+// others {{{
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
 // if the SetupData is always needed
 auto setup = iSetup.getData(setupToken_);
@@ -567,6 +555,6 @@ void DigiSim::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
     //desc.addUntracked<edm::InputTag>("tracks","ctfWithMaterialTracks");
     //descriptions.addDefault(desc);
 }
-
+//}}}
 //define this as a plug-in
 DEFINE_FWK_MODULE(DigiSim);
