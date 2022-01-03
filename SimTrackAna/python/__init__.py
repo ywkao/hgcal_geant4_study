@@ -1,3 +1,3 @@
 #Automatically created by SCRAM
 import os
-__path__.append(os.path.dirname(os.path.abspath(__file__).rsplit('/ReadSimResult/SimTrackAna/',1)[0])+'/cfipython/slc7_amd64_gcc900/ReadSimResult/SimTrackAna')
+__path__.append(os.path.dirname(os.path.abspath(__file__).rsplit('/hgcal_geant4_study/SimTrackAna/',1)[0])+'/cfipython/slc7_amd64_gcc900/hgcal_geant4_study/SimTrackAna')

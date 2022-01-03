@@ -136,8 +136,8 @@ void clue_performance::analyze(const edm::Event& iEvent, const edm::EventSetup& 
   ++evt;
 
   // RecHit Collection
-  Handle<reco::PCaloHitCollection> hgcalSimHitEE;
-  iEvent.getByToken(hgcalSimHitEEToken_, hgcalSimHitEE);
+  //Handle<reco::PCaloHitCollection> hgcalSimHitEE;
+  //iEvent.getByToken(hgcalSimHitEEToken_, hgcalSimHitEE);
 
   // LayerCluster Collection
   Handle<reco::CaloClusterCollection> layerclusters;

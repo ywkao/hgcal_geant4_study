@@ -415,62 +415,72 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Convert Digis to Uncalibrated RecHits (amplitude in unit of MIPs)
     //----------------------------------------------------------------------------------------------------
     // tranparently get things from event setup
-    //worker_->set(iSetup);
+    worker_->set(iSetup);
 
-    //// prepare output
-    //// $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
-    //// $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
-    //auto eeUncalibRechits     = std::make_unique<HGCeeUncalibratedRecHitCollection>();
-    //auto hefUncalibRechits    = std::make_unique<HGChefUncalibratedRecHitCollection>();
-    //auto hebUncalibRechits    = std::make_unique<HGChebUncalibratedRecHitCollection>();
-    //auto hfnoseUncalibRechits = std::make_unique<HGChfnoseUncalibratedRecHitCollection>();
+    // prepare output
+    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
+    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
+    auto eeUncalibRechits     = std::make_unique<HGCeeUncalibratedRecHitCollection>();
+    auto hefUncalibRechits    = std::make_unique<HGChefUncalibratedRecHitCollection>();
+    auto hebUncalibRechits    = std::make_unique<HGChebUncalibratedRecHitCollection>();
+    auto hfnoseUncalibRechits = std::make_unique<HGChfnoseUncalibratedRecHitCollection>();
 
-    //// loop over HGCEE digis
-    //edm::Handle<HGCalDigiCollection> pHGCEEDigis;
-    ////iEvent.getByToken(eeDigiCollection_, pHGCEEDigis);
-    //iEvent.getByToken(digiSource_, pHGCEEDigis);
-    //const HGCalDigiCollection* eeDigis = pHGCEEDigis.product();
-    //eeUncalibRechits->reserve(eeDigis->size());
-    //for (auto itdg = eeDigis->begin(); itdg != eeDigis->end(); ++itdg) {
-    //  std::cout<<"id_digi = "<<(*itdg).id().rawId();
-    //  worker_->runHGCEE(itdg, *eeUncalibRechits);
-    //}
+    // loop over HGCEE digis
+    edm::Handle<HGCalDigiCollection> pHGCEEDigis;
+    //iEvent.getByToken(eeDigiCollection_, pHGCEEDigis);
+    iEvent.getByToken(digiSource_, pHGCEEDigis);
+    const HGCalDigiCollection* eeDigis = pHGCEEDigis.product();
+    eeUncalibRechits->reserve(eeDigis->size());
 
-    //for (auto itdg = eeUncalibRechits->begin(); itdg != eeUncalibRechits->end(); ++itdg) {
-    //  //std::cout<<"id_digi = "<<(*itdg).id()<<" amplitude = "<< (*itdg).amplitude()<<std::endl;
-    //  std::cout<<"id_digi = "<<(*itdg).id().rawId();
-    //  std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
-    //}
-    // skip tmp {{{
-    //// loop over HGCHEsil digis
-    //edm::Handle<HGCalDigiCollection> pHGCHEFDigis;
-    //iEvent.getByToken(hefDigiCollection_, pHGCHEFDigis);
-    //const HGCalDigiCollection* hefDigis = pHGCHEFDigis.product();
-    //hefUncalibRechits->reserve(hefDigis->size());
-    //for (auto itdg = hefDigis->begin(); itdg != hefDigis->end(); ++itdg) {
-    //  worker_->runHGCHEsil(itdg, *hefUncalibRechits);
-    //}
+    for (auto itdg = eeDigis->begin(); itdg != eeDigis->end(); ++itdg) {
+      //std::cout<<"id_digi = "<<(*itdg).id().rawId();
+      worker_->runHGCEE(itdg, *eeUncalibRechits);
+    }
 
-    //// loop over HGCHEscint digis
-    //edm::Handle<HGCalDigiCollection> pHGCHEBDigis;
-    //iEvent.getByToken(hebDigiCollection_, pHGCHEBDigis);
-    //const HGCalDigiCollection* hebDigis = pHGCHEBDigis.product();
-    //hebUncalibRechits->reserve(hebDigis->size());
-    //for (auto itdg = hebDigis->begin(); itdg != hebDigis->end(); ++itdg) {
-    //  worker_->runHGCHEscint(itdg, *hebUncalibRechits);
-    //}
+    printf(">>> check eeDigis->size(): %ld\n", eeDigis->size());
+    printf(">>> check eeUncalibRechits->size(): %ld\n", eeUncalibRechits->size());
 
-    //// loop over HFNose digis
-    //edm::Handle<HGCalDigiCollection> pHGCHFNoseDigis;
-    //iEvent.getByToken(hfnoseDigiCollection_, pHGCHFNoseDigis);
-    //if (pHGCHFNoseDigis.isValid()) {
-    //  const HGCalDigiCollection* hfnoseDigis = pHGCHFNoseDigis.product();
-    //  if (!(hfnoseDigis->empty())) {
-    //    hfnoseUncalibRechits->reserve(hfnoseDigis->size());
-    //    for (auto itdg = hfnoseDigis->begin(); itdg != hfnoseDigis->end(); ++itdg)
-    //      worker_->runHGCHFNose(itdg, *hfnoseUncalibRechits);
-    //  }
-    //}
+    int counter = 0;
+    for (auto itdg = eeUncalibRechits->begin(); itdg != eeUncalibRechits->end(); ++itdg) {
+      //std::cout<<"id_digi = "<<(*itdg).id()<<" amplitude = "<< (*itdg).amplitude()<<std::endl;
+      if(counter>9) continue;
+      std::cout<<"id_digi = "<<(*itdg).id().rawId();
+      std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
+      counter++;
+    }
+
+    // skip{{{
+    /*
+    // loop over HGCHEsil digis
+    edm::Handle<HGCalDigiCollection> pHGCHEFDigis;
+    iEvent.getByToken(hefDigiCollection_, pHGCHEFDigis);
+    const HGCalDigiCollection* hefDigis = pHGCHEFDigis.product();
+    hefUncalibRechits->reserve(hefDigis->size());
+    for (auto itdg = hefDigis->begin(); itdg != hefDigis->end(); ++itdg) {
+      worker_->runHGCHEsil(itdg, *hefUncalibRechits);
+    }
+
+    // loop over HGCHEscint digis
+    edm::Handle<HGCalDigiCollection> pHGCHEBDigis;
+    iEvent.getByToken(hebDigiCollection_, pHGCHEBDigis);
+    const HGCalDigiCollection* hebDigis = pHGCHEBDigis.product();
+    hebUncalibRechits->reserve(hebDigis->size());
+    for (auto itdg = hebDigis->begin(); itdg != hebDigis->end(); ++itdg) {
+      worker_->runHGCHEscint(itdg, *hebUncalibRechits);
+    }
+
+    // loop over HFNose digis
+    edm::Handle<HGCalDigiCollection> pHGCHFNoseDigis;
+    iEvent.getByToken(hfnoseDigiCollection_, pHGCHFNoseDigis);
+    if (pHGCHFNoseDigis.isValid()) {
+      const HGCalDigiCollection* hfnoseDigis = pHGCHFNoseDigis.product();
+      if (!(hfnoseDigis->empty())) {
+        hfnoseUncalibRechits->reserve(hfnoseDigis->size());
+        for (auto itdg = hfnoseDigis->begin(); itdg != hfnoseDigis->end(); ++itdg)
+          worker_->runHGCHFNose(itdg, *hfnoseUncalibRechits);
+      }
+    }
+    */
     //}}}
 
     //----------------------------------------------------------------------------------------------------

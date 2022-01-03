@@ -5,14 +5,7 @@ from Configuration.Eras.Era_Phase2C11I13M9_cff import Phase2C11I13M9
 process = cms.Process('PROD',Phase2C11I13M9)
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
-
-#IdealGeometryRecord = cms.ESSource("EmptyESSource",
-#        recordName = cms.string('IdealGeometryRecord'),
-#        iovIsRunNotTime = cms.bool(True),
-#        firstValid = cms.vuint32(1)
-#        )
-
-process.load("Geometry.CMSCommonData.cmsIdealGeometryXML_cfi")
+process.load('Configuration.Geometry.GeometryExtended2026D86Reco_cff')
 
 process.source = cms.Source("PoolSource",
         #fileNames = cms.untracked.vstring('file:/home/mikumar/t3store3/workarea/CMSSW_9_4_9/src/tmp/step2_1.root')
@@ -100,12 +93,14 @@ process.prodEE_DigiSim = cms.EDAnalyzer('DigiSim',
 
 process.prodHEF_DigiSim = process.prodEE_DigiSim.clone(
         simhits = cms.untracked.InputTag("g4SimHits","HGCHitsHEfront", "SIM"),
-        Detector   = cms.string("HGCalHESiliconSensitive"),
+        digihits = cms.untracked.InputTag("simHGCalUnsuppressedDigis","HEfront"),
+        Detector = cms.string("HGCalHESiliconSensitive"),
         )
 
 process.prodHEB_DigiSim = process.prodEE_DigiSim.clone(
         simhits = cms.untracked.InputTag("g4SimHits","HGCHitsHEback", "SIM"),
-        Detector   = cms.string("HGCalHEScintillatorSensitive"),
+        digihits = cms.untracked.InputTag("simHGCalUnsuppressedDigis","HEback"),
+        Detector = cms.string("HGCalHEScintillatorSensitive"),
         )
 
 
