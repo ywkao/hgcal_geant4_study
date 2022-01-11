@@ -94,11 +94,13 @@
 #include "Geometry/HGCalCommonData/interface/HGCalDDDConstants.h"
 
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
-//}}}
-//
+
 #include "RecoLocalCalo/HGCalRecProducers/interface/HGCalUncalibRecHitWorkerFactory.h"
 #include "DataFormats/HGCRecHit/interface/HGCRecHitCollections.h"
 #include "RecoLocalCalo/HGCalRecAlgos/interface/HGCalUncalibRecHitRecWeightsAlgo.h"
+//}}}
+#include "../interface/toolbox.h"
+namespace tb = toolbox;
 
 void configureIt(const edm::ParameterSet& conf, HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame>& maker) //{{{
 {
@@ -151,7 +153,6 @@ void configureIt(const edm::ParameterSet& conf, HGCalUncalibRecHitRecWeightsAlgo
         maker.set_fCPerMIP(std::vector<double>({1.0}));
     }
 } //}}}
-
 class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
     public:
         //Implemented following Validation/HGCalValidation/plugins/HGCalSimHitValidation.cc
@@ -197,12 +198,18 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
             unsigned int hitid, ndigis;
         };
 
+        struct myDigis {
+            digisinfo dinfo;
+            adcinfo ainfo;
+            double amplitude;
+        };
+
     private:
         virtual void beginJob() override;
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
         //const std::string name;
-        
+
         const std::string nameDetector_; 
         const bool ifNose_;
         const int verbosity_, SampleIndx_;
@@ -345,22 +352,24 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     setupdatatoken_ = esConsumes<setupdata, setuprecord>();
 #endif
 } //}}}
-DigiSim::~DigiSim() //{{{
-{
-    // do anything here that needs to be done at desctruction time
-    // (e.g. close files, deallocate resources etc.)
-}
-//}}}
+DigiSim::~DigiSim(){}
 
 // ------------ method called for each event  ------------
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-    bool debug = false;
+    int counter = 0;
     using namespace edm;
     //int geomType(0); {{{
     //const HGCalGeometry* geom0 = &iSetup.getData(tok_hgcalg_);
     //std::cout<<geom0->topology().waferHexagon8()<<std::endl;
     //}}}
+    
+    /*********************************************************************************
+     * Tool to convert Digis to Uncalibrated RecHits (amplitude in unit of MIPs)
+     * $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
+     * $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
+     *********************************************************************************/
+    if (uncalibMaker_ee_.isSiFESim()) uncalibMaker_ee_.setGeometry(&iSetup.getData(ee_geometry_token_));
     
     //----------------------------------------------------------------------------------------------------
     // SimHit Handle {{{
@@ -421,87 +430,82 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //----------------------------------------------------------------------------------------------------}}}
     // Digi Handle {{{
     //----------------------------------------------------------------------------------------------------
-    std::map<uint32_t, std::pair<digisinfo,adcinfo > > map_digihits;
 
+    // prepare output
     Handle<HGCalDigiCollection> digicollection;
     iEvent.getByToken(digiSource_, digicollection);
+    
+    auto UncalibRechits = std::make_unique<HGCUncalibratedRecHitCollection>();
+    UncalibRechits->reserve(digicollection->size());
+
+    std::map<uint32_t, myDigis > my_map_digihits;
+    std::map<uint32_t, std::pair<digisinfo,adcinfo > > map_digihits;
     if (digicollection.isValid()) {
-        //std::cout<<"valid"<<std::endl;
+        std::cout<<"valid"<<std::endl;
         for (const auto& it : *(digicollection.product())) {
             DetId detId = it.id();
-            //std::cout<<"isSilicon = "<<rhtools_.isSilicon(detId)<<std::endl;
             if(rhtools_.isSilicon(detId)){
-                //std::cout<<"entered in the condition"<<std::endl;
                 uint32_t id_digi = uint32_t(it.id());
-                //  int layer = ((geomType == 0)   ? HGCalDetId(detId).layer()
-                //               : (geomType == 1) ? HGCSiliconDetId(detId).layer()
-                //                                 : HFNoseDetId(detId).layer());
-                //int waferType = ((geomType == 1) ? HGCSiliconDetId(detId).type()
-                //                                   : HFNoseDetId(detId).type());
+
                 const HGCSample& hgcSample = it.sample(SampleIndx_);
-                //uint16_t gain = hgcSample.toa();
                 uint16_t adc_ = hgcSample.data();
+                uint16_t gain = hgcSample.toa();
 
                 digisinfo dinfo;
                 adcinfo ainfo;
                 if (map_digihits.count(id_digi) != 0) {
                     dinfo = map_digihits[id_digi].first;
                     ainfo = map_digihits[id_digi].second;
-                }
-                else {
+                } else {
                     dinfo.u_cor = HGCSiliconDetId(detId).cellU() ;
                     dinfo.v_cor = HGCSiliconDetId(detId).cellV() ;
-                    dinfo.type =  HGCSiliconDetId(detId).type();
+                    dinfo.type  = HGCSiliconDetId(detId).type();
                     dinfo.layer = HGCSiliconDetId(detId).layer();
-                    ainfo.adc = adc_;
+                    ainfo.adc   = adc_;
                 }
 
-
+                HGCUncalibratedRecHit rechit = uncalibMaker_ee_.makeRecHit(it);
+                UncalibRechits->push_back( rechit );
                 map_digihits[id_digi] = std::pair<digisinfo, adcinfo>(dinfo, ainfo);
-                //std::cout<<" Id_digi : "<<id_digi<<"; adc_ : "<<ainfo.adc<<std::endl;
-                //double charge = gain;
-                //bool totmode = hgcSample.mode();
-                //bool zerothreshold = hgcSample.threshold();
-                //std::cout<<" layer = "<<HGCalDetId(detId).layer()<< " gain = "<<gain<<" adc "<<adc<<std::endl;
-                //digiValidation(detId, geom0, layer, waferType, adc, charge, totmode, zerothreshold);
-            }
+                my_map_digihits[id_digi].dinfo = dinfo;
+                my_map_digihits[id_digi].ainfo = ainfo;
+                my_map_digihits[id_digi].amplitude = rechit.amplitude();
+
+                bool debug = true;
+                if(debug) {
+                    //if(counter>9) continue;
+                    double charge = gain;
+                    bool totmode = hgcSample.mode();
+                    bool zerothreshold = hgcSample.threshold();
+                    tb::print_debug_info("Id_digi"   , id_digi                   );
+                    tb::print_debug_info("layer"     , HGCalDetId(detId).layer() );
+                    tb::print_debug_info("adc_"      , ainfo.adc                 );
+                    tb::print_debug_info("amplitude" , rechit.amplitude()        );
+                    tb::print_debug_info("gain"      , gain, true);
+                    tb::print_debug_info("layer"     , my_map_digihits[id_digi].dinfo.layer );
+                    tb::print_debug_info("adc_"      , my_map_digihits[id_digi].ainfo.adc   );
+                    tb::print_debug_info("amplitude" , my_map_digihits[id_digi].amplitude, true );
+                    //digiValidation(detId, geom0, layer, waferType, adc, charge, totmode, zerothreshold);
+                    counter++;
+                }
+
+            } // end of isSilicon bool
+        } // end of digicollection loop
+    } // end of digicollection valid
+
+    // loop over HGCEE digis
+    if(false) {
+        printf(">>> check UncalibRechits->size(): %ld\n", UncalibRechits->size());
+        counter = 0;
+        for (auto itdg = UncalibRechits->begin(); itdg != UncalibRechits->end(); ++itdg) {
+          if(counter>9) continue;
+          std::cout<<"id_digi = "<<(*itdg).id().rawId();
+          std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
+          counter++;
         }
     }
 
     //----------------------------------------------------------------------------------------------------}}}
-    // Convert Digis to Uncalibrated RecHits (amplitude in unit of MIPs)
-    //----------------------------------------------------------------------------------------------------
-    printf(">>> start coverting Digis to uncalibrated Rechits\n");
-    //worker_->set(iSetup);
-    if (uncalibMaker_ee_.isSiFESim()) uncalibMaker_ee_.setGeometry(&iSetup.getData(ee_geometry_token_));
-
-    // prepare output
-    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
-    // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
-    auto UncalibRechits = std::make_unique<HGCUncalibratedRecHitCollection>();
-
-    // loop over HGCEE digis
-    edm::Handle<HGCalDigiCollection> pHGCEEDigis;
-    iEvent.getByToken(digiSource_, pHGCEEDigis);
-    const HGCalDigiCollection* eeDigis = pHGCEEDigis.product();
-    UncalibRechits->reserve(eeDigis->size());
-
-    printf(">>> check eeDigis->size(): %ld\n", eeDigis->size());
-    for (auto itdg = eeDigis->begin(); itdg != eeDigis->end(); ++itdg) {
-      HGCUncalibratedRecHit rechit = uncalibMaker_ee_.makeRecHit(*itdg);
-      UncalibRechits->push_back( rechit );
-    }
-
-    printf(">>> check UncalibRechits->size(): %ld\n", UncalibRechits->size());
-    int counter = 0;
-    for (auto itdg = UncalibRechits->begin(); itdg != UncalibRechits->end(); ++itdg) {
-      if(counter>9) continue;
-      std::cout<<"id_digi = "<<(*itdg).id().rawId();
-      std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
-      counter++;
-    }
-
-    //----------------------------------------------------------------------------------------------------
     // Matching digiHits to simHits {{{
     //----------------------------------------------------------------------------------------------------
     std::map<uint32_t, std::pair<digisinfo, adcinfo>>::iterator itr_digi;
@@ -523,6 +527,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 digisinfo dinfo = (*itr_digi).second.first;
                 adcinfo ainfo = (*itr_digi).second.second;
                 if((*itr_sim).first==(*itr_digi).first){
+                    bool debug = false;
                     if(debug) std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
                     if(dinfo.layer < 26 && dinfo.type==0){
                         //std::cout<<"id_digi = "<<(*itr_digi).first<<" adc = "<<ainfo.adc<<" wafer type = "<<dinfo.type<<" layer = "<<dinfo.layer<<std::endl;
