@@ -12,8 +12,7 @@ process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring('file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R80To100_E100/step2.root')
         )
 
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
 
 
 process.prodEE_DigiSim = cms.EDAnalyzer('DigiSim',
@@ -108,4 +107,5 @@ process.TFileService = cms.Service("TFileService",
         fileName = cms.string('geantoutput.root')
         )
 
-process.p = cms.Path(process.prodEE_DigiSim*process.prodHEF_DigiSim*process.prodHEB_DigiSim)
+process.p = cms.Path(process.prodEE_DigiSim)
+#process.p = cms.Path(process.prodEE_DigiSim*process.prodHEF_DigiSim*process.prodHEB_DigiSim)
