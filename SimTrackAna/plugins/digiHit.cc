@@ -100,6 +100,7 @@
 #include "RecoLocalCalo/HGCalRecAlgos/interface/HGCalUncalibRecHitRecWeightsAlgo.h"
 //}}}
 #include "../interface/toolbox.h"
+#include <TNtuple.h>
 namespace tb = toolbox;
 
 void configureIt(const edm::ParameterSet& conf, HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame>& maker) //{{{
@@ -232,6 +233,9 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *hELossEE;TH1D *hELossEEF;TH1D *hELossEECN;TH1D *hELossEECK;
         TH1D *hELossHEF;TH1D *hELossHEFF;TH1D *hELossHEFCN;TH1D *hELossHEFCK;
         std::vector<TH1D*> vechist;   
+        TNtuple *nt_120mum_[26];
+        TNtuple *nt_200mum_[26];
+        TNtuple *nt_300mum_[26];
         TH1D *ADC_120mum_[26];
         TH1D *ADC_200mum_[26];
         TH1D *ADC_300mum_[26];
@@ -306,47 +310,50 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++){
         tb::set_string(hnamestr, "ADC_120mum_layer_", i+1);
-        ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024, 0, 1024.);
+        ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "MIP_120mum_layer_", i+1);
-        MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 500, 0, 500.);
+        MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
         tb::set_string(hnamestr, "SIM_120mum_layer_", i+1);
-        SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1000, 0, 1000.);
-
+        SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "ADC_SimhitE_120mum_layer_", i+1);
-        adc_sim_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
+        adc_sim_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
         tb::set_string(hnamestr, "ADC_MIP_120mum_layer_", i+1);
-        adc_mip_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 500.);
+        adc_mip_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 150.);
         tb::set_string(hnamestr, "MIP_SimhitE_120mum_layer_", i+1);
-        mip_sim_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),500., 0, 500.,0., 1000.);
+        mip_sim_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 150., 0, 150., 0., 800.);
 
         tb::set_string(hnamestr, "ADC_200mum_layer_", i+1);
-        ADC_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024, 0, 1024.);
+        ADC_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "MIP_200mum_layer_", i+1);
-        MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 500, 0, 500.);
+        MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
         tb::set_string(hnamestr, "SIM_200mum_layer_", i+1);
-        SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1000, 0, 1000.);
-
+        SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "ADC_SimhitE_200mum_layer_", i+1);
-        adc_sim_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
+        adc_sim_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
         tb::set_string(hnamestr, "ADC_MIP_200mum_layer_", i+1);
-        adc_mip_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 500.);
+        adc_mip_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 150.);
         tb::set_string(hnamestr, "MIP_SimhitE_200mum_layer_", i+1);
-        mip_sim_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),500., 0, 500.,0., 1000.);
+        mip_sim_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 150., 0, 150., 0., 800.);
 
         tb::set_string(hnamestr, "ADC_300mum_layer_", i+1);
-        ADC_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1024, 0, 1024.);
+        ADC_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "MIP_300mum_layer_", i+1);
-        MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 500, 0, 500.);
+        MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
         tb::set_string(hnamestr, "SIM_300mum_layer_", i+1);
-        SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 1000, 0, 1000.);
-
+        SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "ADC_SimhitE_300mum_layer_", i+1);
-        adc_sim_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 1000.);
+        adc_sim_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
         tb::set_string(hnamestr, "ADC_MIP_300mum_layer_", i+1);
-        adc_mip_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),1024., 0, 1024.,0., 500.);
+        adc_mip_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 150.);
         tb::set_string(hnamestr, "MIP_SimhitE_300mum_layer_", i+1);
-        mip_sim_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(),hnamestr.str().c_str(),500., 0, 500.,0., 1000.);
+        mip_sim_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 150., 0, 150., 0., 800.);
 
+        tb::set_string(hnamestr, "nt_120mum_layer_", i+1);
+        nt_120mum_[i] = fs->make<TNtuple>(hnamestr.str().c_str(),hnamestr.str().c_str(), "adc:mip:simhitE");
+        tb::set_string(hnamestr, "nt_200mum_layer_", i+1);
+        nt_200mum_[i] = fs->make<TNtuple>(hnamestr.str().c_str(),hnamestr.str().c_str(), "adc:mip:simhitE");
+        tb::set_string(hnamestr, "nt_300mum_layer_", i+1);
+        nt_300mum_[i] = fs->make<TNtuple>(hnamestr.str().c_str(),hnamestr.str().c_str(), "adc:mip:simhitE");
     }
 
 #ifdef this_is_an_eventsetup_example
@@ -445,7 +452,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::map<uint32_t, myDigis > my_map_digihits;
     std::map<uint32_t, std::pair<digisinfo,adcinfo > > map_digihits;
     if (digicollection.isValid()) {
-        std::cout<<"valid"<<std::endl;
         for (const auto& it : *(digicollection.product())) {
             DetId detId = it.id();
             if(rhtools_.isSilicon(detId)){
@@ -512,7 +518,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         if(max_energy<esum.eTime[0]) max_energy=esum.eTime[0];
     }
 
-    printf(">>> start matching!\n");
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
         uint32_t id_simhit = (*itr_sim).first;
         energysum esum = (*itr_sim).second.second;
@@ -521,7 +526,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             for (itr_mydigi = my_map_digihits.begin(); itr_mydigi != my_map_digihits.end(); ++itr_mydigi) {
                 uint32_t  id_digihit = (*itr_mydigi).first;
                 digisinfo dinfo      = (*itr_mydigi).second.dinfo;
-                adcinfo   ainfo      = (*itr_mydigi).second.ainfo;
+                uint32_t  adc        = (*itr_mydigi).second.ainfo.adc;
                 double    amplitude  = (*itr_mydigi).second.amplitude;
                 double    energy     = esum.eTime[0];
                 int       idx        = dinfo.layer-1;
@@ -529,36 +534,39 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(id_simhit==id_digihit){
                     bool debug = false;
                     if(debug) {
-                        tb::print_debug_info("Id_digi"   , id_digihit );
-                        tb::print_debug_info("layer"     , dinfo.layer         );
-                        tb::print_debug_info("wafer type", dinfo.type          );
-                        tb::print_debug_info("adc_"      , ainfo.adc           );
-                        tb::print_debug_info("amplitude" , amplitude           );
-                        tb::print_debug_info("energy"    , energy, true        );
+                        tb::print_debug_info("Id_digi"   , id_digihit   );
+                        tb::print_debug_info("layer"     , dinfo.layer  );
+                        tb::print_debug_info("wafer type", dinfo.type   );
+                        tb::print_debug_info("adc_"      , adc          );
+                        tb::print_debug_info("amplitude" , amplitude    );
+                        tb::print_debug_info("energy"    , energy, true );
                     }
                     if(dinfo.layer <= 26 && dinfo.type==0) {
-                        ADC_120mum_[idx]->Fill(ainfo.adc);
-                        MIP_120mum_[idx]->Fill(amplitude);
-                        SIM_120mum_[idx]->Fill(energy);
-                        adc_sim_120mum_[idx]->Fill(ainfo.adc,energy);
-                        adc_mip_120mum_[idx]->Fill(ainfo.adc,amplitude);
-                        mip_sim_120mum_[idx]->Fill(amplitude,energy);
+                        ADC_120mum_     [idx]-> Fill(adc);
+                        MIP_120mum_     [idx]-> Fill(amplitude);
+                        SIM_120mum_     [idx]-> Fill(energy);
+                        adc_sim_120mum_ [idx]-> Fill(adc,energy);
+                        adc_mip_120mum_ [idx]-> Fill(adc,amplitude);
+                        mip_sim_120mum_ [idx]-> Fill(amplitude,energy);
+                        nt_120mum_      [idx]-> Fill(adc,amplitude,energy);
                     }
                     if(dinfo.layer <= 26 && dinfo.type==1) {
-                        ADC_200mum_[idx]->Fill(ainfo.adc);
-                        MIP_200mum_[idx]->Fill(amplitude);
-                        SIM_200mum_[idx]->Fill(energy);
-                        adc_sim_200mum_[idx]->Fill(ainfo.adc,energy);
-                        adc_mip_200mum_[idx]->Fill(ainfo.adc,amplitude);
-                        mip_sim_200mum_[idx]->Fill(amplitude,energy);
+                        ADC_200mum_     [idx]-> Fill(adc);
+                        MIP_200mum_     [idx]-> Fill(amplitude);
+                        SIM_200mum_     [idx]-> Fill(energy);
+                        adc_sim_200mum_ [idx]-> Fill(adc,energy);
+                        adc_mip_200mum_ [idx]-> Fill(adc,amplitude);
+                        mip_sim_200mum_ [idx]-> Fill(amplitude,energy);
+                        nt_200mum_      [idx]-> Fill(adc,amplitude,energy);
                     }
                     if(dinfo.layer <= 26 && dinfo.type==2) {
-                        ADC_300mum_[idx]->Fill(ainfo.adc);
-                        MIP_300mum_[idx]->Fill(amplitude);
-                        SIM_300mum_[idx]->Fill(energy);
-                        adc_sim_300mum_[idx]->Fill(ainfo.adc,energy);
-                        adc_mip_300mum_[idx]->Fill(ainfo.adc,amplitude);
-                        mip_sim_300mum_[idx]->Fill(amplitude,energy);
+                        ADC_300mum_     [idx]-> Fill(adc);
+                        MIP_300mum_     [idx]-> Fill(amplitude);
+                        SIM_300mum_     [idx]-> Fill(energy);
+                        adc_sim_300mum_ [idx]-> Fill(adc,energy);
+                        adc_mip_300mum_ [idx]-> Fill(adc,amplitude);
+                        mip_sim_300mum_ [idx]-> Fill(amplitude,energy);
+                        nt_300mum_      [idx]-> Fill(adc,amplitude,energy);
                     }
                 }
             } // end of digihits for loop
