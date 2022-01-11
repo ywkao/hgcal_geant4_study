@@ -98,6 +98,59 @@
 //
 #include "RecoLocalCalo/HGCalRecProducers/interface/HGCalUncalibRecHitWorkerFactory.h"
 #include "DataFormats/HGCRecHit/interface/HGCRecHitCollections.h"
+#include "RecoLocalCalo/HGCalRecAlgos/interface/HGCalUncalibRecHitRecWeightsAlgo.h"
+
+void configureIt(const edm::ParameterSet& conf, HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame>& maker) //{{{
+{
+    //https://github.com/cms-sw/cmssw/blob/master/RecoLocalCalo/HGCalRecProducers/plugins/HGCalUncalibRecHitWorkerWeights.cc#L10-L58
+    constexpr char isSiFE[] = "isSiFE";
+    constexpr char adcNbits[] = "adcNbits";
+    constexpr char adcSaturation[] = "adcSaturation";
+    constexpr char tdcNbits[] = "tdcNbits";
+    constexpr char tdcSaturation[] = "tdcSaturation";
+    constexpr char tdcOnset[] = "tdcOnset";
+    constexpr char toaLSB_ns[] = "toaLSB_ns";
+    constexpr char fCPerMIP[] = "fCPerMIP";
+
+    if (conf.exists(isSiFE)) {
+        maker.set_isSiFESim(conf.getParameter<bool>(isSiFE));
+    } else {
+        maker.set_isSiFESim(false);
+    }
+
+    if (conf.exists(adcNbits)) {
+        uint32_t nBits = conf.getParameter<uint32_t>(adcNbits);
+        double saturation = conf.getParameter<double>(adcSaturation);
+        float adcLSB = saturation / pow(2., nBits);
+        maker.set_ADCLSB(adcLSB);
+    } else {
+        maker.set_ADCLSB(-1.);
+    }
+
+    if (conf.exists(tdcNbits)) {
+        uint32_t nBits = conf.getParameter<uint32_t>(tdcNbits);
+        double saturation = conf.getParameter<double>(tdcSaturation);
+        double onset = conf.getParameter<double>(tdcOnset);  // in fC
+        float tdcLSB = saturation / pow(2., nBits);
+        maker.set_TDCLSB(tdcLSB);
+        maker.set_tdcOnsetfC(onset);
+    } else {
+        maker.set_TDCLSB(-1.);
+        maker.set_tdcOnsetfC(-1.);
+    }
+
+    if (conf.exists(toaLSB_ns)) {
+        maker.set_toaLSBToNS(conf.getParameter<double>(toaLSB_ns));
+    } else {
+        maker.set_toaLSBToNS(-1.);
+    }
+
+    if (conf.exists(fCPerMIP)) {
+        maker.set_fCPerMIP(conf.getParameter<std::vector<double> >(fCPerMIP));
+    } else {
+        maker.set_fCPerMIP(std::vector<double>({1.0}));
+    }
+} //}}}
 
 class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
     public:
@@ -161,11 +214,13 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         //edm::EDGetTokenT<HGCalDigiCollection> hefDigiCollection_;    // collection of HGCHEF digis
         //edm::EDGetTokenT<HGCalDigiCollection> hebDigiCollection_;    // collection of HGCHEB digis
         //edm::EDGetTokenT<HGCalDigiCollection> hfnoseDigiCollection_; // collection of HGCHFNose digis
-        std::unique_ptr<HGCalUncalibRecHitWorkerBaseClass> worker_;
+        //std::unique_ptr<HGCalUncalibRecHitWorkerBaseClass> worker_;
 
         hgcal::RecHitTools rhtools_;
         edm::EDGetToken digiSource_;
         //edm::ConsumesCollector iC;
+        edm::ESGetToken<HGCalGeometry, IdealGeometryRecord> ee_geometry_token_;
+        HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame> uncalibMaker_ee_;
 
         TH1D *hELossEE;TH1D *hELossEEF;TH1D *hELossEECN;TH1D *hELossEECK;
         TH1D *hELossHEF;TH1D *hELossHEFF;TH1D *hELossHEFCN;TH1D *hELossHEFCK;
@@ -198,8 +253,9 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         //hefDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHEFdigiCollection"))),
         //hebDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHEBdigiCollection"))),
         //hfnoseDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHFNosedigiCollection"))),
-        worker_{HGCalUncalibRecHitWorkerFactory::get()->create(
-                iconfig.getParameter<std::string>("algo"), iconfig, consumesCollector())}
+        //worker_{HGCalUncalibRecHitWorkerFactory::get()->create(
+        //        iconfig.getParameter<std::string>("algo"), iconfig, consumesCollector())},
+        ee_geometry_token_(consumesCollector().esConsumes(edm::ESInputTag("", "HGCalEESensitive")))
 {
     auto temp = iconfig.getUntrackedParameter<edm::InputTag>("digihits");
     if ((nameDetector_ == "HGCalEESensitive") || (nameDetector_ == "HGCalHESiliconSensitive") ||
@@ -213,6 +269,9 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
             << "\"HGCalEESensitive\", \"HGCalHESiliconSensitive\", or "
             << "\"HGCalHEScintillatorSensitive\", \"HGCalHFNoseSensitive\"!";
     }
+
+    const edm::ParameterSet& ee_cfg = iconfig.getParameterSet("HGCEEConfig");
+    configureIt(ee_cfg, uncalibMaker_ee_);
 
     // tSimCaloHitContainer(consumes<edm::PCaloHitContainer>(iconfig.getUntrackedParameter<edm::InputTag>("simhits")))
     //now do what ever initialization is needed
@@ -410,21 +469,16 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
 
     //----------------------------------------------------------------------------------------------------}}}
-    
-    printf(">>> start coverting Digis to uncalibrated Rechits\n");
     // Convert Digis to Uncalibrated RecHits (amplitude in unit of MIPs)
     //----------------------------------------------------------------------------------------------------
-    // tranparently get things from event setup
-    worker_->set(iSetup);
+    printf(">>> start coverting Digis to uncalibrated Rechits\n");
+    //worker_->set(iSetup);
+    if (uncalibMaker_ee_.isSiFESim()) uncalibMaker_ee_.setGeometry(&iSetup.getData(ee_geometry_token_));
 
     // prepare output
     // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCUncalibratedRecHit.h
     // $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
-    auto UncalibRechits     = std::make_unique<HGCUncalibratedRecHitCollection>();
-    //auto eeUncalibRechits     = std::make_unique<HGCeeUncalibratedRecHitCollection>();
-    //auto hefUncalibRechits    = std::make_unique<HGChefUncalibratedRecHitCollection>();
-    //auto hebUncalibRechits    = std::make_unique<HGChebUncalibratedRecHitCollection>();
-    //auto hfnoseUncalibRechits = std::make_unique<HGChfnoseUncalibratedRecHitCollection>();
+    auto UncalibRechits = std::make_unique<HGCUncalibratedRecHitCollection>();
 
     // loop over HGCEE digis
     edm::Handle<HGCalDigiCollection> pHGCEEDigis;
@@ -432,22 +486,15 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     const HGCalDigiCollection* eeDigis = pHGCEEDigis.product();
     UncalibRechits->reserve(eeDigis->size());
 
+    printf(">>> check eeDigis->size(): %ld\n", eeDigis->size());
     for (auto itdg = eeDigis->begin(); itdg != eeDigis->end(); ++itdg) {
-      //std::cout<<"id_digi = "<<(*itdg).id().rawId();
-      worker_->runHGCEE(itdg, *UncalibRechits);
-
-      //worker_->runHGCEE(itdg, *eeUncalibRechits);
-      //worker_->runHGCHEsil(itdg, *hefUncalibRechits);
-      //worker_->runHGCHEscint(itdg, *hebUncalibRechits);
-      //worker_->runHGCHFNose(itdg, *hfnoseUncalibRechits);
+      HGCUncalibratedRecHit rechit = uncalibMaker_ee_.makeRecHit(*itdg);
+      UncalibRechits->push_back( rechit );
     }
 
-    printf(">>> check eeDigis->size(): %ld\n", eeDigis->size());
     printf(">>> check UncalibRechits->size(): %ld\n", UncalibRechits->size());
-
     int counter = 0;
     for (auto itdg = UncalibRechits->begin(); itdg != UncalibRechits->end(); ++itdg) {
-      //std::cout<<"id_digi = "<<(*itdg).id()<<" amplitude = "<< (*itdg).amplitude()<<std::endl;
       if(counter>9) continue;
       std::cout<<"id_digi = "<<(*itdg).id().rawId();
       std::cout<<", amplitude = "<< (*itdg).amplitude()<<std::endl;
