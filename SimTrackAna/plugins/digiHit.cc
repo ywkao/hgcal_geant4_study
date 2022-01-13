@@ -232,6 +232,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
         TH1D *hELossEE;TH1D *hELossEEF;TH1D *hELossEECN;TH1D *hELossEECK;
         TH1D *hELossHEF;TH1D *hELossHEFF;TH1D *hELossHEFCN;TH1D *hELossHEFCK;
+        
+        // hit
         std::vector<TH1D*> vechist;   
         TNtuple *nt_120mum_[26];
         TNtuple *nt_200mum_[26];
@@ -254,6 +256,25 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TProfile *mip_sim_120mum_[26];
         TProfile *mip_sim_200mum_[26];
         TProfile *mip_sim_300mum_[26];
+
+        // total energy
+        TH1D *total_ADC_120mum_[26];
+        TH1D *total_ADC_200mum_[26];
+        TH1D *total_ADC_300mum_[26];
+        TH1D *total_MIP_120mum_[26];
+        TH1D *total_MIP_200mum_[26];
+        TH1D *total_MIP_300mum_[26];
+        TH1D *total_SIM_120mum_[26];
+        TH1D *total_SIM_200mum_[26];
+        TH1D *total_SIM_300mum_[26];
+
+        // multiplicity
+        TH1D *multiplicity_digis_120mum_[26];
+        TH1D *multiplicity_digis_200mum_[26];
+        TH1D *multiplicity_digis_300mum_[26];
+        TH1D *multiplicity_simhits_120mum_[26];
+        TH1D *multiplicity_simhits_200mum_[26];
+        TH1D *multiplicity_simhits_300mum_[26];
 
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
         edm::ESGetToken<SetupData, SetupRecord> setupToken_;
@@ -308,7 +329,42 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     hELossHEFCN = fs->make<TH1D>("hELossHEFCN" , "hELossHEFCN" , 1000 , 0. , 1000.);
     hELossHEFCK = fs->make<TH1D>("hELossHEFCK" , "hELossHEFCK" , 1000 , 0. , 1000.);
     std::ostringstream hnamestr (std::ostringstream::ate);
-    for(int i=0;i<26;i++){
+    for(int i=0;i<26;i++) {
+        // total energy & multiplicity
+        tb::set_string(hnamestr, "total_ADC_120mum_", i+1);
+        total_ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "total_MIP_120mum_", i+1);
+        total_MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        tb::set_string(hnamestr, "total_SIM_120mum_", i+1);
+        total_SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "multiplicity_digis_120mum_", i+1);
+        multiplicity_digis_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 200.);
+        tb::set_string(hnamestr, "multiplicity_simhits_120mum_", i+1);
+        multiplicity_simhits_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+
+        tb::set_string(hnamestr, "total_ADC_200mum_", i+1);
+        total_ADC_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "total_MIP_200mum_", i+1);
+        total_MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        tb::set_string(hnamestr, "total_SIM_200mum_", i+1);
+        total_SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "multiplicity_digis_200mum_", i+1);
+        multiplicity_digis_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 200.);
+        tb::set_string(hnamestr, "multiplicity_simhits_200mum_", i+1);
+        multiplicity_simhits_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+
+        tb::set_string(hnamestr, "total_ADC_300mum_", i+1);
+        total_ADC_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "total_MIP_300mum_", i+1);
+        total_MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        tb::set_string(hnamestr, "total_SIM_300mum_", i+1);
+        total_SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "multiplicity_digis_300mum_", i+1);
+        multiplicity_digis_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 200.);
+        tb::set_string(hnamestr, "multiplicity_simhits_300mum_", i+1);
+        multiplicity_simhits_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+
+        // individual hits
         tb::set_string(hnamestr, "ADC_120mum_layer_", i+1);
         ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "MIP_120mum_layer_", i+1);
@@ -366,8 +422,47 @@ DigiSim::~DigiSim(){}
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     // init {{{
-    int counter = 0;
     using namespace edm;
+
+    int counter = 0;
+    std::vector<double> total_energy_adc_120mum ;
+    std::vector<double> total_energy_mip_120mum ;
+    std::vector<double> total_energy_sim_120mum ;
+    std::vector<int>    num_digis_120mum        ;
+    std::vector<int>    num_simhits_120mum      ;
+
+    std::vector<double> total_energy_adc_200mum ;
+    std::vector<double> total_energy_mip_200mum ;
+    std::vector<double> total_energy_sim_200mum ;
+    std::vector<int>    num_digis_200mum        ;
+    std::vector<int>    num_simhits_200mum      ;
+
+    std::vector<double> total_energy_adc_300mum ;
+    std::vector<double> total_energy_mip_300mum ;
+    std::vector<double> total_energy_sim_300mum ;
+    std::vector<int>    num_digis_300mum        ;
+    std::vector<int>    num_simhits_300mum      ;
+
+    for(int idx=0; idx<26; ++idx) {
+        total_energy_adc_120mum .push_back(0);
+        total_energy_mip_120mum .push_back(0);
+        total_energy_sim_120mum .push_back(0);
+        num_digis_120mum        .push_back(0);
+        num_simhits_120mum      .push_back(0);
+
+        total_energy_adc_200mum .push_back(0);
+        total_energy_mip_200mum .push_back(0);
+        total_energy_sim_200mum .push_back(0);
+        num_digis_200mum        .push_back(0);
+        num_simhits_200mum      .push_back(0);
+
+        total_energy_adc_300mum .push_back(0);
+        total_energy_mip_300mum .push_back(0);
+        total_energy_sim_300mum .push_back(0);
+        num_digis_300mum        .push_back(0);
+        num_simhits_300mum      .push_back(0);
+    }
+
     //int geomType(0);
     //const HGCalGeometry* geom0 = &iSetup.getData(tok_hgcalg_);
     //std::cout<<geom0->topology().waferHexagon8()<<std::endl;
@@ -481,6 +576,11 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 my_map_digihits[id_digi].ainfo = ainfo;
                 my_map_digihits[id_digi].amplitude = rechit.amplitude();
 
+                int idx = dinfo.layer-1;
+                if(dinfo.layer <= 26 && dinfo.type==0) num_digis_120mum[idx] += 1;
+                if(dinfo.layer <= 26 && dinfo.type==1) num_digis_200mum[idx] += 1;
+                if(dinfo.layer <= 26 && dinfo.type==2) num_digis_300mum[idx] += 1;
+
                 bool debug = false;
                 if(debug) {
                     tb::print_debug_info("Id_digi"   , id_digi                                  );
@@ -541,39 +641,75 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                         tb::print_debug_info("amplitude" , amplitude    );
                         tb::print_debug_info("energy"    , energy, true );
                     }
+                    // individual hit info
                     if(dinfo.layer <= 26 && dinfo.type==0) {
-                        ADC_120mum_     [idx]-> Fill(adc);
-                        MIP_120mum_     [idx]-> Fill(amplitude);
-                        SIM_120mum_     [idx]-> Fill(energy);
-                        adc_sim_120mum_ [idx]-> Fill(adc,energy);
-                        adc_mip_120mum_ [idx]-> Fill(adc,amplitude);
-                        mip_sim_120mum_ [idx]-> Fill(amplitude,energy);
-                        nt_120mum_      [idx]-> Fill(adc,amplitude,energy);
+                        ADC_120mum_     [idx] -> Fill(adc);
+                        MIP_120mum_     [idx] -> Fill(amplitude);
+                        SIM_120mum_     [idx] -> Fill(energy);
+                        adc_sim_120mum_ [idx] -> Fill(adc,energy);
+                        adc_mip_120mum_ [idx] -> Fill(adc,amplitude);
+                        mip_sim_120mum_ [idx] -> Fill(amplitude,energy);
+                        nt_120mum_      [idx] -> Fill(adc,amplitude,energy);
+
+                        total_energy_adc_120mum [idx] += adc;
+                        total_energy_mip_120mum [idx] += amplitude;
+                        total_energy_sim_120mum [idx] += energy;
+                        num_simhits_120mum      [idx] += 1;
                     }
                     if(dinfo.layer <= 26 && dinfo.type==1) {
-                        ADC_200mum_     [idx]-> Fill(adc);
-                        MIP_200mum_     [idx]-> Fill(amplitude);
-                        SIM_200mum_     [idx]-> Fill(energy);
-                        adc_sim_200mum_ [idx]-> Fill(adc,energy);
-                        adc_mip_200mum_ [idx]-> Fill(adc,amplitude);
-                        mip_sim_200mum_ [idx]-> Fill(amplitude,energy);
-                        nt_200mum_      [idx]-> Fill(adc,amplitude,energy);
+                        ADC_200mum_     [idx] -> Fill(adc);
+                        MIP_200mum_     [idx] -> Fill(amplitude);
+                        SIM_200mum_     [idx] -> Fill(energy);
+                        adc_sim_200mum_ [idx] -> Fill(adc,energy);
+                        adc_mip_200mum_ [idx] -> Fill(adc,amplitude);
+                        mip_sim_200mum_ [idx] -> Fill(amplitude,energy);
+                        nt_200mum_      [idx] -> Fill(adc,amplitude,energy);
+
+                        total_energy_adc_200mum [idx] += adc;
+                        total_energy_mip_200mum [idx] += amplitude;
+                        total_energy_sim_200mum [idx] += energy;
+                        num_simhits_200mum      [idx] += 1;
                     }
                     if(dinfo.layer <= 26 && dinfo.type==2) {
-                        ADC_300mum_     [idx]-> Fill(adc);
-                        MIP_300mum_     [idx]-> Fill(amplitude);
-                        SIM_300mum_     [idx]-> Fill(energy);
-                        adc_sim_300mum_ [idx]-> Fill(adc,energy);
-                        adc_mip_300mum_ [idx]-> Fill(adc,amplitude);
-                        mip_sim_300mum_ [idx]-> Fill(amplitude,energy);
-                        nt_300mum_      [idx]-> Fill(adc,amplitude,energy);
+                        ADC_300mum_     [idx] -> Fill(adc);
+                        MIP_300mum_     [idx] -> Fill(amplitude);
+                        SIM_300mum_     [idx] -> Fill(energy);
+                        adc_sim_300mum_ [idx] -> Fill(adc,energy);
+                        adc_mip_300mum_ [idx] -> Fill(adc,amplitude);
+                        mip_sim_300mum_ [idx] -> Fill(amplitude,energy);
+                        nt_300mum_      [idx] -> Fill(adc,amplitude,energy);
+
+                        total_energy_adc_300mum [idx] += adc;
+                        total_energy_mip_300mum [idx] += amplitude;
+                        total_energy_sim_300mum [idx] += energy;
+                        num_simhits_300mum      [idx] += 1;
                     }
                 }
             } // end of digihits for loop
         }
     } // end of simhits for loop
-    //}}}
 
+    // Fill information of an event
+    for(int idx=0; idx<26; ++idx) {
+        total_ADC_120mum_            [idx] -> Fill( total_energy_adc_120mum [idx] );
+        total_MIP_120mum_            [idx] -> Fill( total_energy_mip_120mum [idx] );
+        total_SIM_120mum_            [idx] -> Fill( total_energy_sim_120mum [idx] );
+        multiplicity_digis_120mum_   [idx] -> Fill( num_digis_120mum        [idx] );
+        multiplicity_simhits_120mum_ [idx] -> Fill( num_simhits_120mum      [idx] );
+
+        total_ADC_200mum_            [idx] -> Fill( total_energy_adc_200mum [idx] );
+        total_MIP_200mum_            [idx] -> Fill( total_energy_mip_200mum [idx] );
+        total_SIM_200mum_            [idx] -> Fill( total_energy_sim_200mum [idx] );
+        multiplicity_digis_200mum_   [idx] -> Fill( num_digis_200mum        [idx] );
+        multiplicity_simhits_200mum_ [idx] -> Fill( num_simhits_200mum      [idx] );
+
+        total_ADC_300mum_            [idx] -> Fill( total_energy_adc_300mum [idx] );
+        total_MIP_300mum_            [idx] -> Fill( total_energy_mip_300mum [idx] );
+        total_SIM_300mum_            [idx] -> Fill( total_energy_sim_300mum [idx] );
+        multiplicity_digis_300mum_   [idx] -> Fill( num_digis_300mum        [idx] );
+        multiplicity_simhits_300mum_ [idx] -> Fill( num_simhits_300mum      [idx] );
+    }
+    //}}}
 } // end of analyze
 
 // others {{{

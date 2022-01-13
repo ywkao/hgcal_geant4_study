@@ -24,24 +24,40 @@ def set_graph(gr, ytitle, xtitle, color):
     gr.GetXaxis().SetTitleOffset(1.2)
 
 sub_directory = {
-    "ADC_120mum_layer"         : "ADC",
-    "ADC_200mum_layer"         : "ADC",
-    "ADC_300mum_layer"         : "ADC",
-    "MIP_120mum_layer"         : "MIP",
-    "MIP_200mum_layer"         : "MIP",
-    "MIP_300mum_layer"         : "MIP",
-    "SIM_120mum_layer"         : "SIM",
-    "SIM_200mum_layer"         : "SIM",
-    "SIM_300mum_layer"         : "SIM",
-    "ADC_SimhitE_120mum_layer" : "ADC_SimhitE",
-    "ADC_SimhitE_200mum_layer" : "ADC_SimhitE",
-    "ADC_SimhitE_300mum_layer" : "ADC_SimhitE",
-    "ADC_MIP_120mum_layer"     : "ADC_MIP",
-    "ADC_MIP_200mum_layer"     : "ADC_MIP",
-    "ADC_MIP_300mum_layer"     : "ADC_MIP",
-    "MIP_SimhitE_120mum_layer" : "MIP_SimhitE",
-    "MIP_SimhitE_200mum_layer" : "MIP_SimhitE",
-    "MIP_SimhitE_300mum_layer" : "MIP_SimhitE",
+    "ADC_120mum_layer"            : "ADC",
+    "ADC_200mum_layer"            : "ADC",
+    "ADC_300mum_layer"            : "ADC",
+    "MIP_120mum_layer"            : "MIP",
+    "MIP_200mum_layer"            : "MIP",
+    "MIP_300mum_layer"            : "MIP",
+    "SIM_120mum_layer"            : "SIM",
+    "SIM_200mum_layer"            : "SIM",
+    "SIM_300mum_layer"            : "SIM",
+    "ADC_SimhitE_120mum_layer"    : "ADC_SimhitE",
+    "ADC_SimhitE_200mum_layer"    : "ADC_SimhitE",
+    "ADC_SimhitE_300mum_layer"    : "ADC_SimhitE",
+    "ADC_MIP_120mum_layer"        : "ADC_MIP",
+    "ADC_MIP_200mum_layer"        : "ADC_MIP",
+    "ADC_MIP_300mum_layer"        : "ADC_MIP",
+    "MIP_SimhitE_120mum_layer"    : "MIP_SimhitE",
+    "MIP_SimhitE_200mum_layer"    : "MIP_SimhitE",
+    "MIP_SimhitE_300mum_layer"    : "MIP_SimhitE",
+
+    "total_ADC_120mum"            : "total_ADC",
+    "total_ADC_200mum"            : "total_ADC",
+    "total_ADC_300mum"            : "total_ADC",
+    "total_MIP_120mum"            : "total_MIP",
+    "total_MIP_200mum"            : "total_MIP",
+    "total_MIP_300mum"            : "total_MIP",
+    "total_SIM_120mum"            : "total_SIM",
+    "total_SIM_200mum"            : "total_SIM",
+    "total_SIM_300mum"            : "total_SIM",
+    "multiplicity_digis_120mum"   : "multiplicity_digis",
+    "multiplicity_digis_200mum"   : "multiplicity_digis",
+    "multiplicity_digis_300mum"   : "multiplicity_digis",
+    "multiplicity_simhits_300mum" : "multiplicity_simhits",
+    "multiplicity_simhits_120mum" : "multiplicity_simhits",
+    "multiplicity_simhits_200mum" : "multiplicity_simhits",
 }
 
 ytitles = sub_directory
@@ -57,7 +73,8 @@ def get_graph(varName, v_hists):
         x.append(x_D86[i])
         y.append(h.GetMean())
         ex.append(0.)
-        ey.append(h.GetStdDev())
+        #ey.append(h.GetStdDev())
+        ey.append(h.GetMeanError())
 
         gr = ROOT.TGraphErrors(n, x, y, ex, ey)
         set_graph(gr, ytitles[varName], "Layer depth [ X_{0} ]", ROOT.kBlue)

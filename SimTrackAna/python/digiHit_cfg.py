@@ -6,6 +6,7 @@ process = cms.Process('PROD',Phase2C11I13M9)
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.Geometry.GeometryExtended2026D86Reco_cff')
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 10 )
 
 process.source = cms.Source("PoolSource",
         #fileNames = cms.untracked.vstring('file:/home/mikumar/t3store3/workarea/CMSSW_9_4_9/src/tmp/step2_1.root')
