@@ -8,9 +8,24 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.Geometry.GeometryExtended2026D86Reco_cff')
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 10 )
 
+#import argparse
+#parser = argparse.ArgumentParser()
+#parser.add_argument("-t", help = "specify a tag to run", type=str)
+#args = parser.parse_args()
+#tag = args.t
+
+tag = "D86_R80To100_E20"
+tag = "D86_R80To100_E300"
+tag = "D86_R80To100_E100"
+
+tag = "D86_R35To60_E20"
+tag = "D86_R35To60_E100"
+tag = "D86_R35To60_E300"
+
 process.source = cms.Source("PoolSource",
         #fileNames = cms.untracked.vstring('file:/home/mikumar/t3store3/workarea/CMSSW_9_4_9/src/tmp/step2_1.root')
-        fileNames = cms.untracked.vstring('file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R80To100_E100/step2.root')
+        #fileNames = cms.untracked.vstring('file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R80To100_E100/step2.root')
+        fileNames = cms.untracked.vstring('file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_' + tag + '/step2.root')
         )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
@@ -47,6 +62,7 @@ process.prodEE_DigiSim = cms.EDAnalyzer('DigiSim',
             tdcOnset      = hgceeDigitizer.digiCfg.feCfg.tdcOnset_fC,
             toaLSB_ns     = hgceeDigitizer.digiCfg.feCfg.toaLSB_ns,
             fCPerMIP      = cms.vdouble(1.25,2.57,3.88) #100um, 200um, 300um
+            #fCPerMIP      = cms.vdouble(24.,36.,50.) #120um, 200um, 300um; from Mintu
             ),
 
         HGCHEFConfig = cms.PSet(
@@ -105,7 +121,7 @@ process.prodHEB_DigiSim = process.prodEE_DigiSim.clone(
 
 
 process.TFileService = cms.Service("TFileService",
-        fileName = cms.string('geantoutput.root')
+        fileName = cms.string('geantoutput_' + tag + '.root')
         )
 
 process.p = cms.Path(process.prodEE_DigiSim)
