@@ -13,11 +13,12 @@ ROOT.gStyle.SetStatW(my_stat_pos[2])
 ROOT.gStyle.SetStatH(my_stat_pos[3])
 ROOT.gStyle.SetTextSize(1.2)
 
-import plot_utils as pu
+import my_plot_utils as pu
 
 eos = "./eos_output"
 rootfile = eos + "/" + "geantoutput_v3p1.root"
 rootfile = "geantoutput_v3p1.root"
+rootfile = "rootfiles/geantoutput_D86_R80To100_E100.root"
 fin = ROOT.TFile.Open(rootfile, "R")
 
 c1 = ROOT.TCanvas("c1", "", 800, 600)
@@ -37,7 +38,12 @@ def make_plot(varName, bool_make_profile):
 
     processes = ["1", "13", "26"]
     processes = [str(i) for i in range(1,27)]
-    v_hists = pu.load_histograms(fin, varName, processes)
+
+    v_hists = []
+    if "Eta" in varName or "Phi" in varName:
+        v_hists = pu.load_single_histogram(fin, varName)
+    else:
+        v_hists = pu.load_histograms(fin, varName, processes)
 
     # longitdinal profile
     if bool_make_profile:
@@ -57,22 +63,32 @@ def make_plot(varName, bool_make_profile):
 
 def run():
     c1.cd()
-    thickness = [200]
-    thickness = [120, 200, 300]
+
+    make_plot("hEta", False )
+    make_plot("hPhi", False )
+
+    thickness = ["120mum", "200mum", "300mum", "total"]
+    thickness = ["total"] # consider 120, 200, 300 altogether
+
     for t in thickness:
-        make_plot("total_ADC_%dmum"            % t , True  )
-        make_plot("total_MIP_%dmum"            % t , True  )
-        make_plot("total_SIM_%dmum"            % t , True  )
-        make_plot("multiplicity_digis_%dmum"   % t , True  )
-        make_plot("multiplicity_simhits_%dmum" % t , True  )
 
-        make_plot("ADC_%dmum_layer"            % t , True  )
-        make_plot("MIP_%dmum_layer"            % t , True  )
-        make_plot("SIM_%dmum_layer"            % t , True  )
+        make_plot("ADC_SimhitE_%s_layer"    % t , False )
+        make_plot("ADC_MIP_%s_layer"        % t , False )
+        make_plot("MIP_SimhitE_%s_layer"    % t , False )
 
-        make_plot("ADC_SimhitE_%dmum_layer"    % t , False )
-        make_plot("ADC_MIP_%dmum_layer"        % t , False )
-        make_plot("MIP_SimhitE_%dmum_layer"    % t , False )
+        continue
+
+        make_plot("total_ADC_%s"            % t , True  )
+        make_plot("total_MIP_%s"            % t , True  )
+        make_plot("total_SIM_%s"            % t , True  )
+        make_plot("multiplicity_digis_%s"   % t , True  )
+        make_plot("multiplicity_simhits_%s" % t , True  )
+
+        continue
+
+        make_plot("ADC_%s"            % t , True  )
+        make_plot("MIP_%s"            % t , True  )
+        make_plot("SIM_%s"            % t , True  )
 
 if __name__ == "__main__":
     run()

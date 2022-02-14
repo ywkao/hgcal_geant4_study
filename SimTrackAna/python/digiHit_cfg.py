@@ -14,13 +14,13 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 10 )
 #args = parser.parse_args()
 #tag = args.t
 
+tag = "D86_R35To60_E100"
+tag = "D86_R35To60_E300"
+tag = "D86_R35To60_E20"
+
 tag = "D86_R80To100_E20"
 tag = "D86_R80To100_E300"
 tag = "D86_R80To100_E100"
-
-tag = "D86_R35To60_E20"
-tag = "D86_R35To60_E100"
-tag = "D86_R35To60_E300"
 
 process.source = cms.Source("PoolSource",
         #fileNames = cms.untracked.vstring('file:/home/mikumar/t3store3/workarea/CMSSW_9_4_9/src/tmp/step2_1.root')
@@ -29,6 +29,7 @@ process.source = cms.Source("PoolSource",
         )
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
 
 
 process.prodEE_DigiSim = cms.EDAnalyzer('DigiSim',

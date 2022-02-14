@@ -101,6 +101,7 @@
 //}}}
 #include "../interface/toolbox.h"
 #include <TNtuple.h>
+#include <TVector3.h>
 namespace tb = toolbox;
 
 void configureIt(const edm::ParameterSet& conf, HGCalUncalibRecHitRecWeightsAlgo<HGCalDataFrame>& maker) //{{{
@@ -193,9 +194,11 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         struct digisinfo {
             digisinfo() {
                 u_cor = v_cor = type = layer = 0;
+                x_pos = y_pos = z_pos = eta = phi = 0.;
                 hitid = ndigis = 0;
             }
             int u_cor, v_cor, type, layer;
+            float x_pos, y_pos, z_pos, eta, phi;
             unsigned int hitid, ndigis;
         };
 
@@ -224,6 +227,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         //edm::EDGetTokenT<HGCalDigiCollection> hfnoseDigiCollection_; // collection of HGCHFNose digis
         //std::unique_ptr<HGCalUncalibRecHitWorkerBaseClass> worker_;
 
+        edm::ESGetToken<CaloGeometry, CaloGeometryRecord> caloGeomToken_;
         hgcal::RecHitTools rhtools_;
         edm::EDGetToken digiSource_;
         //edm::ConsumesCollector iC;
@@ -233,45 +237,60 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *hELossEE;TH1D *hELossEEF;TH1D *hELossEECN;TH1D *hELossEECK;
         TH1D *hELossHEF;TH1D *hELossHEFF;TH1D *hELossHEFCN;TH1D *hELossHEFCK;
         
+        TH1D *hEta;
+        TH1D *hPhi;
+
         // hit
         std::vector<TH1D*> vechist;   
+        TNtuple *nt_total_[26];
         TNtuple *nt_120mum_[26];
         TNtuple *nt_200mum_[26];
         TNtuple *nt_300mum_[26];
+        TH1D *ADC_total_[26];
         TH1D *ADC_120mum_[26];
         TH1D *ADC_200mum_[26];
         TH1D *ADC_300mum_[26];
+        TH1D *MIP_total_[26];
         TH1D *MIP_120mum_[26];
         TH1D *MIP_200mum_[26];
         TH1D *MIP_300mum_[26];
+        TH1D *SIM_total_[26];
         TH1D *SIM_120mum_[26];
         TH1D *SIM_200mum_[26];
         TH1D *SIM_300mum_[26];
+        TProfile *adc_sim_total_[26];
         TProfile *adc_sim_120mum_[26];
         TProfile *adc_sim_200mum_[26];
         TProfile *adc_sim_300mum_[26];
+        TProfile *adc_mip_total_[26];
         TProfile *adc_mip_120mum_[26];
         TProfile *adc_mip_200mum_[26];
         TProfile *adc_mip_300mum_[26];
+        TProfile *mip_sim_total_[26];
         TProfile *mip_sim_120mum_[26];
         TProfile *mip_sim_200mum_[26];
         TProfile *mip_sim_300mum_[26];
 
         // total energy
+        TH1D *total_ADC_total_[26];
         TH1D *total_ADC_120mum_[26];
         TH1D *total_ADC_200mum_[26];
         TH1D *total_ADC_300mum_[26];
+        TH1D *total_MIP_total_[26];
         TH1D *total_MIP_120mum_[26];
         TH1D *total_MIP_200mum_[26];
         TH1D *total_MIP_300mum_[26];
+        TH1D *total_SIM_total_[26];
         TH1D *total_SIM_120mum_[26];
         TH1D *total_SIM_200mum_[26];
         TH1D *total_SIM_300mum_[26];
 
         // multiplicity
+        TH1D *multiplicity_digis_total_[26];
         TH1D *multiplicity_digis_120mum_[26];
         TH1D *multiplicity_digis_200mum_[26];
         TH1D *multiplicity_digis_300mum_[26];
+        TH1D *multiplicity_simhits_total_[26];
         TH1D *multiplicity_simhits_120mum_[26];
         TH1D *multiplicity_simhits_200mum_[26];
         TH1D *multiplicity_simhits_300mum_[26];
@@ -299,6 +318,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         //        iconfig.getParameter<std::string>("algo"), iconfig, consumesCollector())},
         ee_geometry_token_(consumesCollector().esConsumes(edm::ESInputTag("", "HGCalEESensitive")))
 {
+    caloGeomToken_ = esConsumes<CaloGeometry, CaloGeometryRecord>();
+
     auto temp = iconfig.getUntrackedParameter<edm::InputTag>("digihits");
     if ((nameDetector_ == "HGCalEESensitive") || (nameDetector_ == "HGCalHESiliconSensitive") ||
             (nameDetector_ == "HGCalHEScintillatorSensitive") || (nameDetector_ == "HGCalHFNoseSensitive")) {
@@ -328,9 +349,23 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     hELossHEFF  = fs->make<TH1D>("hELossHEFF"  , "hELossHEFF"  , 1000 , 0. , 1000.);
     hELossHEFCN = fs->make<TH1D>("hELossHEFCN" , "hELossHEFCN" , 1000 , 0. , 1000.);
     hELossHEFCK = fs->make<TH1D>("hELossHEFCK" , "hELossHEFCK" , 1000 , 0. , 1000.);
+    //hEta = fs->make<TH1D>("hEta" , "hEta" , 20 , -5. , 5.);
+    hEta = fs->make<TH1D>("hEta" , "hEta" , 20 ,  1. , 3.);
+    hPhi = fs->make<TH1D>("hPhi" , "hPhi" , 20 , -3. , 3.);
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
         // total energy & multiplicity
+        tb::set_string(hnamestr, "total_ADC_total_", i+1);
+        total_ADC_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "total_MIP_total_", i+1);
+        total_MIP_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        tb::set_string(hnamestr, "total_SIM_total_", i+1);
+        total_SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "multiplicity_digis_total_", i+1);
+        multiplicity_digis_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 2000.);
+        tb::set_string(hnamestr, "multiplicity_simhits_total_", i+1);
+        multiplicity_simhits_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+
         tb::set_string(hnamestr, "total_ADC_120mum_", i+1);
         total_ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_MIP_120mum_", i+1);
@@ -365,6 +400,19 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         multiplicity_simhits_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
 
         // individual hits
+        tb::set_string(hnamestr, "ADC_total_layer_", i+1);
+        ADC_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
+        tb::set_string(hnamestr, "MIP_total_layer_", i+1);
+        MIP_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
+        tb::set_string(hnamestr, "SIM_total_layer_", i+1);
+        SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
+        tb::set_string(hnamestr, "ADC_SimhitE_total_layer_", i+1);
+        adc_sim_total_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
+        tb::set_string(hnamestr, "ADC_MIP_total_layer_", i+1);
+        adc_mip_total_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 150.);
+        tb::set_string(hnamestr, "MIP_SimhitE_total_layer_", i+1);
+        mip_sim_total_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 150., 0, 150., 0., 800.);
+
         tb::set_string(hnamestr, "ADC_120mum_layer_", i+1);
         ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
         tb::set_string(hnamestr, "MIP_120mum_layer_", i+1);
@@ -404,6 +452,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "MIP_SimhitE_300mum_layer_", i+1);
         mip_sim_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 150., 0, 150., 0., 800.);
 
+        tb::set_string(hnamestr, "nt_total_layer_", i+1);
+        nt_total_[i] = fs->make<TNtuple>(hnamestr.str().c_str(),hnamestr.str().c_str(), "adc:mip:simhitE");
         tb::set_string(hnamestr, "nt_120mum_layer_", i+1);
         nt_120mum_[i] = fs->make<TNtuple>(hnamestr.str().c_str(),hnamestr.str().c_str(), "adc:mip:simhitE");
         tb::set_string(hnamestr, "nt_200mum_layer_", i+1);
@@ -425,6 +475,12 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     using namespace edm;
 
     int counter = 0;
+    std::vector<double> total_energy_adc_total ;
+    std::vector<double> total_energy_mip_total ;
+    std::vector<double> total_energy_sim_total ;
+    std::vector<int>    num_digis_total        ;
+    std::vector<int>    num_simhits_total      ;
+
     std::vector<double> total_energy_adc_120mum ;
     std::vector<double> total_energy_mip_120mum ;
     std::vector<double> total_energy_sim_120mum ;
@@ -444,6 +500,12 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::vector<int>    num_simhits_300mum      ;
 
     for(int idx=0; idx<26; ++idx) {
+        total_energy_adc_total .push_back(0);
+        total_energy_mip_total .push_back(0);
+        total_energy_sim_total .push_back(0);
+        num_digis_total        .push_back(0);
+        num_simhits_total      .push_back(0);
+
         total_energy_adc_120mum .push_back(0);
         total_energy_mip_120mum .push_back(0);
         total_energy_sim_120mum .push_back(0);
@@ -473,6 +535,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      * $CMSSW_RELEASE_BASE/src/DataFormats/HGCRecHit/interface/HGCRecHitCollections.h
      *********************************************************************************/
     if (uncalibMaker_ee_.isSiFESim()) uncalibMaker_ee_.setGeometry(&iSetup.getData(ee_geometry_token_));
+
+    const CaloGeometry &geomCalo = iSetup.getData(caloGeomToken_);
+    rhtools_.setGeometry(geomCalo);
     
     //----------------------------------------------------------------------------------------------------}}}
     // SimHit Handle {{{
@@ -501,6 +566,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(id.type()==HGCSiliconDetId::HGCalCoarseThin)  hELossHEFCN->Fill(energy);
                 if(id.type()==HGCSiliconDetId::HGCalCoarseThick) hELossHEFCK->Fill(energy);
             }  
+
+            //GlobalPoint gp = rhtools_.getPosition(detId);
+            //std::cout << "check: " << gp.x() << ", " << gp.y() << std::endl;
 
             //std::cout<<" hit energy = "<<itHit->energy()<<std::endl;
             uint32_t id_ = itHit->id();
@@ -536,6 +604,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //std::cout<<">>> simhit map size = "<< map_Simhits.size()<<std::endl;
 
     //----------------------------------------------------------------------------------------------------}}}
+    
+    double Z_[47] = {322.155,323.149,325.212,326.206,328.269,329.263,331.326,332.32,334.383,335.377,337.44,338.434,340.497,341.491,343.554,344.548,346.611,347.605,349.993,350.987,353.375,354.369,356.757,357.751,360.139,361.133,367.976,374.281,380.586,386.891,393.196,399.501,405.806,412.111,418.416,424.721,431.026,439.251,447.476,455.701,463.926,472.151,480.376,488.601,496.826,505.051,513.276};
     // Digi Handle {{{
     //----------------------------------------------------------------------------------------------------
     Handle<HGCalDigiCollection> digicollection;
@@ -556,17 +626,28 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 uint16_t adc_ = hgcSample.data();
                 //uint16_t gain = hgcSample.toa();
 
+                GlobalPoint gp = rhtools_.getPosition(detId);
+                float eta = rhtools_.getEta(detId, 0);
+                float phi = rhtools_.getPhi(detId);
+                
                 digisinfo dinfo;
                 adcinfo ainfo;
-                if (map_digihits.count(id_digi) != 0) {
-                    dinfo = map_digihits[id_digi].first;
-                    ainfo = map_digihits[id_digi].second;
-                } else {
-                    dinfo.u_cor = HGCSiliconDetId(detId).cellU() ;
-                    dinfo.v_cor = HGCSiliconDetId(detId).cellV() ;
+                if (map_digihits.count(id_digi) == 0) {
+                    dinfo.u_cor = HGCSiliconDetId(detId).cellU();
+                    dinfo.v_cor = HGCSiliconDetId(detId).cellV();
                     dinfo.type  = HGCSiliconDetId(detId).type();
                     dinfo.layer = HGCSiliconDetId(detId).layer();
+
+                    dinfo.x_pos = gp.x();
+                    dinfo.y_pos = gp.y();
+                    dinfo.z_pos = gp.z();
+                    dinfo.eta = eta;
+                    dinfo.phi = phi;
+
                     ainfo.adc   = adc_;
+                } else {
+                    dinfo = map_digihits[id_digi].first;
+                    ainfo = map_digihits[id_digi].second;
                 }
 
                 HGCUncalibratedRecHit rechit = uncalibMaker_ee_.makeRecHit(it);
@@ -577,17 +658,23 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 my_map_digihits[id_digi].amplitude = rechit.amplitude();
 
                 int idx = dinfo.layer-1;
+                if(dinfo.layer <= 26) num_digis_total[idx] += 1;
                 if(dinfo.layer <= 26 && dinfo.type==0) num_digis_120mum[idx] += 1;
                 if(dinfo.layer <= 26 && dinfo.type==1) num_digis_200mum[idx] += 1;
                 if(dinfo.layer <= 26 && dinfo.type==2) num_digis_300mum[idx] += 1;
 
                 bool debug = false;
                 if(debug) {
-                    tb::print_debug_info("Id_digi"   , id_digi                                  );
-                    tb::print_debug_info("layer"     , my_map_digihits[id_digi].dinfo.layer     );
-                    tb::print_debug_info("wafer type", my_map_digihits[id_digi].dinfo.type      );
-                    tb::print_debug_info("adc_"      , my_map_digihits[id_digi].ainfo.adc       );
-                    tb::print_debug_info("amplitude" , my_map_digihits[id_digi].amplitude, true );
+                    tb::print_debug_info("Id_digi"    , id_digi                                  );
+                    tb::print_debug_info("x_pos"      , my_map_digihits[id_digi].dinfo.x_pos     );
+                    tb::print_debug_info("y_pos"      , my_map_digihits[id_digi].dinfo.y_pos     );
+                    tb::print_debug_info("z_pos"      , my_map_digihits[id_digi].dinfo.z_pos     );
+                    tb::print_debug_info("eta"        , my_map_digihits[id_digi].dinfo.eta       );
+                    tb::print_debug_info("phi"        , my_map_digihits[id_digi].dinfo.phi       );
+                    tb::print_debug_info("layer"      , my_map_digihits[id_digi].dinfo.layer     );
+                    tb::print_debug_info("wafer type" , my_map_digihits[id_digi].dinfo.type      );
+                    tb::print_debug_info("adc_"       , my_map_digihits[id_digi].ainfo.adc       );
+                    tb::print_debug_info("amplitude"  , my_map_digihits[id_digi].amplitude, true );
                 }
 
             } // end of isSilicon bool
@@ -627,6 +714,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 uint32_t  id_digihit = (*itr_mydigi).first;
                 digisinfo dinfo      = (*itr_mydigi).second.dinfo;
                 uint32_t  adc        = (*itr_mydigi).second.ainfo.adc;
+                double    eta        = dinfo.eta;
+                double    phi        = dinfo.phi;
                 double    amplitude  = (*itr_mydigi).second.amplitude;
                 double    energy     = esum.eTime[0];
                 int       idx        = dinfo.layer-1;
@@ -641,7 +730,23 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                         tb::print_debug_info("amplitude" , amplitude    );
                         tb::print_debug_info("energy"    , energy, true );
                     }
+                    hEta->Fill(eta);
+                    hPhi->Fill(phi);
                     // individual hit info
+                    if(dinfo.layer <= 26) {
+                        ADC_total_     [idx] -> Fill(adc);
+                        MIP_total_     [idx] -> Fill(amplitude);
+                        SIM_total_     [idx] -> Fill(energy);
+                        adc_sim_total_ [idx] -> Fill(adc,energy);
+                        adc_mip_total_ [idx] -> Fill(adc,amplitude);
+                        mip_sim_total_ [idx] -> Fill(amplitude,energy);
+                        nt_total_      [idx] -> Fill(adc,amplitude,energy);
+
+                        total_energy_adc_total [idx] += adc;
+                        total_energy_mip_total [idx] += amplitude;
+                        total_energy_sim_total [idx] += energy;
+                        num_simhits_total      [idx] += 1;
+                    }
                     if(dinfo.layer <= 26 && dinfo.type==0) {
                         ADC_120mum_     [idx] -> Fill(adc);
                         MIP_120mum_     [idx] -> Fill(amplitude);
@@ -691,6 +796,17 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // Fill information of an event
     for(int idx=0; idx<26; ++idx) {
+        //tb::print_debug_info("num_digis_total"  , num_digis_total  [idx]        );
+        //tb::print_debug_info("num_digis_120mum" , num_digis_120mum [idx]        );
+        //tb::print_debug_info("num_digis_200mum" , num_digis_200mum [idx]        );
+        //tb::print_debug_info("num_digis_300mum" , num_digis_300mum [idx] , true );
+
+        total_ADC_total_            [idx] -> Fill( total_energy_adc_total [idx] );
+        total_MIP_total_            [idx] -> Fill( total_energy_mip_total [idx] );
+        total_SIM_total_            [idx] -> Fill( total_energy_sim_total [idx] );
+        multiplicity_digis_total_   [idx] -> Fill( num_digis_total        [idx] );
+        multiplicity_simhits_total_ [idx] -> Fill( num_simhits_total      [idx] );
+
         total_ADC_120mum_            [idx] -> Fill( total_energy_adc_120mum [idx] );
         total_MIP_120mum_            [idx] -> Fill( total_energy_mip_120mum [idx] );
         total_SIM_120mum_            [idx] -> Fill( total_energy_sim_120mum [idx] );

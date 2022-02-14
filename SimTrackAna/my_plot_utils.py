@@ -4,6 +4,14 @@ import array
 import ROOT
 ROOT.gROOT.SetBatch(True)
 
+def load_single_histogram(fin, varName):
+    v_hists = []
+    histName = "prodEE_DigiSim/" + varName
+    h = fin.Get(histName)
+    v_hists.append(h)
+
+    return v_hists
+
 def load_histograms(fin, varName, processes):
     v_hists = []
     for p in processes:
@@ -24,38 +32,52 @@ def set_graph(gr, ytitle, xtitle, color):
     gr.GetXaxis().SetTitleOffset(1.2)
 
 sub_directory = {
+    "hEta"                        : "Eta",
+    "hPhi"                        : "Phi",
+
+    "ADC_total_layer"             : "ADC",
     "ADC_120mum_layer"            : "ADC",
     "ADC_200mum_layer"            : "ADC",
     "ADC_300mum_layer"            : "ADC",
+    "MIP_total_layer"             : "MIP",
     "MIP_120mum_layer"            : "MIP",
     "MIP_200mum_layer"            : "MIP",
     "MIP_300mum_layer"            : "MIP",
+    "SIM_total_layer"             : "SIM",
     "SIM_120mum_layer"            : "SIM",
     "SIM_200mum_layer"            : "SIM",
     "SIM_300mum_layer"            : "SIM",
+    "ADC_SimhitE_total_layer"     : "ADC_SimhitE",
     "ADC_SimhitE_120mum_layer"    : "ADC_SimhitE",
     "ADC_SimhitE_200mum_layer"    : "ADC_SimhitE",
     "ADC_SimhitE_300mum_layer"    : "ADC_SimhitE",
+    "ADC_MIP_total_layer"         : "ADC_MIP",
     "ADC_MIP_120mum_layer"        : "ADC_MIP",
     "ADC_MIP_200mum_layer"        : "ADC_MIP",
     "ADC_MIP_300mum_layer"        : "ADC_MIP",
+    "MIP_SimhitE_total_layer"     : "MIP_SimhitE",
     "MIP_SimhitE_120mum_layer"    : "MIP_SimhitE",
     "MIP_SimhitE_200mum_layer"    : "MIP_SimhitE",
     "MIP_SimhitE_300mum_layer"    : "MIP_SimhitE",
 
+    "total_ADC_total"             : "total_ADC",
     "total_ADC_120mum"            : "total_ADC",
     "total_ADC_200mum"            : "total_ADC",
     "total_ADC_300mum"            : "total_ADC",
+    "total_MIP_total"             : "total_MIP",
     "total_MIP_120mum"            : "total_MIP",
     "total_MIP_200mum"            : "total_MIP",
     "total_MIP_300mum"            : "total_MIP",
+    "total_SIM_total"             : "total_SIM",
     "total_SIM_120mum"            : "total_SIM",
     "total_SIM_200mum"            : "total_SIM",
     "total_SIM_300mum"            : "total_SIM",
+    "multiplicity_digis_total"    : "multiplicity_digis",
     "multiplicity_digis_120mum"   : "multiplicity_digis",
     "multiplicity_digis_200mum"   : "multiplicity_digis",
     "multiplicity_digis_300mum"   : "multiplicity_digis",
     "multiplicity_simhits_300mum" : "multiplicity_simhits",
+    "multiplicity_simhits_total"  : "multiplicity_simhits",
     "multiplicity_simhits_120mum" : "multiplicity_simhits",
     "multiplicity_simhits_200mum" : "multiplicity_simhits",
 }
