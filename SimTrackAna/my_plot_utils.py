@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import math
+import copy
 import array
 import ROOT
 ROOT.gROOT.SetBatch(True)
@@ -32,8 +33,8 @@ def set_graph(gr, ytitle, xtitle, color):
     gr.GetXaxis().SetTitleOffset(1.2)
 
 sub_directory = {
-    "hEta"                        : "Eta",
-    "hPhi"                        : "Phi",
+    "hEta"                        : "EtaPhi",
+    "hPhi"                        : "EtaPhi",
 
     "ADC_total_layer"             : "ADC",
     "ADC_120mum_layer"            : "ADC",
@@ -82,7 +83,9 @@ sub_directory = {
     "multiplicity_simhits_200mum" : "multiplicity_simhits",
 }
 
-ytitles = sub_directory
+ytitles = copy.deepcopy( sub_directory )
+ytitles["hEta"] = "Eta"
+ytitles["hPhi"] = "Phi"
 
 x_D86 = [0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659]
 

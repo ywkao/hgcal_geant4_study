@@ -33,18 +33,21 @@ c2.SetRightMargin(0.)
 c2.Divide(7,4)
 
 #--------------------------------------------------
-
-def make_plot(myRootfiles, varName, bool_make_logitudinal_profile):
-
-    dir_output = eos + "/" + pu.sub_directory[varName]
+def create_directory(dir_output):
     if not os.path.isdir(dir_output):
         subprocess.call("mkdir %s" % dir_output, shell=True)
         subprocess.call("cp -p %s/index.php %s" % (eos, dir_output), shell=True)
 
-    processes = ["1", "13", "26"]
+def make_plot(varName, bool_make_logitudinal_profile):
+    global myRootfiles, specified_directory
+    
+    # Initiate
+    bool_this_is_eta_phi = "Eta" in varName or "Phi" in varName
+    dir_output = specified_directory + "/" + pu.sub_directory[varName]
+    create_directory(dir_output)
     processes = [str(i) for i in range(1,27)]
 
-    # loading
+    # Load histograms
     vf = []
     v_v_hists = []
     for rootfile in myRootfiles:
@@ -52,14 +55,23 @@ def make_plot(myRootfiles, varName, bool_make_logitudinal_profile):
         vf.append(fin)
 
         v_hists = []
-        if "Eta" in varName or "Phi" in varName:
+        if bool_this_is_eta_phi:
             v_hists = pu.load_single_histogram(fin, varName)
             v_v_hists.append(v_hists)
         else:
             v_hists = pu.load_histograms(fin, varName, processes)
             v_v_hists.append(v_hists)
 
-    # longitdinal profile
+    # Eta or Phi
+    if bool_this_is_eta_phi:
+        c1.cd()
+        for i, v_hists in enumerate(v_v_hists):
+            v_hists[0].Draw()
+            output = dir_output + "/" + varName + "_" + tags[i]
+            c1.SaveAs(output + ".png")
+            c1.SaveAs(output + ".pdf")
+
+    # Longitdinal profile
     if bool_make_logitudinal_profile:
         v_gr = []
 
@@ -78,9 +90,11 @@ def make_plot(myRootfiles, varName, bool_make_logitudinal_profile):
                 c2.SetTicks(1,1)
                 h.Draw()
 
-            output = eos + "/" + varName + "_all_plots_" + tags[i]
+            output = specified_directory + "/" + varName + "_all_plots_" + tags[i]
             c2.SaveAs(output + ".png")
             c2.SaveAs(output + ".pdf")
+
+            continue
 
             # individual plots
             c1.cd()
@@ -96,44 +110,49 @@ def make_plot(myRootfiles, varName, bool_make_logitudinal_profile):
             if i==0: gr.Draw("apc")
             else:    gr.Draw('pc;same')
 
-        output = eos + "/" + varName
+        output = specified_directory + "/" + varName
         c1.SaveAs(output + ".png")
         c1.SaveAs(output + ".pdf")
 
 #--------------------------------------------------
 
-def run(input_files):
-    make_plot(input_files, "hEta", False )
-    make_plot(input_files, "hPhi", False )
+def run(myfin, mydin):
+    global myRootfiles, specified_directory
+    myRootfiles = myfin
+    specified_directory = mydin
+
+    create_directory( specified_directory )
+    make_plot( "hEta", False )
+    make_plot( "hPhi", False )
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total"] # consider 120, 200, 300 altogether
 
     for t in thickness:
-
-        make_plot(input_files, "total_MIP_%s"            % t , True  )
-
+        make_plot( "multiplicity_simhits_%s" % t , True  )
+        make_plot( "total_MIP_%s"            % t , True  )
         continue
 
-        make_plot(input_files, "total_ADC_%s"            % t , True  )
-        make_plot(input_files, "total_MIP_%s"            % t , True  )
-        make_plot(input_files, "total_SIM_%s"            % t , True  )
-        make_plot(input_files, "multiplicity_digis_%s"   % t , True  )
-        make_plot(input_files, "multiplicity_simhits_%s" % t , True  )
+        make_plot( "total_ADC_%s"            % t , True  )
+        make_plot( "total_MIP_%s"            % t , True  )
+        make_plot( "total_SIM_%s"            % t , True  )
+        make_plot( "multiplicity_digis_%s"   % t , True  )
+        make_plot( "multiplicity_simhits_%s" % t , True  )
 
-        make_plot(input_files, "ADC_SimhitE_%s_layer"    % t , False )
-        make_plot(input_files, "ADC_MIP_%s_layer"        % t , False )
-        make_plot(input_files, "MIP_SimhitE_%s_layer"    % t , False )
+        make_plot( "ADC_SimhitE_%s_layer"    % t , False )
+        make_plot( "ADC_MIP_%s_layer"        % t , False )
+        make_plot( "MIP_SimhitE_%s_layer"    % t , False )
 
-        continue
+        make_plot( "ADC_%s"                  % t , True  )
+        make_plot( "MIP_%s"                  % t , True  )
+        make_plot( "SIM_%s"                  % t , True  )
 
-        make_plot(input_files, "ADC_%s"            % t , True  )
-        make_plot(input_files, "MIP_%s"            % t , True  )
-        make_plot(input_files, "SIM_%s"            % t , True  )
+#--------------------------------------------------
 
 if __name__ == "__main__":
+    tags = ["E300", "E100", "E20"]
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed]
-    myRootfiles = [
+    input_files = [
         "rootfiles/geantoutput_D86_R35To60_E300.root",
         "rootfiles/geantoutput_D86_R35To60_E100.root",
         "rootfiles/geantoutput_D86_R35To60_E20.root",
@@ -142,8 +161,8 @@ if __name__ == "__main__":
         "rootfiles/geantoutput_D86_R80To100_E20.root",
     ]
 
-    tags = ["E300", "E100", "E20"]
-
-    run( myRootfiles[0:3] )
+    myRootfiles, specified_directory = [], ""
+    run( input_files[0:3], eos + "/" + "R35To60"  )
+    run( input_files[3:6], eos + "/" + "R80To100" )
     #subprocess.call("ls -lhrt %s" % dir_output, shell=True)
 
