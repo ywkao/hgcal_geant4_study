@@ -358,46 +358,46 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_ADC_total_", i+1);
         total_ADC_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_MIP_total_", i+1);
-        total_MIP_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        total_MIP_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_total_", i+1);
         total_SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "multiplicity_digis_total_", i+1);
-        multiplicity_digis_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 2000.);
+        multiplicity_digis_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 2000.);
         tb::set_string(hnamestr, "multiplicity_simhits_total_", i+1);
-        multiplicity_simhits_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+        multiplicity_simhits_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
 
         tb::set_string(hnamestr, "total_ADC_120mum_", i+1);
         total_ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_MIP_120mum_", i+1);
-        total_MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        total_MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_120mum_", i+1);
         total_SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "multiplicity_digis_120mum_", i+1);
-        multiplicity_digis_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 200.);
+        multiplicity_digis_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_120mum_", i+1);
-        multiplicity_simhits_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+        multiplicity_simhits_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
 
         tb::set_string(hnamestr, "total_ADC_200mum_", i+1);
         total_ADC_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_MIP_200mum_", i+1);
-        total_MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        total_MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_200mum_", i+1);
         total_SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "multiplicity_digis_200mum_", i+1);
-        multiplicity_digis_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 200.);
+        multiplicity_digis_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_200mum_", i+1);
-        multiplicity_simhits_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+        multiplicity_simhits_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
 
         tb::set_string(hnamestr, "total_ADC_300mum_", i+1);
         total_ADC_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_MIP_300mum_", i+1);
-        total_MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 1500.);
+        total_MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_300mum_", i+1);
         total_SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "multiplicity_digis_300mum_", i+1);
-        multiplicity_digis_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 200, 0, 200.);
+        multiplicity_digis_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_300mum_", i+1);
-        multiplicity_simhits_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 100.);
+        multiplicity_simhits_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
 
         // individual hits
         tb::set_string(hnamestr, "ADC_total_layer_", i+1);

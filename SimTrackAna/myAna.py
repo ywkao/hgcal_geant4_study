@@ -38,6 +38,17 @@ def create_directory(dir_output):
         subprocess.call("mkdir %s" % dir_output, shell=True)
         subprocess.call("cp -p %s/index.php %s" % (eos, dir_output), shell=True)
 
+def annotate(rshift=0):
+    latex = ROOT.TLatex()
+    latex.SetNDC()
+    latex.SetTextFont(43)
+    latex.SetTextAlign(11)
+    #latex.SetTextSize(24)
+    latex.SetTextSize(20)
+    latex.DrawLatex( 0.12, 0.912, "#bf{CMS} #it{work in progress}" )
+    latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
+    #latex.DrawLatex( 0.69+rshift, 0.912, "%s fb^{-1} (13 TeV)" % str(lumi["RunII"]) )
+
 def make_plot(varName, bool_make_logitudinal_profile):
     global myRootfiles, specified_directory
     
@@ -106,9 +117,16 @@ def make_plot(varName, bool_make_logitudinal_profile):
 
         # logitudinal profile
         c1.cd()
+        legend = ROOT.TLegend(0.67, 0.65, 0.87, 0.85)
+        legend.SetLineColor(0)
+        legend.SetTextSize(0.04)
         for i, gr in enumerate(v_gr):
             if i==0: gr.Draw("apc")
             else:    gr.Draw('pc;same')
+            legend.AddEntry(gr, label[tags[i]], "l")
+
+        annotate()
+        legend.Draw("same")
 
         output = specified_directory + "/" + varName
         c1.SaveAs(output + ".png")
@@ -151,6 +169,11 @@ def run(myfin, mydin):
 
 if __name__ == "__main__":
     tags = ["E300", "E100", "E20"]
+    label = {}
+    label["E300"] = "300 GeV"
+    label["E100"] = "100 GeV"
+    label["E20"]  = "20 GeV"
+
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed]
     input_files = [
         "rootfiles/geantoutput_D86_R35To60_E300.root",

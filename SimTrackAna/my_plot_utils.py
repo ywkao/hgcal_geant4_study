@@ -28,6 +28,7 @@ def set_graph(gr, ytitle, xtitle, color):
     gr.SetLineWidth(2)
     gr.SetMarkerStyle(20)
     gr.SetMarkerColor(color)
+    gr.SetMinimum(0)
     gr.GetXaxis().SetTitle(xtitle)
     gr.GetYaxis().SetTitle(ytitle)
     gr.GetXaxis().SetTitleOffset(1.2)
