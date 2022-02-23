@@ -517,27 +517,74 @@ test_beam_data = [
 #}}}
 ]
 
+# 23 files
 test_beam_data_e300 = [
-    "ntuple_969.root", # pdgID = 11, energy = 300.00
-    "ntuple_968.root", # pdgID = 11, energy = 300.00
-    "ntuple_967.root", # pdgID = 11, energy = 300.00
-    "ntuple_966.root", # pdgID = 11, energy = 300.00
-    "ntuple_965.root", # pdgID = 11, energy = 300.00
-    "ntuple_964.root", # pdgID = 11, energy = 300.00
-    "ntuple_920.root", # pdgID = 11, energy = 300.00
-    "ntuple_919.root", # pdgID = 11, energy = 300.00
-    "ntuple_918.root", # pdgID = 11, energy = 300.00
-    "ntuple_435.root", # pdgID = 11, energy = 300.00
-    "ntuple_433.root", # pdgID = 11, energy = 300.00
-    "ntuple_432.root", # pdgID = 11, energy = 300.00
-    "ntuple_431.root", # pdgID = 11, energy = 300.00
-    "ntuple_430.root", # pdgID = 11, energy = 300.00
-    "ntuple_429.root", # pdgID = 11, energy = 300.00
-    "ntuple_426.root", # pdgID = 11, energy = 300.00
-    "ntuple_425.root", # pdgID = 11, energy = 300.00
-    "ntuple_424.root", # pdgID = 11, energy = 300.00
+    "ntuple_969.root",  # pdgID = 11, energy = 300.00
+    "ntuple_968.root",  # pdgID = 11, energy = 300.00
+    "ntuple_967.root",  # pdgID = 11, energy = 300.00
+    "ntuple_966.root",  # pdgID = 11, energy = 300.00
+    "ntuple_965.root",  # pdgID = 11, energy = 300.00
+    "ntuple_964.root",  # pdgID = 11, energy = 300.00
+    "ntuple_920.root",  # pdgID = 11, energy = 300.00
+    "ntuple_919.root",  # pdgID = 11, energy = 300.00
+    "ntuple_918.root",  # pdgID = 11, energy = 300.00
+    "ntuple_435.root",  # pdgID = 11, energy = 300.00
+    "ntuple_433.root",  # pdgID = 11, energy = 300.00
+    "ntuple_432.root",  # pdgID = 11, energy = 300.00
+    "ntuple_431.root",  # pdgID = 11, energy = 300.00
+    "ntuple_430.root",  # pdgID = 11, energy = 300.00
+    "ntuple_429.root",  # pdgID = 11, energy = 300.00
+    "ntuple_426.root",  # pdgID = 11, energy = 300.00
+    "ntuple_425.root",  # pdgID = 11, energy = 300.00
+    "ntuple_424.root",  # pdgID = 11, energy = 300.00
     "ntuple_1155.root", # pdgID = 11, energy = 300.00
     "ntuple_1154.root", # pdgID = 11, energy = 300.00
     "ntuple_1153.root", # pdgID = 11, energy = 300.00
     "ntuple_1006.root", # pdgID = 11, energy = 300.00
+    "ntuple_1005.root", # pdgID = 11, energy = 300.00
 ]
+
+# 18 files
+test_beam_data_e100 = [
+    "ntuple_991.root", # pdgID = 11, energy = 100.00
+    "ntuple_990.root", # pdgID = 11, energy = 100.00
+    "ntuple_988.root", # pdgID = 11, energy = 100.00
+    "ntuple_987.root", # pdgID = 11, energy = 100.00
+    "ntuple_985.root", # pdgID = 11, energy = 100.00
+    "ntuple_916.root", # pdgID = 11, energy = 100.00
+    "ntuple_491.root", # pdgID = 11, energy = 100.00
+    "ntuple_490.root", # pdgID = 11, energy = 100.00
+    "ntuple_489.root", # pdgID = 11, energy = 100.00
+    "ntuple_487.root", # pdgID = 11, energy = 100.00
+    "ntuple_486.root", # pdgID = 11, energy = 100.00
+    "ntuple_484.root", # pdgID = 11, energy = 100.00
+    "ntuple_483.root", # pdgID = 11, energy = 100.00
+    "ntuple_482.root", # pdgID = 11, energy = 100.00
+    "ntuple_481.root", # pdgID = 11, energy = 100.00
+    "ntuple_480.root", # pdgID = 11, energy = 100.00
+    "ntuple_479.root", # pdgID = 11, energy = 100.00
+    "ntuple_477.root", # pdgID = 11, energy = 100.00
+]
+
+# 17 files
+test_beam_data_e20 = [
+    "ntuple_1012.root", # pdgID = 11, energy = 20.00
+    "ntuple_1014.root", # pdgID = 11, energy = 20.00
+    "ntuple_1015.root", # pdgID = 11, energy = 20.00
+    "ntuple_436.root", # pdgID = 11, energy = 20.00
+    "ntuple_437.root", # pdgID = 11, energy = 20.00
+    "ntuple_439.root", # pdgID = 11, energy = 20.00
+    "ntuple_441.root", # pdgID = 11, energy = 20.00
+    "ntuple_442.root", # pdgID = 11, energy = 20.00
+    "ntuple_443.root", # pdgID = 11, energy = 20.00
+    "ntuple_444.root", # pdgID = 11, energy = 20.00
+    "ntuple_447.root", # pdgID = 11, energy = 20.00
+    "ntuple_450.root", # pdgID = 11, energy = 20.00
+    "ntuple_451.root", # pdgID = 11, energy = 20.00
+    "ntuple_452.root", # pdgID = 11, energy = 20.00
+    "ntuple_453.root", # pdgID = 11, energy = 20.00
+    "ntuple_455.root", # pdgID = 11, energy = 20.00
+    "ntuple_984.root", # pdgID = 11, energy = 20.00
+]
+
+test_beam_data = test_beam_data_e300 + test_beam_data_e100 + test_beam_data_e20

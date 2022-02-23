@@ -6,51 +6,68 @@
 
 void hits::Loop()
 {
-//   In a ROOT session, you can do:
-//      root> .L hits.C
-//      root> hits t
-//      root> t.GetEntry(12); // Fill t data members with entry number 12
-//      root> t.Show();       // Show values of entry 12
-//      root> t.Show(16);     // Read and show values of entry 16
-//      root> t.Loop();       // Loop on all entries
-//
-
-//     This is the loop skeleton where:
-//    jentry is the global entry number in the chain
-//    ientry is the entry number in the current Tree
-//  Note that the argument to GetEntry must be:
-//    jentry for TChain::GetEntry
-//    ientry for TTree::GetEntry and TBranch::GetEntry
-//
-//       To read only selected branches, Insert statements like:
-// METHOD1:
     fChain->SetBranchStatus("*",0);  // disable all branches
     fChain->SetBranchStatus("rechit_layer",1);  // activate branchname
+    fChain->SetBranchStatus("rechit_energy",1);  // activate branchname
+    fChain->SetBranchStatus("rechit_energy_noHG",1);  // activate branchname
+    fChain->SetBranchStatus("rechit_amplitudeHigh",1);  // activate branchname
+    fChain->SetBranchStatus("rechit_amplitudeLow",1);  // activate branchname
+
     fChain->SetBranchStatus("pdgID",1);  // activate branchname
     fChain->SetBranchStatus("beamEnergy",1);  // activate branchname
-// METHOD2: replace line
-//    fChain->GetEntry(jentry);       //read all branches
-//by  b_branchname->GetEntry(ientry); //read only this branch
-   if (fChain == 0) return;
 
-   Long64_t nentries = fChain->GetEntriesFast();
-   myEntries = (double) nentries;
+    if (fChain == 0) return;
 
-   Long64_t nbytes = 0, nb = 0;
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      Long64_t ientry = LoadTree(jentry);
-      if (ientry < 0) break;
+    Long64_t nentries = fChain->GetEntriesFast();
+    myEntries = (double) nentries;
 
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
-      // if (Cut(ientry) < 0) continue;
-      
-      mean_pdgID += pdgID;
-      mean_energy += beamEnergy;
+    bool debug = false;
+    Long64_t nbytes = 0, nb = 0;
+    for (Long64_t jentry=0; jentry<nentries;jentry++) {
+        Long64_t ientry = LoadTree(jentry);
+        if (ientry < 0) break;
 
-      for (int i=0; i<rechit_layer->size(); ++i) {
-          h_hits_layer->Fill(rechit_layer->at(i));
-          if(debug) printf("%2d, value = %u\n", i, rechit_layer->at(i));
-      }
-      
-   } // end of event loop
+        nb = fChain->GetEntry(jentry);   nbytes += nb;
+
+        // check pdgId and beam energy for the root file
+        mean_pdgID += pdgID;
+        mean_energy += beamEnergy;
+
+        // init counters for 28 layers
+        std::vector<double> total_amplitude_high;
+        std::vector<double> total_amplitude_low;
+        for (int i=0; i<28; ++i) {
+            total_amplitude_high.push_back(0.);
+            total_amplitude_low .push_back(0.);
+        }
+
+        // loop over all hits
+        for (int i=0; i<rechit_layer->size(); ++i) {
+            unsigned int layer = rechit_layer->at(i);
+            h_rechit_layer         -> Fill(rechit_layer         -> at(i));
+            h_rechit_energy        -> Fill(rechit_energy        -> at(i));
+            h_rechit_energy_noHG   -> Fill(rechit_energy_noHG   -> at(i));
+            h_rechit_amplitudeHigh -> Fill(rechit_amplitudeHigh -> at(i));
+            h_rechit_amplitudeLow  -> Fill(rechit_amplitudeLow  -> at(i));
+
+            if(layer <= 28) {
+                total_amplitude_high[layer-1] += rechit_amplitudeHigh -> at(i);
+                total_amplitude_low [layer-1] += rechit_amplitudeLow  -> at(i);
+            }
+
+            if(debug) printf("%2d, value = %u\n", i, rechit_layer->at(i));
+        }
+
+        // fill total amplitude (MIPs, I think) per layer for an event
+        for (int i=0; i<28; ++i) {
+            //printf("%.2f, ", total_amplitude_high[i]);
+            //printf("%.2f, ", total_amplitude_low[i]);
+
+            h_rechit_amplitudeHigh_layers[i] -> Fill(total_amplitude_high[i]);
+            h_rechit_amplitudeLow_layers[i]  -> Fill(total_amplitude_low[i]);
+        }
+
+    } // end of event loop
+
+
 }
