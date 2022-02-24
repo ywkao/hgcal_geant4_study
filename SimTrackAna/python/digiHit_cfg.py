@@ -28,8 +28,8 @@ process.source = cms.Source("PoolSource",
         fileNames = cms.untracked.vstring('file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_' + tag + '/step2.root')
         )
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
 
 
 process.prodEE_DigiSim = cms.EDAnalyzer('DigiSim',

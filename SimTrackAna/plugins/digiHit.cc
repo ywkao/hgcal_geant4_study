@@ -242,6 +242,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
         // hit
         std::vector<TH1D*> vechist;   
+        TNtuple *nt_hit_position;
         TNtuple *nt_total_[26];
         TNtuple *nt_120mum_[26];
         TNtuple *nt_200mum_[26];
@@ -349,6 +350,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     hELossHEFF  = fs->make<TH1D>("hELossHEFF"  , "hELossHEFF"  , 1000 , 0. , 1000.);
     hELossHEFCN = fs->make<TH1D>("hELossHEFCN" , "hELossHEFCN" , 1000 , 0. , 1000.);
     hELossHEFCK = fs->make<TH1D>("hELossHEFCK" , "hELossHEFCK" , 1000 , 0. , 1000.);
+    nt_hit_position = fs->make<TNtuple>("nt_hit_position","nt_hit_position", "r:z:is_Silicon_w120:is_Silicon_w200:is_Silicon_w300:is_Scintillator");
     //hEta = fs->make<TH1D>("hEta" , "hEta" , 20 , -5. , 5.);
     hEta = fs->make<TH1D>("hEta" , "hEta" , 20 ,  1. , 3.);
     hPhi = fs->make<TH1D>("hPhi" , "hPhi" , 20 , -3. , 3.);
@@ -524,6 +526,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         num_digis_300mum        .push_back(0);
         num_simhits_300mum      .push_back(0);
     }
+    
+    //double Z_[47] = {322.155,323.149,325.212,326.206,328.269,329.263,331.326,332.32,334.383,335.377,337.44,338.434,340.497,341.491,343.554,344.548,346.611,347.605,349.993,350.987,353.375,354.369,356.757,357.751,360.139,361.133,367.976,374.281,380.586,386.891,393.196,399.501,405.806,412.111,418.416,424.721,431.026,439.251,447.476,455.701,463.926,472.151,480.376,488.601,496.826,505.051,513.276};
 
     //int geomType(0);
     //const HGCalGeometry* geom0 = &iSetup.getData(tok_hgcalg_);
@@ -549,6 +553,49 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(tSimCaloHitContainer, simhit);
     for(PCaloHitContainer::const_iterator itHit= simhit->begin(); itHit!= simhit->end(); ++itHit) {
         DetId detId = static_cast<DetId>(itHit->id());
+
+        bool store_hit_position_info = true;
+        if(store_hit_position_info) {
+            // Warn: Might need to set proper sub detector configuration.
+            // Currently the code is for CEE analayis
+            GlobalPoint gp = rhtools_.getPosition(detId);
+            float x = gp.x();
+            float y = gp.y();
+            float z = gp.z();
+            float Rxy = sqrt(pow(x, 2) + pow(y, 2));
+            bool isSilicon = rhtools_.isSilicon(detId);
+            bool isScintillator = rhtools_.isScintillator(detId);
+            int wafer_type = HGCSiliconDetId(detId).type();
+
+            bool is_Silicon_w120 = false;
+            bool is_Silicon_w200 = false;
+            bool is_Silicon_w300 = false;
+            bool is_Scintillator = isScintillator;
+
+            if(isSilicon) {
+                if(wafer_type==0) is_Silicon_w120 = true;
+                if(wafer_type==1) is_Silicon_w200 = true;
+                if(wafer_type==2) is_Silicon_w300 = true;
+            }
+
+            nt_hit_position->Fill(Rxy, z, is_Silicon_w120, is_Silicon_w200, is_Silicon_w300, is_Scintillator);
+
+            bool debug = false;
+            if(debug) {
+                tb::print_debug_info("x"               , x                      );
+                tb::print_debug_info("y"               , y                      );
+                tb::print_debug_info("z"               , z                      );
+                tb::print_debug_info("Rxy"             , Rxy                    );
+                tb::print_debug_info("isSilicon"       , isSilicon              );
+                tb::print_debug_info("isScintillator"  , isScintillator         );
+                tb::print_debug_info("wafer_type"      , wafer_type             );
+                tb::print_debug_info("is_Silicon_w120" , is_Silicon_w120        );
+                tb::print_debug_info("is_Silicon_w200" , is_Silicon_w200        );
+                tb::print_debug_info("is_Silicon_w300" , is_Silicon_w300        );
+                tb::print_debug_info("is_Scintillator" , is_Scintillator , true );
+            }
+        }
+
         if(rhtools_.isSilicon(detId)){
             HGCSiliconDetId id(itHit->id());
             double energy = itHit->energy()*1.e6; // in kev
@@ -604,8 +651,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //std::cout<<">>> simhit map size = "<< map_Simhits.size()<<std::endl;
 
     //----------------------------------------------------------------------------------------------------}}}
-    
-    double Z_[47] = {322.155,323.149,325.212,326.206,328.269,329.263,331.326,332.32,334.383,335.377,337.44,338.434,340.497,341.491,343.554,344.548,346.611,347.605,349.993,350.987,353.375,354.369,356.757,357.751,360.139,361.133,367.976,374.281,380.586,386.891,393.196,399.501,405.806,412.111,418.416,424.721,431.026,439.251,447.476,455.701,463.926,472.151,480.376,488.601,496.826,505.051,513.276};
     // Digi Handle {{{
     //----------------------------------------------------------------------------------------------------
     Handle<HGCalDigiCollection> digicollection;
