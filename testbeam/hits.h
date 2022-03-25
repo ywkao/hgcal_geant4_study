@@ -178,6 +178,7 @@ class hits {
         virtual void     MakeGraph(TString output, TString ytitle, TH1D** h);
         virtual void     Report(TString input);
         virtual void     Write();
+        virtual float    get_amplitude(bool HGsat, bool LGsat, std::vector<float> amplitudes);
 
         TCanvas *c1;
         TCanvas *c2;
@@ -185,9 +186,11 @@ class hits {
         TH1D *h_rechit_layer;
         TH1D *h_rechit_energy;
         TH1D *h_rechit_energy_noHG;
+        TH1D *h_rechit_amplitude;
         TH1D *h_rechit_amplitudeHigh;
         TH1D *h_rechit_amplitudeLow;
 
+        TH1D *h_rechit_amplitude_layers[28];
         TH1D *h_rechit_amplitudeHigh_layers[28];
         TH1D *h_rechit_amplitudeLow_layers[28];
 
@@ -397,6 +400,8 @@ void hits::Init(TTree *tree)
     // 28 layers
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<28;i++) {
+        tb::set_string(hnamestr, "rechit_amplitude_total_", i+1);
+        h_rechit_amplitude_layers[i] = new TH1D(hnamestr.str().c_str(), hnamestr.str().c_str(), 50, 0, 100000.);
         tb::set_string(hnamestr, "rechit_amplitudeHigh_total_", i+1);
         h_rechit_amplitudeHigh_layers[i] = new TH1D(hnamestr.str().c_str(), hnamestr.str().c_str(), 50, 0, 100000.);
         tb::set_string(hnamestr, "rechit_amplitudeLow_total_", i+1);
@@ -407,6 +412,13 @@ void hits::Init(TTree *tree)
     myEntries = 0;
     mean_pdgID = 0;
     mean_energy = 0;
+}
+
+float hits::get_amplitude(bool HGsat, bool LGsat, std::vector<float> amplitudes)
+{
+    if(!HGsat) return amplitudes[0];
+    else if(HGsat && !LGsat) return amplitudes[1];
+    else return amplitudes[1]; // to be corrected
 }
 
 Bool_t hits::Notify()
@@ -439,9 +451,11 @@ void hits::Write()
     h_rechit_layer         -> Write();
     h_rechit_energy        -> Write();
     h_rechit_energy_noHG   -> Write();
+    h_rechit_amplitude     -> Write();
     h_rechit_amplitudeHigh -> Write();
     h_rechit_amplitudeLow  -> Write();
     for(int i=0;i<28;i++) {
+        h_rechit_amplitude_layers[i] -> Write();
         h_rechit_amplitudeHigh_layers[i] -> Write();
         h_rechit_amplitudeLow_layers [i] -> Write();
     }
@@ -460,6 +474,12 @@ void hits::MakePlot(TString output)
     c2->cd();
     for(int i=0;i<28;i++) {
         c2->cd(i+1);
+        h_rechit_amplitude_layers[i] -> Draw();
+    }
+    c2 -> SaveAs(output + "amplitude" + "_layer_summary.png");
+
+    for(int i=0;i<28;i++) {
+        c2->cd(i+1);
         h_rechit_amplitudeHigh_layers[i] -> Draw();
     }
     c2 -> SaveAs(output + "amplitudeHigh" + "_layer_summary.png");
@@ -470,6 +490,7 @@ void hits::MakePlot(TString output)
     }
     c2 -> SaveAs(output + "amplitudeLow" + "_layer_summary.png");
 
+    MakeGraph(output, "amplitude", h_rechit_amplitude_layers);
     MakeGraph(output, "amplitudeHigh", h_rechit_amplitudeHigh_layers);
     MakeGraph(output, "amplitudeLow" , h_rechit_amplitudeLow_layers);
 
@@ -479,6 +500,8 @@ void hits::MakePlot(TString output)
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<28;i++) {
         c1->cd();
+        tb::set_string(hnamestr, output + "amplitude" + "_layer_", i+1); hnamestr<<".png";
+        h_rechit_amplitude_layers[i] -> Draw(); c1 -> SaveAs(hnamestr.str().c_str());
         tb::set_string(hnamestr, output + "amplitudeHigh" + "_layer_", i+1); hnamestr<<".png";
         h_rechit_amplitudeHigh_layers[i] -> Draw(); c1 -> SaveAs(hnamestr.str().c_str());
         tb::set_string(hnamestr, output + "amplitudeLow" + "_layer_", i+1); hnamestr<<".png";
