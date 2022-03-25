@@ -46,7 +46,8 @@ def annotate(rshift=0):
     #latex.SetTextSize(24)
     latex.SetTextSize(20)
     latex.DrawLatex( 0.12, 0.912, "#bf{CMS} #it{work in progress}" )
-    latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
+    latex.DrawLatex( 0.58+rshift, 0.912, "2018 Oct. test beam data v17" )
+    #latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
     #latex.DrawLatex( 0.69+rshift, 0.912, "%s fb^{-1} (13 TeV)" % str(lumi["RunII"]) )
 
 def make_plot(varName, bool_make_logitudinal_profile):
@@ -127,7 +128,7 @@ def make_plot(varName, bool_make_logitudinal_profile):
             else:    gr.Draw('pc;same')
             legend.AddEntry(gr, label[tags[i]], "l")
 
-        annotate()
+        annotate(0.02)
         legend.Draw("same")
 
         output = specified_directory + "/" + varName

@@ -20,10 +20,11 @@ def run():
         for command in command_list: print command
 
 if __name__ == "__main__":
+    subprocess.call("mkdir -p tmp", shell=True)
 
     for f in glob.glob("python/test_digiHit_cfg*"):
         tag = f.split('_cfg_')[1].split('.')[0]
-        command = "time cmsRun %s 2>&1 | tee log_%s.txt" % (f, tag)
+        command = "time cmsRun %s 2>&1 | tee tmp/log_%s.txt" % (f, tag)
         regester(command)
 
     run()

@@ -49,11 +49,25 @@ def annotate(rshift=0):
     latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
     #latex.DrawLatex( 0.69+rshift, 0.912, "%s fb^{-1} (13 TeV)" % str(lumi["RunII"]) )
 
+def draw_2D_ntuple(hname, v_hists, selection, color, is_first_plot=False):
+    if is_first_plot: v_hists[0].Draw("r:z>>%s(2500, 300, 550, 3000, 0, 300)" % hname, selection)
+    else:             v_hists[0].Draw("r:z>>%s(2500, 300, 550, 3000, 0, 300)" % hname, selection, "same")
+
+    hnew = ROOT.gDirectory.Get(hname)
+    hnew.SetTitle("")
+    hnew.GetXaxis().SetTitle("Z [cm]")
+    hnew.GetYaxis().SetTitle("Rxy [cm]")
+    hnew.SetMarkerColor(color)
+    if is_first_plot: hnew.Draw()
+    else:             hnew.Draw("same")
+
 def make_plot(varName, bool_make_logitudinal_profile):
     global myRootfiles, specified_directory
     
     # Initiate
+    bool_ntuple = "nt_" in varName
     bool_this_is_eta_phi = "Eta" in varName or "Phi" in varName
+    bool_single_figures = bool_ntuple or bool_this_is_eta_phi
     dir_output = specified_directory + "/" + pu.sub_directory[varName]
     create_directory(dir_output)
     processes = [str(i) for i in range(1,27)]
@@ -66,18 +80,68 @@ def make_plot(varName, bool_make_logitudinal_profile):
         vf.append(fin)
 
         v_hists = []
-        if bool_this_is_eta_phi:
+        if bool_single_figures:
             v_hists = pu.load_single_histogram(fin, varName)
             v_v_hists.append(v_hists)
         else:
             v_hists = pu.load_histograms(fin, varName, processes)
             v_v_hists.append(v_hists)
 
-    # Eta or Phi
-    if bool_this_is_eta_phi:
+    # Eta or Phi or ntuple
+    if bool_single_figures:
         c1.cd()
         for i, v_hists in enumerate(v_v_hists):
-            v_hists[0].Draw()
+            if bool_this_is_eta_phi: v_hists[0].Draw()
+            elif bool_ntuple:
+                #nt_hit_position = fs->make<TNtuple>("nt_hit_position","nt_hit_position", "r:z:is_Silicon_w120:is_Silicon_w200:is_Silicon_w300:is_Scintillator");
+                draw_2D_ntuple("hnew"+"_"+tags[i]+"_w300", v_hists, "is_Silicon_w300>0", ROOT.kMagenta, True)
+                draw_2D_ntuple("hnew"+"_"+tags[i]+"_w200", v_hists, "is_Silicon_w200>0", ROOT.kGreen)
+                draw_2D_ntuple("hnew"+"_"+tags[i]+"_w120", v_hists, "is_Silicon_w120>0", ROOT.kRed)
+
+                #hname = "hnew" + "_" + tags[i] + "_w300"
+                #v_hists[0].Draw("r:z>>%s(250, 300, 550, 300, 0, 300)" % hname, "is_Silicon_w300>0")
+                #hnew = ROOT.gDirectory.Get(hname)
+                #hnew.SetTitle("")
+                #hnew.GetXaxis().SetTitle("Z [cm]")
+                #hnew.GetYaxis().SetTitle("Rxy [cm]")
+                #hnew.SetMarkerColor(ROOT.kMagenta)
+                #hnew.Draw("same")
+
+                #hname = "hnew" + "_" + tags[i] + "_w200"
+                #v_hists[0].Draw("r:z>>%s(250, 300, 550, 300, 0, 300)" % hname, "is_Silicon_w200>0", "same")
+                #hnew = ROOT.gDirectory.Get(hname)
+                #hnew.SetTitle("")
+                #hnew.GetXaxis().SetTitle("Z [cm]")
+                #hnew.GetYaxis().SetTitle("Rxy [cm]")
+                #hnew.SetMarkerColor(ROOT.kGreen)
+                #hnew.Draw("same")
+
+                #hname = "hnew" + "_" + tags[i] + "_w120"
+                #v_hists[0].Draw("r:z>>%s(250, 300, 550, 300, 0, 300)" % hname, "is_Silicon_w120>0", "same")
+                #hnew = ROOT.gDirectory.Get(hname)
+                #hnew.SetTitle("")
+                #hnew.GetXaxis().SetTitle("Z [cm]")
+                #hnew.GetYaxis().SetTitle("Rxy [cm]")
+                #hnew.SetMarkerColor(ROOT.kRed)
+                #hnew.Draw("same")
+
+                # not fully controllable
+                #v_hists[0].Draw("r:z")
+                #htemp = ROOT.gPad.GetPrimitive("htemp")
+                #htemp.GetXaxis().SetRangeUser(300, 550)
+                #htemp.GetYaxis().SetRangeUser(0, 300)
+                #htemp.Draw()
+                #c1.Update()
+
+                # failed
+                #v_hists[0].Draw("r:z", "", "A*")
+                #graph = ROOT.gPad.GetPrimitive("Graph")
+                #graph.GetXaxis().SetRangeUser(300, 550)
+                #graph.GetYaxis().SetRangeUser(0, 300)
+                #graph.Draw("A*")
+                #c1.Update()
+            else: continue # no matched situation
+
             output = dir_output + "/" + varName + "_" + tags[i]
             c1.SaveAs(output + ".png")
             c1.SaveAs(output + ".pdf")
@@ -142,6 +206,9 @@ def run(myfin, mydin):
     create_directory( specified_directory )
     make_plot( "hEta", False )
     make_plot( "hPhi", False )
+    make_plot( "nt_hit_position", False )
+
+    return
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total"] # consider 120, 200, 300 altogether

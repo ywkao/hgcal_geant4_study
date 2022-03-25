@@ -388,11 +388,11 @@ void hits::Init(TTree *tree)
     c3 = new TCanvas("c3", "", 800, 600);
     c2->Divide(7,4);
 
-    h_rechit_layer         = new TH1D("h_rechit_layer"         , ";layer;Enties" , 50 , 0 , 50);
-    h_rechit_energy        = new TH1D("h_rechit_energy"        , ";energy;Enties" , 50 , 0 , 100);
-    h_rechit_energy_noHG   = new TH1D("h_rechit_energy_noHG"   , ";energy;Enties" , 50 , 0 , 100);
-    h_rechit_amplitudeHigh = new TH1D("h_rechit_amplitudeHigh" , ";amplitude;Enties" , 50 , 0 , 5000);
-    h_rechit_amplitudeLow  = new TH1D("h_rechit_amplitudeLow"  , ";amplitude;Enties" , 50 , 0 , 5000);
+    h_rechit_layer         = new TH1D("h_rechit_layer"         , ";layer;Enties"     , 50 , 0 , 50   );
+    h_rechit_energy        = new TH1D("h_rechit_energy"        , ";energy;Enties"    , 50 , 0 , 100  );
+    h_rechit_energy_noHG   = new TH1D("h_rechit_energy_noHG"   , ";energy;Enties"    , 50 , 0 , 100  );
+    h_rechit_amplitudeHigh = new TH1D("h_rechit_amplitudeHigh" , ";amplitude;Enties" , 50 , 0 , 5000 );
+    h_rechit_amplitudeLow  = new TH1D("h_rechit_amplitudeLow"  , ";amplitude;Enties" , 50 , 0 , 5000 );
 
     // 28 layers
     std::ostringstream hnamestr (std::ostringstream::ate);
