@@ -62,7 +62,7 @@ def draw_2D_ntuple(hname, v_hists, selection, color, is_first_plot=False):
     else:             hnew.Draw("same")
 
 def make_plot(varName, bool_make_logitudinal_profile):
-    global myRootfiles, specified_directory
+    global myRootfiles, specified_directory, flag_add_reference
     
     # Initiate
     bool_ntuple = "nt_" in varName
@@ -97,49 +97,6 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 draw_2D_ntuple("hnew"+"_"+tags[i]+"_w300", v_hists, "is_Silicon_w300>0", ROOT.kMagenta, True)
                 draw_2D_ntuple("hnew"+"_"+tags[i]+"_w200", v_hists, "is_Silicon_w200>0", ROOT.kGreen)
                 draw_2D_ntuple("hnew"+"_"+tags[i]+"_w120", v_hists, "is_Silicon_w120>0", ROOT.kRed)
-
-                #hname = "hnew" + "_" + tags[i] + "_w300"
-                #v_hists[0].Draw("r:z>>%s(250, 300, 550, 300, 0, 300)" % hname, "is_Silicon_w300>0")
-                #hnew = ROOT.gDirectory.Get(hname)
-                #hnew.SetTitle("")
-                #hnew.GetXaxis().SetTitle("Z [cm]")
-                #hnew.GetYaxis().SetTitle("Rxy [cm]")
-                #hnew.SetMarkerColor(ROOT.kMagenta)
-                #hnew.Draw("same")
-
-                #hname = "hnew" + "_" + tags[i] + "_w200"
-                #v_hists[0].Draw("r:z>>%s(250, 300, 550, 300, 0, 300)" % hname, "is_Silicon_w200>0", "same")
-                #hnew = ROOT.gDirectory.Get(hname)
-                #hnew.SetTitle("")
-                #hnew.GetXaxis().SetTitle("Z [cm]")
-                #hnew.GetYaxis().SetTitle("Rxy [cm]")
-                #hnew.SetMarkerColor(ROOT.kGreen)
-                #hnew.Draw("same")
-
-                #hname = "hnew" + "_" + tags[i] + "_w120"
-                #v_hists[0].Draw("r:z>>%s(250, 300, 550, 300, 0, 300)" % hname, "is_Silicon_w120>0", "same")
-                #hnew = ROOT.gDirectory.Get(hname)
-                #hnew.SetTitle("")
-                #hnew.GetXaxis().SetTitle("Z [cm]")
-                #hnew.GetYaxis().SetTitle("Rxy [cm]")
-                #hnew.SetMarkerColor(ROOT.kRed)
-                #hnew.Draw("same")
-
-                # not fully controllable
-                #v_hists[0].Draw("r:z")
-                #htemp = ROOT.gPad.GetPrimitive("htemp")
-                #htemp.GetXaxis().SetRangeUser(300, 550)
-                #htemp.GetYaxis().SetRangeUser(0, 300)
-                #htemp.Draw()
-                #c1.Update()
-
-                # failed
-                #v_hists[0].Draw("r:z", "", "A*")
-                #graph = ROOT.gPad.GetPrimitive("Graph")
-                #graph.GetXaxis().SetRangeUser(300, 550)
-                #graph.GetYaxis().SetRangeUser(0, 300)
-                #graph.Draw("A*")
-                #c1.Update()
             else: continue # no matched situation
 
             output = dir_output + "/" + varName + "_" + tags[i]
@@ -153,8 +110,13 @@ def make_plot(varName, bool_make_logitudinal_profile):
         # loop over energy
         for i, v_hists in enumerate(v_v_hists):
             gr = pu.get_graph(varName, v_hists)
-            gr.SetLineColor(colors[i])
-            gr.SetMarkerColor(colors[i])
+            gr.SetLineStyle(2)
+            if not flag_add_reference:
+                gr.SetLineColor(colors[i])
+                gr.SetMarkerColor(colors[i])
+            else:
+                gr.SetMarkerColor(ROOT.kBlue)
+                gr.SetLineColor(ROOT.kBlue)
             v_gr.append(gr)
 
             # 26 plots in one
@@ -179,15 +141,42 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 c1.SaveAs(output + ".png")
                 c1.SaveAs(output + ".pdf")
 
+        # ref from test beam
+        v_gr_ref_mc, v_gr_ref_data = [], []
+        for ene in [300, 100, 20]:
+            ref_tag = "multiplicity" if 'multiplicity' in varName else "mips"
+            gr = pu.get_graph_from_list(varName, pu.test_beam_result[ref_tag]["mc"][ene])
+            gr.SetMarkerColor(ROOT.kRed)
+            gr.SetLineColor(ROOT.kRed)
+            gr.SetLineStyle(2)
+            v_gr_ref_mc.append(gr)
+
+            gr = pu.get_graph_from_list(varName, pu.test_beam_result[ref_tag]["data"][ene])
+            gr.SetMarkerColor(ROOT.kBlack)
+            gr.SetLineColor(ROOT.kBlack)
+            gr.SetLineStyle(2)
+            v_gr_ref_data.append(gr)
+
         # logitudinal profile
         c1.cd()
         legend = ROOT.TLegend(0.67, 0.65, 0.87, 0.85)
         legend.SetLineColor(0)
         legend.SetTextSize(0.04)
         for i, gr in enumerate(v_gr):
-            if i==0: gr.Draw("apc")
-            else:    gr.Draw('pc;same')
-            legend.AddEntry(gr, label[tags[i]], "l")
+            if i==0: gr.Draw("alp")
+            else:    gr.Draw('lp;same')
+
+            if not flag_add_reference:
+                legend.AddEntry(gr, label[tags[i]], "l")
+
+            else:
+                v_gr_ref_mc[i].Draw('lp;same')
+                v_gr_ref_data[i].Draw('lp;same')
+
+                if i==0:
+                    legend.AddEntry(v_gr_ref_data[i], "2018 TB Data", "l")
+                    legend.AddEntry(v_gr_ref_mc[i], "2018 TB MC", "l")
+                    legend.AddEntry(gr, "D86 geometry", "l")
 
         annotate()
         legend.Draw("same")
@@ -199,16 +188,14 @@ def make_plot(varName, bool_make_logitudinal_profile):
 #--------------------------------------------------
 
 def run(myfin, mydin):
-    global myRootfiles, specified_directory
+    global flag_add_reference, myRootfiles, specified_directory
     myRootfiles = myfin
     specified_directory = mydin
 
     create_directory( specified_directory )
-    make_plot( "hEta", False )
-    make_plot( "hPhi", False )
-    make_plot( "nt_hit_position", False )
-
-    #return
+    #make_plot( "hEta", False )
+    #make_plot( "hPhi", False )
+    #make_plot( "nt_hit_position", False )
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total"] # consider 120, 200, 300 altogether
@@ -250,6 +237,8 @@ if __name__ == "__main__":
         "rootfiles/geantoutput_D86_R80To100_E100.root",
         "rootfiles/geantoutput_D86_R80To100_E20.root",
     ]
+
+    flag_add_reference = True
 
     myRootfiles, specified_directory = [], ""
     run( input_files[0:3], eos + "/" + "R35To60"  )
