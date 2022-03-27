@@ -208,7 +208,7 @@ def run(myfin, mydin):
     make_plot( "hPhi", False )
     make_plot( "nt_hit_position", False )
 
-    return
+    #return
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total"] # consider 120, 200, 300 altogether

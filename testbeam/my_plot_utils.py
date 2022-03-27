@@ -83,6 +83,7 @@ sub_directory = {
     "multiplicity_simhits_120mum" : "multiplicity_simhits",
     "multiplicity_simhits_200mum" : "multiplicity_simhits",
 
+    "rechit_amplitude_total" : "amplitude",
     "rechit_amplitudeHigh_total" : "amplitudeHigh",
     "rechit_amplitudeLow_total"  : "amplitudeLow",
 }

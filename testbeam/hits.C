@@ -92,6 +92,7 @@ void hits::Loop()
             //printf("%.2f, ", total_amplitude_high[i]);
             //printf("%.2f, ", total_amplitude_low[i]);
 
+            h_rechit_amplitude_layers[i]     -> Fill(total_amplitude[i]);
             h_rechit_amplitudeHigh_layers[i] -> Fill(total_amplitude_high[i]);
             h_rechit_amplitudeLow_layers[i]  -> Fill(total_amplitude_low[i]);
         }

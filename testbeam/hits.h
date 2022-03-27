@@ -394,6 +394,7 @@ void hits::Init(TTree *tree)
     h_rechit_layer         = new TH1D("h_rechit_layer"         , ";layer;Enties"     , 50 , 0 , 50   );
     h_rechit_energy        = new TH1D("h_rechit_energy"        , ";energy;Enties"    , 50 , 0 , 100  );
     h_rechit_energy_noHG   = new TH1D("h_rechit_energy_noHG"   , ";energy;Enties"    , 50 , 0 , 100  );
+    h_rechit_amplitude     = new TH1D("h_rechit_amplitude"     , ";amplitude;Enties" , 50 , 0 , 5000 );
     h_rechit_amplitudeHigh = new TH1D("h_rechit_amplitudeHigh" , ";amplitude;Enties" , 50 , 0 , 5000 );
     h_rechit_amplitudeLow  = new TH1D("h_rechit_amplitudeLow"  , ";amplitude;Enties" , 50 , 0 , 5000 );
 
@@ -467,6 +468,7 @@ void hits::MakePlot(TString output)
     h_rechit_layer         -> Draw(); c1 -> SaveAs(output + "layer"         + ".png");
     h_rechit_energy        -> Draw(); c1 -> SaveAs(output + "energy"        + ".png");
     h_rechit_energy_noHG   -> Draw(); c1 -> SaveAs(output + "noHG"          + ".png");
+    h_rechit_amplitude     -> Draw(); c1 -> SaveAs(output + "amplitude"     + ".png");
     h_rechit_amplitudeHigh -> Draw(); c1 -> SaveAs(output + "amplitudeHigh" + ".png");
     h_rechit_amplitudeLow  -> Draw(); c1 -> SaveAs(output + "amplitudeLow"  + ".png");
 

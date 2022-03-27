@@ -147,8 +147,9 @@ def run(myfin, mydin):
     thickness = ["total"] # consider 120, 200, 300 altogether
 
     for t in thickness:
-        make_plot( "rechit_amplitudeHigh_%s" % t , True  )
-        make_plot( "rechit_amplitudeLow_%s"  % t , True  )
+        make_plot( "rechit_amplitude_%s" % t , True  )
+        #make_plot( "rechit_amplitudeHigh_%s" % t , True  )
+        #make_plot( "rechit_amplitudeLow_%s"  % t , True  )
 
 #--------------------------------------------------
 

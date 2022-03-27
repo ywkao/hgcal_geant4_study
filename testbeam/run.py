@@ -26,6 +26,7 @@ def run():
 if __name__ == "__main__":
     subprocess.call("make", shell=True)
 
+    files = [ "ntuple_496.root" ]
     files = [ "ntuple_496.root", "ntuple_sim_config22_pdgID11_beamMomentum120_listFTFP_BERT_EMN.root" ]
     files = mylist.test_beam_data_e300
     files = mylist.test_beam_data
