@@ -40,11 +40,11 @@ def add_pkg(): #{{{
     print ">>>", os.getcwd()
 
     subprocess.call('pwd', shell=True)
-    subprocess.call("git cms-addpkg Geometry/HGCalGeometry", shell=True)
     subprocess.call("git cms-addpkg Geometry/HGCalCommonData", shell=True)
+    subprocess.call("git cms-addpkg Geometry/HGCalGeometry", shell=True)
     subprocess.call("git cms-addpkg Geometry/HGCalSimData", shell=True)
-    subprocess.call("git cms-addpkg Geometry/CMSCommonData", shell=True)
     subprocess.call("git cms-addpkg DataFormats/ForwardDetId", shell=True)
+    subprocess.call("git cms-addpkg Geometry/CMSCommonData", shell=True)
     subprocess.call("git cms-addpkg Validation/HGCalValidation", shell=True) # newly added, to be checked
 #}}}
 def print_common_xml(): #{{{

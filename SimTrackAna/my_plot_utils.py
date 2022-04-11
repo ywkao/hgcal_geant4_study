@@ -92,17 +92,20 @@ ytitles["nt_hit_position"] = "Rxy [cm]"
 
 x_D86 = [0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659]
 
-def get_graph(varName, v_hists):
+def get_graph(varName, v_hists, is_number_of_hits = False):
     n = 26 
     x, ex = array.array('d'), array.array('d')
     y, ey = array.array('d'), array.array('d')
 
+    scale_factor = 1.
+    scale_factor = 0.56 if is_number_of_hits else 1.
+
     for i, h in enumerate(v_hists):
         x.append(x_D86[i])
-        y.append(h.GetMean())
+        y.append(h.GetMean() * scale_factor)
         ex.append(0.)
         #ey.append(h.GetStdDev())
-        ey.append(h.GetMeanError())
+        ey.append(h.GetMeanError() * scale_factor)
 
         gr = ROOT.TGraphErrors(n, x, y, ex, ey)
         set_graph(gr, ytitles[varName], "Layer depth [ X_{0} ]", ROOT.kBlue)

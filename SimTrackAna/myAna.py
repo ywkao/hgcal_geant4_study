@@ -63,6 +63,7 @@ def draw_2D_ntuple(hname, v_hists, selection, color, is_first_plot=False):
 
 def make_plot(varName, bool_make_logitudinal_profile):
     global myRootfiles, specified_directory, flag_add_reference
+    is_number_of_hits = "multiplicity" in varName
     
     # Initiate
     bool_ntuple = "nt_" in varName
@@ -76,6 +77,7 @@ def make_plot(varName, bool_make_logitudinal_profile):
     vf = []
     v_v_hists = []
     for rootfile in myRootfiles:
+        print ">>> rootfile", rootfile
         fin = ROOT.TFile.Open(rootfile, "R")
         vf.append(fin)
 
@@ -109,7 +111,7 @@ def make_plot(varName, bool_make_logitudinal_profile):
 
         # loop over energy
         for i, v_hists in enumerate(v_v_hists):
-            gr = pu.get_graph(varName, v_hists)
+            gr = pu.get_graph(varName, v_hists, is_number_of_hits)
             gr.SetLineStyle(2)
             if not flag_add_reference:
                 gr.SetLineColor(colors[i])
@@ -174,9 +176,9 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 v_gr_ref_data[i].Draw('lp;same')
 
                 if i==0:
-                    legend.AddEntry(v_gr_ref_data[i], "2018 TB Data", "l")
-                    legend.AddEntry(v_gr_ref_mc[i], "2018 TB MC", "l")
-                    legend.AddEntry(gr, "D86 geometry", "l")
+                    legend.AddEntry(v_gr_ref_data[i], "2018 TB Data", "lp")
+                    legend.AddEntry(v_gr_ref_mc[i], "2018 TB MC", "lp")
+                    legend.AddEntry(gr, "D86 geometry", "lp")
 
         annotate()
         legend.Draw("same")
@@ -193,9 +195,9 @@ def run(myfin, mydin):
     specified_directory = mydin
 
     create_directory( specified_directory )
-    #make_plot( "hEta", False )
-    #make_plot( "hPhi", False )
-    #make_plot( "nt_hit_position", False )
+    make_plot( "hEta", False )
+    make_plot( "hPhi", False )
+    make_plot( "nt_hit_position", False )
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total"] # consider 120, 200, 300 altogether
@@ -236,12 +238,16 @@ if __name__ == "__main__":
         "rootfiles/geantoutput_D86_R80To100_E300.root",
         "rootfiles/geantoutput_D86_R80To100_E100.root",
         "rootfiles/geantoutput_D86_R80To100_E20.root",
+        "rootfiles/geantoutput_D86_muon_E100.root",
     ]
 
     flag_add_reference = True
 
     myRootfiles, specified_directory = [], ""
-    run( input_files[0:3], eos + "/" + "R35To60"  )
-    run( input_files[3:6], eos + "/" + "R80To100" )
+    #run( input_files[0:3], eos + "/" + "R35To60"  )
+    #run( input_files[3:6], eos + "/" + "R80To100" )
+
+    tags = ["E100"]
+    run( [input_files[-1]], eos + "/" + "muon" )
     #subprocess.call("ls -lhrt %s" % dir_output, shell=True)
 

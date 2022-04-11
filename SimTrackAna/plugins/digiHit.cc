@@ -765,6 +765,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 double    energy     = esum.eTime[0];
                 int       idx        = dinfo.layer-1;
 
+                bool selection_on_mips = amplitude > 0.5;
+                if(!selection_on_mips) continue;
+
                 if(id_simhit==id_digihit){
                     bool debug = false;
                     if(debug) {
