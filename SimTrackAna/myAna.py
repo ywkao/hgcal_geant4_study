@@ -13,9 +13,12 @@ ROOT.gStyle.SetStatW(my_stat_pos[2])
 ROOT.gStyle.SetStatH(my_stat_pos[3])
 ROOT.gStyle.SetTextSize(1.2)
 
-import my_plot_utils as pu
+import plot_utils as pu
+import MetaData as m
 
-eos = "./eos_output"
+flag_add_reference = True
+
+eos = "./eos"
 rootfile = eos + "/" + "geantoutput_v3p1.root"
 rootfile = "geantoutput_v3p1.root"
 rootfile = "rootfiles/geantoutput_D86_R80To100_E100.root"
@@ -144,16 +147,16 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 c1.SaveAs(output + ".pdf")
 
         # ref from test beam
-        v_gr_ref_mc, v_gr_ref_data = [], []
+        v_gr_ref_mc, v_gr_ref_data, ref_ey = [], [], [0.]*28
         for ene in [300, 100, 20]:
             ref_tag = "multiplicity" if 'multiplicity' in varName else "mips"
-            gr = pu.get_graph_from_list(varName, pu.test_beam_result[ref_tag]["mc"][ene])
+            gr = pu.get_graph_from_list(varName, m.test_beam_result["layer_depth"], m.test_beam_result[ref_tag]["mc"][ene], ref_ey, is_number_of_hits)
             gr.SetMarkerColor(ROOT.kRed)
             gr.SetLineColor(ROOT.kRed)
             gr.SetLineStyle(2)
             v_gr_ref_mc.append(gr)
 
-            gr = pu.get_graph_from_list(varName, pu.test_beam_result[ref_tag]["data"][ene])
+            gr = pu.get_graph_from_list(varName, m.test_beam_result["layer_depth"], m.test_beam_result[ref_tag]["data"][ene], ref_ey, is_number_of_hits)
             gr.SetMarkerColor(ROOT.kBlack)
             gr.SetLineColor(ROOT.kBlack)
             gr.SetLineStyle(2)
@@ -165,27 +168,36 @@ def make_plot(varName, bool_make_logitudinal_profile):
         legend.SetLineColor(0)
         legend.SetTextSize(0.04)
         for i, gr in enumerate(v_gr):
-            if i==0: gr.Draw("alp")
-            else:    gr.Draw('lp;same')
 
             if not flag_add_reference:
+                if i==0: gr.Draw("alp")
+                else:    gr.Draw('lp;same')
                 legend.AddEntry(gr, label[tags[i]], "l")
 
+                if i+1 == len(v_gr):
+                    annotate()
+                    legend.Draw("same")
+
+                    output = specified_directory + "/" + varName
+                    c1.SaveAs(output + ".png")
+                    c1.SaveAs(output + ".pdf")
+
             else:
+                gr.Draw("alp")
                 v_gr_ref_mc[i].Draw('lp;same')
                 v_gr_ref_data[i].Draw('lp;same')
 
-                if i==0:
-                    legend.AddEntry(v_gr_ref_data[i], "2018 TB Data", "lp")
-                    legend.AddEntry(v_gr_ref_mc[i], "2018 TB MC", "lp")
-                    legend.AddEntry(gr, "D86 geometry", "lp")
+                legend.Clear()
+                legend.AddEntry(v_gr_ref_data[i], "2018 TB Data", "lp")
+                legend.AddEntry(v_gr_ref_mc[i], "2018 TB MC", "lp")
+                legend.AddEntry(gr, "D86 geometry", "lp")
 
-        annotate()
-        legend.Draw("same")
+                annotate()
+                legend.Draw("same")
 
-        output = specified_directory + "/" + varName
-        c1.SaveAs(output + ".png")
-        c1.SaveAs(output + ".pdf")
+                output = specified_directory + "/" + varName + "_" + tags[i]
+                c1.SaveAs(output + ".png")
+                c1.SaveAs(output + ".pdf")
 
 #--------------------------------------------------
 
@@ -195,16 +207,16 @@ def run(myfin, mydin):
     specified_directory = mydin
 
     create_directory( specified_directory )
-    make_plot( "hEta", False )
-    make_plot( "hPhi", False )
-    make_plot( "nt_hit_position", False )
+    #make_plot( "hEta", False )
+    #make_plot( "hPhi", False )
+    #make_plot( "nt_hit_position", False )
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total"] # consider 120, 200, 300 altogether
 
     for t in thickness:
         make_plot( "multiplicity_simhits_%s" % t , True  )
-        make_plot( "total_MIP_%s"            % t , True  )
+        #make_plot( "total_MIP_%s"            % t , True  )
         continue
 
         make_plot( "total_ADC_%s"            % t , True  )
@@ -241,11 +253,11 @@ if __name__ == "__main__":
         "rootfiles/geantoutput_D86_muon_E100.root",
     ]
 
-    flag_add_reference = True
-
     myRootfiles, specified_directory = [], ""
     #run( input_files[0:3], eos + "/" + "R35To60"  )
-    #run( input_files[3:6], eos + "/" + "R80To100" )
+    run( input_files[3:6], eos + "/" + "R80To100" )
+
+    exit()
 
     tags = ["E100"]
     run( [input_files[-1]], eos + "/" + "muon" )
