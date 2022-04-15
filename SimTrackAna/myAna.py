@@ -17,6 +17,7 @@ import plot_utils as pu
 import MetaData as m
 
 flag_add_reference = True
+flag_add_reference = False
 
 eos = "./eos"
 rootfile = eos + "/" + "geantoutput_v3p1.root"
@@ -213,6 +214,7 @@ def run(myfin, mydin):
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
+    thickness = ["total"]
 
     for t in thickness:
         make_plot( "multiplicity_simhits_%s" % t , True  )
@@ -251,11 +253,18 @@ if __name__ == "__main__":
         "rootfiles/geantoutput_D86_R80To100_E100.root",
         "rootfiles/geantoutput_D86_R80To100_E20.root",
         "rootfiles/geantoutput_D86_muon_E100.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_electron_1mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_photon_1mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_egamma_1mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
     ]
 
     myRootfiles, specified_directory = [], ""
     #run( input_files[0:3], eos + "/" + "R35To60"  )
-    run( input_files[3:6], eos + "/" + "R80To100" )
+    #run( input_files[3:6], eos + "/" + "R80To100" )
+
+    tags = ["ProdCut_electron", "ProdCut_photon", "ProdCut_egamma"]
+    run( input_files[6:9], eos + "/" + "R80To100" )
 
     exit()
 
