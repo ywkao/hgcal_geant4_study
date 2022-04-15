@@ -278,6 +278,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *total_ADC_200mum_[26];
         TH1D *total_ADC_300mum_[26];
         TH1D *total_MIP_total_[26];
+        TH1D *total_MIP_coarse_[26];
+        TH1D *total_MIP_fine_[26];
         TH1D *total_MIP_120mum_[26];
         TH1D *total_MIP_200mum_[26];
         TH1D *total_MIP_300mum_[26];
@@ -292,6 +294,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *multiplicity_digis_200mum_[26];
         TH1D *multiplicity_digis_300mum_[26];
         TH1D *multiplicity_simhits_total_[26];
+        TH1D *multiplicity_simhits_coarse_[26];
+        TH1D *multiplicity_simhits_fine_[26];
         TH1D *multiplicity_simhits_120mum_[26];
         TH1D *multiplicity_simhits_200mum_[26];
         TH1D *multiplicity_simhits_300mum_[26];
@@ -361,12 +365,20 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         total_ADC_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_MIP_total_", i+1);
         total_MIP_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "total_MIP_coarse_", i+1);
+        total_MIP_coarse_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        tb::set_string(hnamestr, "total_MIP_fine_", i+1);
+        total_MIP_fine_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_total_", i+1);
         total_SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "multiplicity_digis_total_", i+1);
         multiplicity_digis_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 2000.);
         tb::set_string(hnamestr, "multiplicity_simhits_total_", i+1);
         multiplicity_simhits_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
+        tb::set_string(hnamestr, "multiplicity_simhits_coarse_", i+1);
+        multiplicity_simhits_coarse_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
+        tb::set_string(hnamestr, "multiplicity_simhits_fine_", i+1);
+        multiplicity_simhits_fine_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
 
         tb::set_string(hnamestr, "total_ADC_120mum_", i+1);
         total_ADC_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
@@ -479,9 +491,13 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     int counter = 0;
     std::vector<double> total_energy_adc_total ;
     std::vector<double> total_energy_mip_total ;
+    std::vector<double> total_energy_mip_coarse ;
+    std::vector<double> total_energy_mip_fine ;
     std::vector<double> total_energy_sim_total ;
     std::vector<int>    num_digis_total        ;
     std::vector<int>    num_simhits_total      ;
+    std::vector<int>    num_simhits_coarse      ;
+    std::vector<int>    num_simhits_fine      ;
 
     std::vector<double> total_energy_adc_120mum ;
     std::vector<double> total_energy_mip_120mum ;
@@ -504,9 +520,13 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     for(int idx=0; idx<26; ++idx) {
         total_energy_adc_total .push_back(0);
         total_energy_mip_total .push_back(0);
+        total_energy_mip_coarse.push_back(0);
+        total_energy_mip_fine  .push_back(0);
         total_energy_sim_total .push_back(0);
         num_digis_total        .push_back(0);
         num_simhits_total      .push_back(0);
+        num_simhits_coarse     .push_back(0);
+        num_simhits_fine       .push_back(0);
 
         total_energy_adc_120mum .push_back(0);
         total_energy_mip_120mum .push_back(0);
@@ -764,6 +784,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 double    amplitude  = (*itr_mydigi).second.amplitude;
                 double    energy     = esum.eTime[0];
                 int       idx        = dinfo.layer-1;
+                int       cellType   = (*itr_sim).second.first.type;
+                bool      is_coarse  = cellType==HGCSiliconDetId::HGCalCoarseThin || cellType==HGCSiliconDetId::HGCalCoarseThick;
+                bool      is_fine    = cellType==HGCSiliconDetId::HGCalFine;
 
                 bool selection_on_mips = amplitude > 0.5;
                 if(!selection_on_mips) continue;
@@ -774,6 +797,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                         tb::print_debug_info("Id_digi"   , id_digihit   );
                         tb::print_debug_info("layer"     , dinfo.layer  );
                         tb::print_debug_info("wafer type", dinfo.type   );
+                        tb::print_debug_info("cell type" , cellType   );
                         tb::print_debug_info("adc_"      , adc          );
                         tb::print_debug_info("amplitude" , amplitude    );
                         tb::print_debug_info("energy"    , energy, true );
@@ -792,8 +816,12 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                         total_energy_adc_total [idx] += adc;
                         total_energy_mip_total [idx] += amplitude;
+                        if(is_coarse) total_energy_mip_coarse[idx] += amplitude;
+                        if(is_fine)   total_energy_mip_fine  [idx] += amplitude;
                         total_energy_sim_total [idx] += energy;
                         num_simhits_total      [idx] += 1;
+                        if(is_coarse) num_simhits_coarse     [idx] += 1;
+                        if(is_fine)   num_simhits_fine       [idx] += 1;
                     }
                     if(dinfo.layer <= 26 && dinfo.type==0) {
                         ADC_120mum_     [idx] -> Fill(adc);
@@ -849,11 +877,15 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         //tb::print_debug_info("num_digis_200mum" , num_digis_200mum [idx]        );
         //tb::print_debug_info("num_digis_300mum" , num_digis_300mum [idx] , true );
 
-        total_ADC_total_            [idx] -> Fill( total_energy_adc_total [idx] );
-        total_MIP_total_            [idx] -> Fill( total_energy_mip_total [idx] );
-        total_SIM_total_            [idx] -> Fill( total_energy_sim_total [idx] );
-        multiplicity_digis_total_   [idx] -> Fill( num_digis_total        [idx] );
-        multiplicity_simhits_total_ [idx] -> Fill( num_simhits_total      [idx] );
+        total_ADC_total_             [idx] -> Fill( total_energy_adc_total [idx] );
+        total_MIP_total_             [idx] -> Fill( total_energy_mip_total [idx] );
+        total_MIP_coarse_            [idx] -> Fill( total_energy_mip_coarse [idx] );
+        total_MIP_fine_              [idx] -> Fill( total_energy_mip_fine [idx] );
+        total_SIM_total_             [idx] -> Fill( total_energy_sim_total [idx] );
+        multiplicity_digis_total_    [idx] -> Fill( num_digis_total        [idx] );
+        multiplicity_simhits_total_  [idx] -> Fill( num_simhits_total      [idx] );
+        multiplicity_simhits_coarse_ [idx] -> Fill( num_simhits_coarse     [idx] );
+        multiplicity_simhits_fine_   [idx] -> Fill( num_simhits_fine       [idx] );
 
         total_ADC_120mum_            [idx] -> Fill( total_energy_adc_120mum [idx] );
         total_MIP_120mum_            [idx] -> Fill( total_energy_mip_120mum [idx] );

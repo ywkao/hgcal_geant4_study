@@ -70,6 +70,8 @@ sub_directory = {
         "total_ADC_200mum"            : "total_ADC",
         "total_ADC_300mum"            : "total_ADC",
         "total_MIP_total"             : "total_MIP",
+        "total_MIP_coarse"             : "total_MIP",
+        "total_MIP_fine"             : "total_MIP",
         "total_MIP_120mum"            : "total_MIP",
         "total_MIP_200mum"            : "total_MIP",
         "total_MIP_300mum"            : "total_MIP",
@@ -83,6 +85,8 @@ sub_directory = {
         "multiplicity_digis_300mum"   : "multiplicity_digis",
         "multiplicity_simhits_300mum" : "multiplicity_simhits",
         "multiplicity_simhits_total"  : "multiplicity_simhits",
+        "multiplicity_simhits_coarse"  : "multiplicity_simhits",
+        "multiplicity_simhits_fine"  : "multiplicity_simhits",
         "multiplicity_simhits_120mum" : "multiplicity_simhits",
         "multiplicity_simhits_200mum" : "multiplicity_simhits",
         }

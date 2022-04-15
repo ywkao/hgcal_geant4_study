@@ -212,11 +212,11 @@ def run(myfin, mydin):
     #make_plot( "nt_hit_position", False )
 
     thickness = ["120mum", "200mum", "300mum", "total"]
-    thickness = ["total"] # consider 120, 200, 300 altogether
+    thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
 
     for t in thickness:
         make_plot( "multiplicity_simhits_%s" % t , True  )
-        #make_plot( "total_MIP_%s"            % t , True  )
+        make_plot( "total_MIP_%s"            % t , True  )
         continue
 
         make_plot( "total_ADC_%s"            % t , True  )
