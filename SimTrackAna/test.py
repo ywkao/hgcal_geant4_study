@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     subprocess.call("mkdir -p tmp", shell=True)
 
-    for f in glob.glob("python/run_digiHit_cfg_*"):
+    for f in glob.glob("python/run_digiHit_cfg_*1000*"):
     #for f in glob.glob("python/test_digiHit_cfg*"):
     #for f in glob.glob("python/test_digiHit_cfg*muon*"):
         tag = f.split('_cfg_')[1].split('.')[0]

@@ -1,5 +1,44 @@
 #!/usr/bin/env python2
 
+input_files = {
+    "R35To60" : [
+        "rootfiles/geantoutput_D86_R35To60_E300.root",
+        "rootfiles/geantoutput_D86_R35To60_E100.root",
+        "rootfiles/geantoutput_D86_R35To60_E20.root",
+    ],
+
+    "R80To100" : [
+        "rootfiles/geantoutput_D86_R80To100_E300.root",
+        "rootfiles/geantoutput_D86_R80To100_E100.root",
+        "rootfiles/geantoutput_D86_R80To100_E20.root",
+    ],
+
+    "muon" : [
+        "rootfiles/geantoutput_D86_muon_E100.root",
+    ],
+
+    "ProdCut1mm" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_electron_1mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_photon_1mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_egamma_1mm.root",
+    ],
+
+    "ProdCut100mm" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_electron_100mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_photon_100mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_egamma_100mm.root",
+    ],
+
+    "ProdCut1000mm" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_electron_1000mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_photon_1000mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_egamma_1000mm.root",
+    ],
+}
+
 test_beam_result = {
     # layer depth is approximated from eyes
     "layer_depth" : [0.98  , 1.97  , 2.80  , 3.80  , 4.80  , 5.75  , 6.75    ,

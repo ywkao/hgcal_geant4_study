@@ -20,10 +20,10 @@ flag_add_reference = True
 flag_add_reference = False
 
 eos = "./eos"
-rootfile = eos + "/" + "geantoutput_v3p1.root"
-rootfile = "geantoutput_v3p1.root"
-rootfile = "rootfiles/geantoutput_D86_R80To100_E100.root"
-fin = ROOT.TFile.Open(rootfile, "R")
+#rootfile = eos + "/" + "geantoutput_v3p1.root"
+#rootfile = "geantoutput_v3p1.root"
+#rootfile = "rootfiles/geantoutput_D86_R80To100_E100.root"
+#fin = ROOT.TFile.Open(rootfile, "R")
 
 c1 = ROOT.TCanvas("c1", "", 800, 600)
 c1.SetGrid()
@@ -50,7 +50,8 @@ def annotate(rshift=0):
     #latex.SetTextSize(24)
     latex.SetTextSize(20)
     latex.DrawLatex( 0.12, 0.912, "#bf{CMS} #it{work in progress}" )
-    latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
+    latex.DrawLatex( 0.56+rshift, 0.912, "D86 Simulation with 1,000 events" )
+    #latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
     #latex.DrawLatex( 0.69+rshift, 0.912, "%s fb^{-1} (13 TeV)" % str(lumi["RunII"]) )
 
 def draw_2D_ntuple(hname, v_hists, selection, color, is_first_plot=False):
@@ -69,7 +70,9 @@ def make_plot(varName, bool_make_logitudinal_profile):
     global myRootfiles, specified_directory, flag_add_reference
     is_number_of_hits = "multiplicity" in varName
     
+    #++++++++++++++++++++++++++++++
     # Initiate
+    #++++++++++++++++++++++++++++++
     bool_ntuple = "nt_" in varName
     bool_this_is_eta_phi = "Eta" in varName or "Phi" in varName
     bool_single_figures = bool_ntuple or bool_this_is_eta_phi
@@ -77,7 +80,9 @@ def make_plot(varName, bool_make_logitudinal_profile):
     create_directory(dir_output)
     processes = [str(i) for i in range(1,27)]
 
+    #++++++++++++++++++++++++++++++
     # Load histograms
+    #++++++++++++++++++++++++++++++
     vf = []
     v_v_hists = []
     for rootfile in myRootfiles:
@@ -93,7 +98,9 @@ def make_plot(varName, bool_make_logitudinal_profile):
             v_hists = pu.load_histograms(fin, varName, processes)
             v_v_hists.append(v_hists)
 
+    #++++++++++++++++++++++++++++++
     # Eta or Phi or ntuple
+    #++++++++++++++++++++++++++++++
     if bool_single_figures:
         c1.cd()
         for i, v_hists in enumerate(v_v_hists):
@@ -109,13 +116,18 @@ def make_plot(varName, bool_make_logitudinal_profile):
             c1.SaveAs(output + ".png")
             c1.SaveAs(output + ".pdf")
 
+    #++++++++++++++++++++++++++++++
     # Longitdinal profile
+    #++++++++++++++++++++++++++++++
     if bool_make_logitudinal_profile:
         v_gr = []
 
+        #------------------------------
         # loop over energy
+        #------------------------------
         for i, v_hists in enumerate(v_v_hists):
-            gr = pu.get_graph(varName, v_hists, is_number_of_hits)
+            #gr = pu.get_graph(varName, v_hists, is_number_of_hits)
+            gr = pu.get_graph(varName, v_hists, False)
             gr.SetLineStyle(2)
             if not flag_add_reference:
                 gr.SetLineColor(colors[i])
@@ -147,7 +159,9 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 c1.SaveAs(output + ".png")
                 c1.SaveAs(output + ".pdf")
 
+        #------------------------------
         # ref from test beam
+        #------------------------------
         v_gr_ref_mc, v_gr_ref_data, ref_ey = [], [], [0.]*28
         for ene in [300, 100, 20]:
             ref_tag = "multiplicity" if 'multiplicity' in varName else "mips"
@@ -163,17 +177,23 @@ def make_plot(varName, bool_make_logitudinal_profile):
             gr.SetLineStyle(2)
             v_gr_ref_data.append(gr)
 
+        #------------------------------
         # logitudinal profile
+        #------------------------------
         c1.cd()
-        legend = ROOT.TLegend(0.67, 0.65, 0.87, 0.85)
+        #legend = ROOT.TLegend(0.67, 0.65, 0.87, 0.85)
+        #legend = ROOT.TLegend(0.65, 0.65, 0.85, 0.85)
+        legend = ROOT.TLegend(0.60, 0.65, 0.85, 0.85)
         legend.SetLineColor(0)
         legend.SetTextSize(0.04)
         for i, gr in enumerate(v_gr):
 
             if not flag_add_reference:
+                print i
+
                 if i==0: gr.Draw("alp")
                 else:    gr.Draw('lp;same')
-                legend.AddEntry(gr, label[tags[i]], "l")
+                legend.AddEntry(gr, label[tags[i]], "lp")
 
                 if i+1 == len(v_gr):
                     annotate()
@@ -238,37 +258,28 @@ def run(myfin, mydin):
 #--------------------------------------------------
 
 if __name__ == "__main__":
-    tags = ["E300", "E100", "E20"]
-    label = {}
-    label["E300"] = "300 GeV"
-    label["E100"] = "100 GeV"
-    label["E20"]  = "20 GeV"
+    myRootfiles, specified_directory, label = [], "", {}
+    colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kGreen, ROOT.kRed]
 
-    colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed]
-    input_files = [
-        "rootfiles/geantoutput_D86_R35To60_E300.root",
-        "rootfiles/geantoutput_D86_R35To60_E100.root",
-        "rootfiles/geantoutput_D86_R35To60_E20.root",
-        "rootfiles/geantoutput_D86_R80To100_E300.root",
-        "rootfiles/geantoutput_D86_R80To100_E100.root",
-        "rootfiles/geantoutput_D86_R80To100_E20.root",
-        "rootfiles/geantoutput_D86_muon_E100.root",
-        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_electron_1mm.root",
-        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_photon_1mm.root",
-        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_egamma_1mm.root",
-        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
-    ]
-
-    myRootfiles, specified_directory = [], ""
-    #run( input_files[0:3], eos + "/" + "R35To60"  )
-    #run( input_files[3:6], eos + "/" + "R80To100" )
-
-    tags = ["ProdCut_electron", "ProdCut_photon", "ProdCut_egamma"]
-    run( input_files[6:9], eos + "/" + "R80To100" )
-
+    # prodCut study
+    tags = ["nominal", "ProdCut_electron", "ProdCut_photon", "ProdCut_egamma"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["ProdCut1mm"]    , eos + "/" + "R80To100_ProdCut1mm"    )
+    run( m.input_files["ProdCut100mm"]  , eos + "/" + "R80To100_ProdCut100mm"  )
+    run( m.input_files["ProdCut1000mm"] , eos + "/" + "R80To100_ProdCut1000mm" )
     exit()
 
+    #++++++++++++++++++++++++++++++
+    # need to check root files
+    #++++++++++++++++++++++++++++++
+
+    # init study
+    tags = ["E300", "E100", "E20"]
+    for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    run( m.input_files["R35To60"], eos + "/" + "R35To60"  )
+    run( m.input_files["R80To100"], eos + "/" + "R80To100" )
+
+    # muon study
     tags = ["E100"]
-    run( [input_files[-1]], eos + "/" + "muon" )
-    #subprocess.call("ls -lhrt %s" % dir_output, shell=True)
+    run( [input_files["muon"]], eos + "/" + "muon" )
 
