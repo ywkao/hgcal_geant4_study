@@ -161,6 +161,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
         explicit DigiSim(const edm::ParameterSet&);
         ~DigiSim();
+        double get_additional_correction(int layer);
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
         struct energysum {
@@ -299,6 +300,10 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *multiplicity_simhits_120mum_[26];
         TH1D *multiplicity_simhits_200mum_[26];
         TH1D *multiplicity_simhits_300mum_[26];
+
+        // dE/dx weights from https://github.com/cms-sw/cmssw/blob/master/RecoLocalCalo/HGCalRecProducers/python/HGCalRecHit_cfi.py#L12-L60
+        std::vector<double> weightsPerLayer_V16 = { 0., 5.55, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 13.54, 12.86, 13.54, 12.86, 13.54, 12.86, 13.54, 12.86,
+                                                    58.63, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 83.08, 83.08, 83.43, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61};
 
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
         edm::ESGetToken<SetupData, SetupRecord> setupToken_;
@@ -481,6 +486,18 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 #endif
 } //}}}
 DigiSim::~DigiSim(){}
+
+double DigiSim::get_additional_correction(int layer)
+{
+    double correction = 1.;
+    // start the correction from 3rd layer & consider only odd layers
+    if( layer%2==1 && layer>2 ) {
+        correction = 1. - 0.5 * (1. - weightsPerLayer_V16[layer] / weightsPerLayer_V16[layer-1] );
+        return correction;
+    } else {
+        return correction;
+    }
+}
 
 // ------------ method called for each event  ------------
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -792,12 +809,15 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(!selection_on_mips) continue;
 
                 if(id_simhit==id_digihit){
+                    double dEdx_weights = get_additional_correction(idx+1); // layer = idx+1
+                    amplitude = amplitude * dEdx_weights;
+
                     bool debug = false;
                     if(debug) {
                         tb::print_debug_info("Id_digi"   , id_digihit   );
                         tb::print_debug_info("layer"     , dinfo.layer  );
                         tb::print_debug_info("wafer type", dinfo.type   );
-                        tb::print_debug_info("cell type" , cellType   );
+                        tb::print_debug_info("cell type" , cellType     );
                         tb::print_debug_info("adc_"      , adc          );
                         tb::print_debug_info("amplitude" , amplitude    );
                         tb::print_debug_info("energy"    , energy, true );

@@ -267,7 +267,7 @@ if __name__ == "__main__":
     #tags = ["nominal", "Turn_off_Compton", "TOC+airPCB", "TOC+airPCB+CutEle5mm", "TOC+airPCB+CutEle10mm"]
     tags = ["nominal", "Turn_off_Compton", "TOC+airPCB", "airPCB"]
     for tag in tags: label[tag] = tag
-    run( m.input_files["pcbStudy"]    , eos + "/" + "R80To100_PCB_study"    )
+    run( m.input_files["pcbStudy"]    , eos + "/" + "R80To100_PCB_study_with_dEdx_weights_v2"    )
     exit()
 
     tags = ["nominal", "Turn_off_Compton", "TurnOffCompton_CutEle1mm", "TurnOffCompton_CutEle10mm", "TurnOffCompton_CutEle100mm", "TurnOffCompton_CutEle100mm"]
