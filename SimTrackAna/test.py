@@ -23,7 +23,18 @@ if __name__ == "__main__":
 
     subprocess.call("mkdir -p tmp", shell=True)
 
-    for f in glob.glob("python/run_digiHit_cfg_*1000*"):
+    configs = [
+        "python/run_digiHit_cfg_PCB.py",
+        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_50mm.py",
+        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_100mm.py",
+        #"python/run_digiHit_cfg_turnOffCompton.py",
+    ]
+
+    for f in glob.glob("python/*air*.py"):
+    #for f in configs:
+    #for f in glob.glob("python/*turnOffComptionScattering_ProdCut_electron*.py"):
+    #for f in glob.glob("python/run_digiHit_cfg_turnOffCompton.py"):
+    #for f in glob.glob("python/run_digiHit_cfg_*1000*"):
     #for f in glob.glob("python/test_digiHit_cfg*"):
     #for f in glob.glob("python/test_digiHit_cfg*muon*"):
         tag = f.split('_cfg_')[1].split('.')[0]

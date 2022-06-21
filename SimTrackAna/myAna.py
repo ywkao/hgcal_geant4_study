@@ -185,7 +185,7 @@ def make_plot(varName, bool_make_logitudinal_profile):
         #legend = ROOT.TLegend(0.65, 0.65, 0.85, 0.85)
         legend = ROOT.TLegend(0.60, 0.65, 0.85, 0.85)
         legend.SetLineColor(0)
-        legend.SetTextSize(0.04)
+        legend.SetTextSize(0.025)
         for i, gr in enumerate(v_gr):
 
             if not flag_add_reference:
@@ -230,7 +230,7 @@ def run(myfin, mydin):
     create_directory( specified_directory )
     #make_plot( "hEta", False )
     #make_plot( "hPhi", False )
-    #make_plot( "nt_hit_position", False )
+    make_plot( "nt_hit_position", False )
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
@@ -260,6 +260,37 @@ def run(myfin, mydin):
 if __name__ == "__main__":
     myRootfiles, specified_directory, label = [], "", {}
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kGreen, ROOT.kRed]
+    colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen]
+    colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta, ROOT.kBlue-7, ROOT.kRed-7]
+
+    #tags = ["nominal", "Turn_off_Compton", "Replace_PCB_by_Air", "TurnOffCompton_CutEle5mm", "TurnOffCompton_CutEle10mm"]
+    #tags = ["nominal", "Turn_off_Compton", "TOC+airPCB", "TOC+airPCB+CutEle5mm", "TOC+airPCB+CutEle10mm"]
+    tags = ["nominal", "Turn_off_Compton", "TOC+airPCB", "airPCB"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["pcbStudy"]    , eos + "/" + "R80To100_PCB_study"    )
+    exit()
+
+    tags = ["nominal", "Turn_off_Compton", "TurnOffCompton_CutEle1mm", "TurnOffCompton_CutEle10mm", "TurnOffCompton_CutEle100mm", "TurnOffCompton_CutEle100mm"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["turnOffCompton_ProdCutElectron"]    , eos + "/" + "R80To100_turnOffCompton_ProdCutElectron_v3"    )
+    exit()
+
+    tags = ["nominal", "Turn_off_Compton", "TurnOffCompton_CutEle1mm", "TurnOffCompton_CutEle5mm", "TurnOffCompton_CutEle10mm", "TurnOffCompton_CutEle50mm", "TurnOffCompton_CutEle100mm"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["turnOffCompton_ProdCutElectron"]    , eos + "/" + "R80To100_turnOffCompton_ProdCutElectron_v2"    )
+    exit()
+
+    # extra
+    tags = ["nominal", "Turn_off_Compton", "Turn_off_Conversion", "Turn_off_both"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["extraStudy"]    , eos + "/" + "R80To100_extra_study"    )
+    exit()
+
+    # compton
+    tags = ["nominal", "Turn_off_Compton", "Turn_off_both", "ProdCut_electron"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["turnOffCompton"]    , eos + "/" + "R80To100_TurnOffCompton_comparison"    )
+    exit()
 
     # prodCut study
     tags = ["nominal", "ProdCut_electron", "ProdCut_photon", "ProdCut_egamma"]

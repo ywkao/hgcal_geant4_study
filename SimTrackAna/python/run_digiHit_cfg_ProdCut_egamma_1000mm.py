@@ -6,7 +6,7 @@ process = cms.Process('PROD',Phase2C11I13M9)
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.Geometry.GeometryExtended2026D86Reco_cff')
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 10 )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
 
 #import argparse
 #parser = argparse.ArgumentParser()

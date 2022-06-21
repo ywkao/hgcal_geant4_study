@@ -37,6 +37,42 @@ input_files = {
         "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_photon_1000mm.root",
         "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_egamma_1000mm.root",
     ],
+
+    "turnOffCompton" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_v2.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_turnOffGammaConversion.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_ProdCut_electron_100mm.root",
+    ],
+
+    "extraStudy" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_v2.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffGammaConversion.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_turnOffGammaConversion.root",
+    ],
+
+    "turnOffCompton_ProdCutElectron" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_v3.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_1mm.root",
+        #"rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_5mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_10mm.root",
+        #"rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_50mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_100mm.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_1000mm.root",
+    ],
+
+    "pcbStudy" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_turnOffComptionScattering_v3.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_airPCB_turnOffComptionScattering.root",
+        "rootfiles/geantoutput_D86_R80To100_E100_PCB.root",
+        #"rootfiles/geantoutput_D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_5mm.root",
+        #"rootfiles/geantoutput_D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_10mm.root",
+        #"rootfiles/geantoutput_D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_100mm.root",
+    ],
+
 }
 
 test_beam_result = {
