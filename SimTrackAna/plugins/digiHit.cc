@@ -303,7 +303,9 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
         // dE/dx weights from https://github.com/cms-sw/cmssw/blob/master/RecoLocalCalo/HGCalRecProducers/python/HGCalRecHit_cfi.py#L12-L60
         std::vector<double> weightsPerLayer_V16 = { 0., 5.55, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 13.54, 12.86, 13.54, 12.86, 13.54, 12.86, 13.54, 12.86,
-                                                    58.63, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 83.08, 83.08, 83.43, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61};
+                                                    58.63, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 83.08, 83.08, 83.43, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61 };
+
+        std::vector<double> x_D86 = { 0., 0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659 };
 
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
         edm::ESGetToken<SetupData, SetupRecord> setupToken_;
@@ -489,13 +491,22 @@ DigiSim::~DigiSim(){}
 
 double DigiSim::get_additional_correction(int layer)
 {
-    double correction = 1.;
+    //double correction = 1.;
     // start the correction from 3rd layer & consider only odd layers
-    if( layer%2==1 && layer>2 ) {
-        correction = 1. - 0.5 * (1. - weightsPerLayer_V16[layer] / weightsPerLayer_V16[layer-1] );
+    //if( layer%2==1 && layer>2 ) {
+    //    correction = 1. - 0.5 * (1. - weightsPerLayer_V16[layer] / weightsPerLayer_V16[layer-1] );
+    //    return correction;
+    //} else {
+    //    return correction;
+    //}
+
+    if(layer<=26) {
+        double width = x_D86[layer] - x_D86[layer-1];
+        double dEdx_weight = weightsPerLayer_V16[layer]; 
+        double correction = 1. / (width*dEdx_weight);
         return correction;
     } else {
-        return correction;
+        return 1.;
     }
 }
 
