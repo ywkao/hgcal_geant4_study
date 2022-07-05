@@ -503,7 +503,9 @@ double DigiSim::get_additional_correction(int layer)
     if(layer<=26) {
         double width = x_D86[layer] - x_D86[layer-1];
         double dEdx_weight = weightsPerLayer_V16[layer]; 
-        double correction = 1. / (width*dEdx_weight);
+        //double correction = 1. / (width*dEdx_weight);
+        //double correction = dEdx_weight / width;
+        double correction = 1. / width;
         return correction;
     } else {
         return 1.;
