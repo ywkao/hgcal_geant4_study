@@ -13,8 +13,8 @@ ROOT.gStyle.SetStatW(my_stat_pos[2])
 ROOT.gStyle.SetStatH(my_stat_pos[3])
 ROOT.gStyle.SetTextSize(1.2)
 
-import plot_utils as pu
-import MetaData as m
+import toolbox.plot_utils as pu
+import toolbox.MetaData as m
 
 flag_add_reference = True
 flag_add_reference = False
@@ -195,6 +195,10 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 else:    gr.Draw('lp;same')
                 legend.AddEntry(gr, label[tags[i]], "lp")
 
+                if i==0 and 'MIP' in varName:
+                    gr.SetMaximum(1060.)
+                    gr.SetMaximum(6000.)
+
                 if i+1 == len(v_gr):
                     annotate()
                     legend.Draw("same")
@@ -257,11 +261,32 @@ def run(myfin, mydin):
 
 #--------------------------------------------------
 
+X0 = {
+    "uniform" : [1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,16.,17.,18.,19.,20.,21.,22.,23.,24.,25.,26.],
+    "alternative" : [0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659],
+}
+
 if __name__ == "__main__":
     myRootfiles, specified_directory, label = [], "", {}
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kGreen, ROOT.kRed]
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen]
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta, ROOT.kBlue-7, ROOT.kRed-7]
+    colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.kMagenta, ROOT.kRed-7]
+
+    tags = ["E300", "E100", "E20"]
+    for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    run( m.input_files["R80To100"], eos + "/" + "R80To100_v2" )
+    exit()
+
+    tags = ["nominal", "inverse_dEdx_X0", "dEdx_divided_X0", "inverse_X0", "applied_dEdx"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["X0_corrections"]    , eos + "/" + "R80To100_study_with_corrections_v3"    )
+    exit()
+
+    tags = ["nominal", "with_dEdx_weight"]
+    for tag in tags: label[tag] = tag
+    run( m.input_files["dEdxStudy"]    , eos + "/" + "R80To100_study_with_dEdx_weights"    )
+    exit()
 
     #tags = ["nominal", "Turn_off_Compton", "Replace_PCB_by_Air", "TurnOffCompton_CutEle5mm", "TurnOffCompton_CutEle10mm"]
     #tags = ["nominal", "Turn_off_Compton", "TOC+airPCB", "TOC+airPCB+CutEle5mm", "TOC+airPCB+CutEle10mm"]

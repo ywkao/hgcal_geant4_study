@@ -73,6 +73,18 @@ input_files = {
         #"rootfiles/geantoutput_D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_100mm.root",
     ],
 
+    "dEdxStudy" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles_dEdx_weights/geantoutput_D86_R80To100_E100_nominal.root",
+    ],
+
+    "X0_corrections" : [
+        "rootfiles/geantoutput_D86_R80To100_E100_nominal.root",
+        "rootfiles_dEdx_weights/geantoutput_D86_R80To100_E100_nominal_weighted_dEdx_X0.root",
+        "rootfiles_dEdx_weights/geantoutput_D86_R80To100_E100_nominal_weighted_dEdx_divided_X0.root",
+        "rootfiles_dEdx_weights/geantoutput_D86_R80To100_E100_nominal_weighted_X0.root",
+        "rootfiles_dEdx_weights/geantoutput_D86_R80To100_E100_nominal_weighted_dEdx.root",
+    ],
 }
 
 test_beam_result = {
