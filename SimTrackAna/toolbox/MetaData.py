@@ -8,9 +8,9 @@ input_files = {
     ],
 
     "R80To100" : [
-        "rootfiles/geantoutput_D86_R80To100_E300.root",
-        "rootfiles/geantoutput_D86_R80To100_E100.root",
-        "rootfiles/geantoutput_D86_R80To100_E20.root",
+        "rootfiles_original/geantoutput_D86_R80To100_E300.root",
+        "rootfiles_original/geantoutput_D86_R80To100_E100.root",
+        "rootfiles_original/geantoutput_D86_R80To100_E20.root",
     ],
 
     "muon" : [

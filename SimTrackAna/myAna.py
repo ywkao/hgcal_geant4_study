@@ -16,8 +16,8 @@ ROOT.gStyle.SetTextSize(1.2)
 import toolbox.plot_utils as pu
 import toolbox.MetaData as m
 
-flag_add_reference = True
 flag_add_reference = False
+flag_add_reference = True
 
 eos = "./eos"
 #rootfile = eos + "/" + "geantoutput_v3p1.root"
@@ -92,7 +92,7 @@ def make_plot(varName, bool_make_logitudinal_profile):
 
         v_hists = []
         if bool_single_figures:
-            v_hists = pu.load_single_histogram(fin, varName)
+            v_hists.append( pu.load_single_histogram(fin, varName) )
             v_v_hists.append(v_hists)
         else:
             v_hists = pu.load_histograms(fin, varName, processes)
@@ -112,9 +112,9 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 draw_2D_ntuple("hnew"+"_"+tags[i]+"_w120", v_hists, "is_Silicon_w120>0", ROOT.kRed)
             else: continue # no matched situation
 
-            output = dir_output + "/" + varName + "_" + tags[i]
+            output = dir_output + varName + "_" + tags[i]
             c1.SaveAs(output + ".png")
-            c1.SaveAs(output + ".pdf")
+            #c1.SaveAs(output + ".pdf")
 
     #++++++++++++++++++++++++++++++
     # Longitdinal profile
@@ -136,6 +136,8 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 gr.SetMarkerColor(ROOT.kBlue)
                 gr.SetLineColor(ROOT.kBlue)
             v_gr.append(gr)
+
+            continue
 
             # 26 plots in one
             c2.cd()
@@ -183,21 +185,20 @@ def make_plot(varName, bool_make_logitudinal_profile):
         c1.cd()
         #legend = ROOT.TLegend(0.67, 0.65, 0.87, 0.85)
         #legend = ROOT.TLegend(0.65, 0.65, 0.85, 0.85)
-        legend = ROOT.TLegend(0.60, 0.65, 0.85, 0.85)
-        legend.SetLineColor(0)
-        legend.SetTextSize(0.025)
-        for i, gr in enumerate(v_gr):
 
-            if not flag_add_reference:
-                print i
+        if not flag_add_reference:
+            legend = ROOT.TLegend(0.70, 0.65, 0.85, 0.85)
+            legend.SetLineColor(0)
+            legend.SetTextSize(0.04)
 
+            for i, gr in enumerate(v_gr):
                 if i==0: gr.Draw("alp")
                 else:    gr.Draw('lp;same')
                 legend.AddEntry(gr, label[tags[i]], "lp")
 
                 if i==0 and 'MIP' in varName:
                     gr.SetMaximum(1060.)
-                    gr.SetMaximum(6000.)
+                    gr.SetMaximum(3000.)
 
                 if i+1 == len(v_gr):
                     annotate()
@@ -207,7 +208,11 @@ def make_plot(varName, bool_make_logitudinal_profile):
                     c1.SaveAs(output + ".png")
                     c1.SaveAs(output + ".pdf")
 
-            else:
+        else:
+            legend = ROOT.TLegend(0.60, 0.65, 0.85, 0.85)
+            legend.SetLineColor(0)
+            legend.SetTextSize(0.025)
+            for i, gr in enumerate(v_gr):
                 gr.Draw("alp")
                 v_gr_ref_mc[i].Draw('lp;same')
                 v_gr_ref_data[i].Draw('lp;same')
@@ -224,6 +229,86 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 c1.SaveAs(output + ".png")
                 c1.SaveAs(output + ".pdf")
 
+def make_simple_plot():
+    global myRootfiles, specified_directory, xRanges, xLatexs
+    #++++++++++++++++++++++++++++++
+    # Load histograms
+    #++++++++++++++++++++++++++++++
+    vf, v_v_hists = [], []
+    for rootfile in myRootfiles:
+        print ">>> rootfile", rootfile
+        fin = ROOT.TFile.Open(rootfile, "R")
+        vf.append(fin)
+
+        v_hists = []
+        v_hists.append( pu.load_single_histogram(fin, "total_MIP_odd")  )
+        v_hists.append( pu.load_single_histogram(fin, "total_MIP_even") )
+        v_v_hists.append(v_hists)
+
+    c1.cd()
+    for i, v_hists in enumerate(v_v_hists):
+        sigmaEoverE = []
+        max_values = []
+        max_values.append(v_hists[0].GetMaximum())
+        max_values.append(v_hists[1].GetMaximum())
+        max_value = max(max_values)
+
+        # Edep odd layers
+        v_hists[0].SetTitle("")
+        v_hists[0].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
+        v_hists[0].GetXaxis().SetTitleOffset(1.1)
+        v_hists[0].GetXaxis().SetTitle("Deposited energy [MIP]")
+        v_hists[0].GetYaxis().SetTitle("Entries")
+        v_hists[0].SetMaximum(max_value*1.2)
+        v_hists[0].SetStats(0)
+        v_hists[0].SetLineWidth(2)
+        v_hists[0].SetLineColor(ROOT.kBlue)
+        v_hists[0].Fit("gaus", "0", "", fitRanges[0][i][0], fitRanges[0][i][1])
+        pu.record_fit_result( v_hists[0].GetListOfFunctions().FindObject("gaus") )
+        v_hists[0].Draw()
+        f0 = v_hists[0].GetFunction("gaus")
+        f0.Draw("same")
+
+        func = v_hists[0].GetListOfFunctions().FindObject("gaus")
+        fit_mean  = func.GetParameter(1)
+        fit_sigma = func.GetParameter(2)
+        sigmaEoverE.append(fit_sigma/fit_mean)
+
+        # Edep even layers
+        v_hists[1].SetTitle("")
+        v_hists[1].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
+        v_hists[1].SetStats(0)
+        v_hists[1].SetLineWidth(2)
+        v_hists[1].SetLineColor(ROOT.kBlack)
+        v_hists[1].Fit("gaus", "0", "", fitRanges[1][i][0], fitRanges[1][i][1])
+        pu.record_fit_result( v_hists[1].GetListOfFunctions().FindObject("gaus") )
+
+        v_hists[1].Draw("same")
+        f1 = v_hists[1].GetFunction("gaus")
+        f1.Draw("same")
+
+        func = v_hists[1].GetListOfFunctions().FindObject("gaus")
+        fit_mean  = func.GetParameter(1)
+        fit_sigma = func.GetParameter(2)
+        sigmaEoverE.append(fit_sigma/fit_mean)
+
+        latex = ROOT.TLatex()
+        latex.SetNDC()
+        latex.SetTextFont(43)
+        latex.SetTextAlign(11)
+        latex.SetTextSize(24)
+
+        latex.SetTextColor(ROOT.kBlue)
+        latex.DrawLatex( xLatexs[i], 0.70, "#sigma#left(E_{odd}#right) / #bar{E}_{odd} = %.4f" % sigmaEoverE[0] )
+        latex.SetTextColor(ROOT.kBlack)
+        latex.DrawLatex( xLatexs[i], 0.60, "#sigma#left(E_{even}#right) / #bar{E}_{even} = %.4f" % sigmaEoverE[1] )
+
+        c1.Update()
+        annotate()
+        output = specified_directory + "/" + "h_Edep_odd_even_" + tags[i]
+        c1.SaveAs(output + ".png")
+        c1.SaveAs(output + ".pdf")
+
 #--------------------------------------------------
 
 def run(myfin, mydin):
@@ -234,7 +319,11 @@ def run(myfin, mydin):
     create_directory( specified_directory )
     #make_plot( "hEta", False )
     #make_plot( "hPhi", False )
-    make_plot( "nt_hit_position", False )
+
+    #make_plot( "nt_hit_position", False )
+    make_simple_plot()
+
+    return
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
@@ -273,14 +362,22 @@ if __name__ == "__main__":
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta, ROOT.kBlue-7, ROOT.kRed-7]
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.kMagenta, ROOT.kRed-7]
 
+    xLatexs = [0.20, 0.55, 0.55]
+    xRanges = [[0, 20000], [1000, 10000], [0, 4000]]
+    fitRanges = [
+            #[ [0, 20000], [0, 20000], [0, 20000] ], # odd
+            #[ [0, 20000], [0, 20000], [0, 20000] ]  # even
+            [ [12967.34, 14509.10], [4244.69, 5026.41], [768.00, 1121.41] ], # odd
+            [ [11600.52, 12917.76], [3768.06, 4477.40], [677.49, 996.03] ],  # even
+    ]
     tags = ["E300", "E100", "E20"]
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To100"], eos + "/" + "R80To100_v2" )
+    run( m.input_files["R80To100"], eos + "/" + "R80To100_v4p3" )
     exit()
 
     tags = ["nominal", "inverse_dEdx_X0", "dEdx_divided_X0", "inverse_X0", "applied_dEdx"]
     for tag in tags: label[tag] = tag
-    run( m.input_files["X0_corrections"]    , eos + "/" + "R80To100_study_with_corrections_v3"    )
+    run( m.input_files["X0_corrections"]    , eos + "/" + "R80To100_study_with_corrections_v2"    )
     exit()
 
     tags = ["nominal", "with_dEdx_weight"]

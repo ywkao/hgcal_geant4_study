@@ -62,7 +62,7 @@ if __name__ == "__main__":
     #for f in glob.glob("python/run_digiHit_cfg_*1000*"):
     #for f in glob.glob("python/test_digiHit_cfg*"):
     #for f in glob.glob("python/test_digiHit_cfg*muon*"):
-    for f in glob.glob("python/test_digiHit_cfg_D86_R35To60_E*"):
+    for f in glob.glob("python/test_digiHit_cfg_D86_R80To100_E*"):
         tag = f.split('_cfg_')[1].split('.')[0]
         command = "time cmsRun %s 2>&1 | tee tmp/log_%s.txt" % (f, tag)
         #command = "sed -n '18p' %s" % f

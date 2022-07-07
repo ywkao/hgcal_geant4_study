@@ -289,6 +289,9 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *total_SIM_200mum_[26];
         TH1D *total_SIM_300mum_[26];
 
+        TH1D *total_MIP_even;
+        TH1D *total_MIP_odd;
+
         // multiplicity
         TH1D *multiplicity_digis_total_[26];
         TH1D *multiplicity_digis_120mum_[26];
@@ -365,6 +368,10 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     //hEta = fs->make<TH1D>("hEta" , "hEta" , 20 , -5. , 5.);
     hEta = fs->make<TH1D>("hEta" , "hEta" , 20 ,  1. , 3.);
     hPhi = fs->make<TH1D>("hPhi" , "hPhi" , 20 , -3. , 3.);
+
+    total_MIP_odd = fs->make<TH1D>("total_MIP_odd" , "total_MIP_odd" , 200 , 0. , 20000.);
+    total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 200 , 0. , 20000.);
+
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
         // total energy & multiplicity
@@ -491,6 +498,9 @@ DigiSim::~DigiSim(){}
 
 double DigiSim::get_additional_correction(int layer)
 {
+    // no correction
+    return 1.;
+
     //double correction = 1.;
     // start the correction from 3rd layer & consider only odd layers
     //if( layer%2==1 && layer>2 ) {
@@ -520,6 +530,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     using namespace edm;
 
     int counter = 0;
+    double total_energy_mip_odd  = 0.;
+    double total_energy_mip_even = 0.;
     std::vector<double> total_energy_adc_total ;
     std::vector<double> total_energy_mip_total ;
     std::vector<double> total_energy_mip_coarse ;
@@ -839,6 +851,11 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     hEta->Fill(eta);
                     hPhi->Fill(phi);
                     // individual hit info
+                    if(idx%2==0)
+                        total_energy_mip_odd += amplitude;
+                    else
+                        total_energy_mip_even += amplitude;
+
                     if(dinfo.layer <= 26) {
                         ADC_total_     [idx] -> Fill(adc);
                         MIP_total_     [idx] -> Fill(amplitude);
@@ -939,6 +956,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         multiplicity_digis_300mum_   [idx] -> Fill( num_digis_300mum        [idx] );
         multiplicity_simhits_300mum_ [idx] -> Fill( num_simhits_300mum      [idx] );
     }
+
+    total_MIP_odd  -> Fill(total_energy_mip_odd);
+    total_MIP_even -> Fill(total_energy_mip_even);
     //}}}
 } // end of analyze
 
