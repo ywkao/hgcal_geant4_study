@@ -136,6 +136,9 @@ def record_fit_result(func):
     fitError_const = func.GetParError(0)
     fitError_mean  = func.GetParError(1)
     fitError_sigma = func.GetParError(2)
+
+    return fit_mean, fit_sigma
+
     print ">>> result:", fit_const, fit_mean, fit_sigma 
     print ">>> fit error:", fitError_const, fitError_mean, fitError_sigma 
     

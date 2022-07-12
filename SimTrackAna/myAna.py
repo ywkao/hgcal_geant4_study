@@ -264,14 +264,10 @@ def make_simple_plot():
         v_hists[0].SetLineWidth(2)
         v_hists[0].SetLineColor(ROOT.kBlue)
         v_hists[0].Fit("gaus", "0", "", fitRanges[0][i][0], fitRanges[0][i][1])
-        pu.record_fit_result( v_hists[0].GetListOfFunctions().FindObject("gaus") )
         v_hists[0].Draw()
-        f0 = v_hists[0].GetFunction("gaus")
-        f0.Draw("same")
+        v_hists[0].GetFunction("gaus").Draw("same")
 
-        func = v_hists[0].GetListOfFunctions().FindObject("gaus")
-        fit_mean  = func.GetParameter(1)
-        fit_sigma = func.GetParameter(2)
+        fit_mean, fit_sigma = pu.record_fit_result( v_hists[0].GetListOfFunctions().FindObject("gaus") )
         sigmaEoverE.append(fit_sigma/fit_mean)
 
         # Edep even layers
@@ -281,17 +277,13 @@ def make_simple_plot():
         v_hists[1].SetLineWidth(2)
         v_hists[1].SetLineColor(ROOT.kBlack)
         v_hists[1].Fit("gaus", "0", "", fitRanges[1][i][0], fitRanges[1][i][1])
-        pu.record_fit_result( v_hists[1].GetListOfFunctions().FindObject("gaus") )
-
         v_hists[1].Draw("same")
-        f1 = v_hists[1].GetFunction("gaus")
-        f1.Draw("same")
+        v_hists[1].GetFunction("gaus").Draw("same")
 
-        func = v_hists[1].GetListOfFunctions().FindObject("gaus")
-        fit_mean  = func.GetParameter(1)
-        fit_sigma = func.GetParameter(2)
+        fit_mean, fit_sigma = pu.record_fit_result( v_hists[1].GetListOfFunctions().FindObject("gaus") )
         sigmaEoverE.append(fit_sigma/fit_mean)
 
+        # result
         latex = ROOT.TLatex()
         latex.SetNDC()
         latex.SetTextFont(43)
@@ -317,7 +309,7 @@ def run(myfin, mydin):
     specified_directory = mydin
 
     create_directory( specified_directory )
-    #make_plot( "hEta", False )
+    make_plot( "hEta", False )
     #make_plot( "hPhi", False )
 
     #make_plot( "nt_hit_position", False )

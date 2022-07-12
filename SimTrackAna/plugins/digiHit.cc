@@ -369,8 +369,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     hEta = fs->make<TH1D>("hEta" , "hEta" , 20 ,  1. , 3.);
     hPhi = fs->make<TH1D>("hPhi" , "hPhi" , 20 , -3. , 3.);
 
-    total_MIP_odd = fs->make<TH1D>("total_MIP_odd" , "total_MIP_odd" , 200 , 0. , 20000.);
-    total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 200 , 0. , 20000.);
+    total_MIP_odd = fs->make<TH1D>("total_MIP_odd" , "total_MIP_odd" , 200 , 0. , 30000.);
+    total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 200 , 0. , 30000.);
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
