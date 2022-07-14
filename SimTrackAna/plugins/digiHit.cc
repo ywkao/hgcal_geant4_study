@@ -289,8 +289,10 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *total_SIM_200mum_[26];
         TH1D *total_SIM_300mum_[26];
 
-        TH1D *total_MIP_even;
         TH1D *total_MIP_odd;
+        TH1D *total_MIP_even;
+        TH1D *total_SIM_even;
+        TH1D *total_SIM_odd;
 
         // multiplicity
         TH1D *multiplicity_digis_total_[26];
@@ -371,6 +373,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 
     total_MIP_odd = fs->make<TH1D>("total_MIP_odd" , "total_MIP_odd" , 200 , 0. , 30000.);
     total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 200 , 0. , 30000.);
+    total_SIM_odd  = fs->make<TH1D>("total_SIM_odd"  , "total_SIM_odd" , 100 , 0. , 10.);
+    total_SIM_even = fs->make<TH1D>("total_SIM_even" , "total_SIM_even" , 100 , 0. , 10.);
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
@@ -532,6 +536,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     int counter = 0;
     double total_energy_mip_odd  = 0.;
     double total_energy_mip_even = 0.;
+    double total_energy_sim_odd  = 0.;
+    double total_energy_sim_even = 0.;
     std::vector<double> total_energy_adc_total ;
     std::vector<double> total_energy_mip_total ;
     std::vector<double> total_energy_mip_coarse ;
@@ -661,7 +667,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         if(rhtools_.isSilicon(detId)){
             HGCSiliconDetId id(itHit->id());
-            double energy = itHit->energy()*1.e6; // in kev
+            double energy = itHit->energy()*1.e6; // from GeV to keV
 
             if(nameDetector_ == "HGCalEESensitive"){
                 hELossEE->Fill(energy);
@@ -825,7 +831,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 double    eta        = dinfo.eta;
                 double    phi        = dinfo.phi;
                 double    amplitude  = (*itr_mydigi).second.amplitude;
-                double    energy     = esum.eTime[0];
+                double    energy     = esum.eTime[0] / 1.e3; // MeV
                 int       idx        = dinfo.layer-1;
                 int       cellType   = (*itr_sim).second.first.type;
                 bool      is_coarse  = cellType==HGCSiliconDetId::HGCalCoarseThin || cellType==HGCSiliconDetId::HGCalCoarseThick;
@@ -833,6 +839,10 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                 bool selection_on_mips = amplitude > 0.5;
                 if(!selection_on_mips) continue;
+
+                //bool selectoin_on_eta = eta > 1.6 && eta < 2.0;
+                //bool selectoin_on_eta = eta > 1.8;
+                //if(!selectoin_on_eta) continue;
 
                 if(id_simhit==id_digihit){
                     double dEdx_weights = get_additional_correction(idx+1); // layer = idx+1
@@ -851,10 +861,13 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     hEta->Fill(eta);
                     hPhi->Fill(phi);
                     // individual hit info
-                    if(idx%2==0)
+                    if(idx%2==0) {
                         total_energy_mip_odd += amplitude;
-                    else
+                        total_energy_sim_odd += energy;
+                    } else {
                         total_energy_mip_even += amplitude;
+                        total_energy_sim_even += energy;
+                    }
 
                     if(dinfo.layer <= 26) {
                         ADC_total_     [idx] -> Fill(adc);
@@ -959,6 +972,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     total_MIP_odd  -> Fill(total_energy_mip_odd);
     total_MIP_even -> Fill(total_energy_mip_even);
+    total_SIM_odd  -> Fill(total_energy_sim_odd);
+    total_SIM_even -> Fill(total_energy_sim_even);
     //}}}
 } // end of analyze
 

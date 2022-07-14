@@ -25,6 +25,10 @@ function copy()
 # main
 #++++++++++++++++++++++++++++++
 
+#create "D86_R80To150_E20"
+#create "D86_R80To150_E100"
+#create "D86_R80To150_E300"
+
 #create D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_10mm
 #create D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_5mm
 #create D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_100mm
@@ -54,4 +58,3 @@ create "D86_R35To60_E300"
 create "D86_R80To100_E20"
 create "D86_R80To100_E100"
 create "D86_R80To100_E300"
-

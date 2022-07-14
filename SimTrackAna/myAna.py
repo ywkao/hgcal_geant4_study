@@ -16,8 +16,8 @@ ROOT.gStyle.SetTextSize(1.2)
 import toolbox.plot_utils as pu
 import toolbox.MetaData as m
 
-flag_add_reference = False
 flag_add_reference = True
+flag_add_reference = False
 
 eos = "./eos"
 #rootfile = eos + "/" + "geantoutput_v3p1.root"
@@ -315,8 +315,6 @@ def run(myfin, mydin):
     #make_plot( "nt_hit_position", False )
     make_simple_plot()
 
-    return
-
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
     thickness = ["total"]
@@ -324,6 +322,7 @@ def run(myfin, mydin):
     for t in thickness:
         make_plot( "multiplicity_simhits_%s" % t , True  )
         make_plot( "total_MIP_%s"            % t , True  )
+        make_plot( "total_SIM_%s"            % t , True  )
         continue
 
         make_plot( "total_ADC_%s"            % t , True  )
@@ -364,7 +363,8 @@ if __name__ == "__main__":
     ]
     tags = ["E300", "E100", "E20"]
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To100"], eos + "/" + "R80To100_v4p3" )
+    #run( m.input_files["R80To100"], eos + "/" + "R80To100_v4p3" )
+    run( m.input_files["R80To150"], eos + "/" + "R80To150_v2p2" )
     exit()
 
     tags = ["nominal", "inverse_dEdx_X0", "dEdx_divided_X0", "inverse_X0", "applied_dEdx"]

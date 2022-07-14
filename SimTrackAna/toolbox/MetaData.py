@@ -13,6 +13,15 @@ input_files = {
         "rootfiles_original/geantoutput_D86_R80To100_E20.root",
     ],
 
+    "R80To150" : [
+        "rootfiles/geantoutput_D86_R80To150_E300.root",
+        "rootfiles/geantoutput_D86_R80To150_E100.root",
+        "rootfiles/geantoutput_D86_R80To150_E20.root",
+        #"rootfiles_original/geantoutput_D86_R80To150_E300.root",
+        #"rootfiles_original/geantoutput_D86_R80To150_E100.root",
+        #"rootfiles_original/geantoutput_D86_R80To150_E20.root",
+    ],
+
     "muon" : [
         "rootfiles/geantoutput_D86_muon_E100.root",
     ],
