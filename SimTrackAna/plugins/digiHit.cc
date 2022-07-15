@@ -840,9 +840,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 bool selection_on_mips = amplitude > 0.5;
                 if(!selection_on_mips) continue;
 
-                //bool selectoin_on_eta = eta > 1.6 && eta < 2.0;
                 //bool selectoin_on_eta = eta > 1.8;
-                //if(!selectoin_on_eta) continue;
+                bool selectoin_on_eta = eta > 1.6 && eta < 2.0;
+                if(!selectoin_on_eta) continue;
 
                 if(id_simhit==id_digihit){
                     double dEdx_weights = get_additional_correction(idx+1); // layer = idx+1

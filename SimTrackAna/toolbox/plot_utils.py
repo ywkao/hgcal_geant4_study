@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os, subprocess
 import math
 import copy
 import array
@@ -6,6 +7,30 @@ import ROOT
 ROOT.gROOT.SetBatch(True)
 
 import MetaData as m
+
+def annotate(rshift=0):
+    latex = ROOT.TLatex()
+    latex.SetNDC()
+    latex.SetTextFont(43)
+    latex.SetTextAlign(11)
+    #latex.SetTextSize(24)
+    latex.SetTextSize(20)
+    latex.DrawLatex( 0.12, 0.912, "#bf{CMS} #it{work in progress}" )
+    latex.DrawLatex( 0.56+rshift, 0.912, "D86 Simulation with 1,000 events" )
+    #latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
+    #latex.DrawLatex( 0.69+rshift, 0.912, "%s fb^{-1} (13 TeV)" % str(lumi["RunII"]) )
+
+def draw_2D_ntuple(hname, v_hists, selection, color, is_first_plot=False):
+    if is_first_plot: v_hists[0].Draw("r:z>>%s(2500, 300, 550, 3000, 0, 300)" % hname, selection)
+    else:             v_hists[0].Draw("r:z>>%s(2500, 300, 550, 3000, 0, 300)" % hname, selection, "same")
+
+    hnew = ROOT.gDirectory.Get(hname)
+    hnew.SetTitle("")
+    hnew.GetXaxis().SetTitle("Z [cm]")
+    hnew.GetYaxis().SetTitle("Rxy [cm]")
+    hnew.SetMarkerColor(color)
+    if is_first_plot: hnew.Draw()
+    else:             hnew.Draw("same")
 
 def load_single_histogram(fin, varName):
     histName = "prodEE_DigiSim/" + varName
@@ -21,7 +46,7 @@ def load_histograms(fin, varName, processes):
 
     return v_hists
 
-def set_graph(gr, ytitle, xtitle, color):
+def set_graph(gr, xtitle, ytitle, color):
     gr.SetTitle("")
     gr.SetLineColor(color)
     gr.SetLineWidth(2)
@@ -98,11 +123,12 @@ x_D86 = [0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.47
 def get_graph(varName, v_hists, is_number_of_hits = False):
     lx = x_D86
     ly = [h.GetMean() for h in v_hists]
+    lex = [0. for i in range(len(v_hists))]
     ley = [h.GetMeanError() for h in v_hists]
-    gr = get_graph_from_list(varName, lx, ly, ley, is_number_of_hits)
+    gr = get_graph_from_list("Layer depth [ X_{0} ]", ytitles[varName], lx, ly, lex, ley, ROOT.kBlue, is_number_of_hits)
     return gr
 
-def get_graph_from_list(varName, lx, ly, ley, normalize_to_unity = False):
+def get_graph_from_list(xtitle, ytitle, lx, ly, lex, ley, color, normalize_to_unity = False):
     n = len(lx) 
     x, ex = array.array('d'), array.array('d')
     y, ey = array.array('d'), array.array('d')
@@ -115,11 +141,11 @@ def get_graph_from_list(varName, lx, ly, ley, normalize_to_unity = False):
     for i, ele in enumerate(lx):
         x.append(ele)
         y.append(ly[i])
-        ex.append(0.)
+        ex.append(lex[i])
         ey.append(ley[i])
 
     gr = ROOT.TGraphErrors(n, x, y, ex, ey)
-    set_graph(gr, ytitles[varName], "Layer depth [ X_{0} ]", ROOT.kBlue)
+    set_graph(gr, xtitle, ytitle, color)
     if normalize_to_unity: gr.SetMaximum(0.12)
 
     #print ">>> get_graph_from_list::total =", total
@@ -127,8 +153,9 @@ def get_graph_from_list(varName, lx, ly, ley, normalize_to_unity = False):
     return gr
 
 
-def record_fit_result(func):
-    #global d_fit_const, d_fit_mean, d_fit_sigma
+fit_result = {}
+def record_fit_result(myTags, func):
+    global fit_result
 
     fit_const = func.GetParameter(0)
     fit_mean  = func.GetParameter(1)
@@ -137,14 +164,20 @@ def record_fit_result(func):
     fitError_mean  = func.GetParError(1)
     fitError_sigma = func.GetParError(2)
 
+    tag = myTags[0] # beam energy
+    label = myTags[1] # odd / even
+
+    if not tag in fit_result.keys():
+        fit_result[tag] = {}
+
+    fit_result[tag][label] = {}
+    fit_result[tag][label]["mean"] = fit_mean
+    fit_result[tag][label]["error_mean"] = fitError_mean
+    fit_result[tag][label]["sigma"] = fit_sigma
+    fit_result[tag][label]["error_sigma"] = fitError_sigma
+
     return fit_mean, fit_sigma
 
     print ">>> result:", fit_const, fit_mean, fit_sigma 
     print ">>> fit error:", fitError_const, fitError_mean, fitError_sigma 
     
-    #d_fit_const["central"].append( func.GetParameter(0) )
-    #d_fit_mean ["central"].append( func.GetParameter(1) )
-    #d_fit_sigma["central"].append( func.GetParameter(2) )
-    #d_fit_const[ "error" ].append( func.GetParError(0)  )
-    #d_fit_mean [ "error" ].append( func.GetParError(1)  )
-    #d_fit_sigma[ "error" ].append( func.GetParError(2)  )

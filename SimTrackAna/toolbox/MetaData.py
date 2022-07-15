@@ -1,5 +1,43 @@
 #!/usr/bin/env python2
 
+# E = 300, 100, 20
+fit_constraints_v1 = {
+    "MIP" : {
+        "xRanges" : [[11000, 17000], [3000, 9000], [500, 6500]],
+        "fitRanges" : [
+                [ [12967.34, 14509.10], [4244.69, 5026.41], [775.00, 1075] ], # odd
+                [ [11600.52, 12917.76], [3768.06, 4477.40], [735, 980] ],  # even
+        ]
+    },
+
+    "SIM" : {
+        "xRanges" : [[0, 10], [0, 10], [0, 10]],
+        "fitRanges" : [
+            [[0, 10], [0, 10], [0, 10]], #odd
+            [[0, 10], [0, 10], [0, 10]], #even
+        ]
+    },
+}
+
+# E = 225, 175, 60
+fit_constraints_v2 = {
+    "MIP" : {
+        "xRanges" : [[8000, 14000], [6000, 12000], [1000, 7000]],
+        "fitRanges" :  [
+                [ [9900, 11000], [7500, 8500], [2500, 3500] ], # odd
+                [ [8750, 9850 ], [6750, 7750], [2250, 2750] ]  # even
+        ]
+    },
+
+    "SIM" : {
+        "xRanges" : [[0, 10], [0, 10], [0, 10]],
+        "fitRanges" : [
+            [[0, 10], [0, 10], [0, 10]], #odd
+            [[0, 10], [0, 10], [0, 10]], #even
+        ]
+    },
+}
+
 input_files = {
     "R35To60" : [
         "rootfiles/geantoutput_D86_R35To60_E300.root",
@@ -20,6 +58,12 @@ input_files = {
         #"rootfiles_original/geantoutput_D86_R80To150_E300.root",
         #"rootfiles_original/geantoutput_D86_R80To150_E100.root",
         #"rootfiles_original/geantoutput_D86_R80To150_E20.root",
+    ],
+
+    "R80To150_v2" : [
+        "rootfiles/geantoutput_D86_R80To150_E225.root",
+        "rootfiles/geantoutput_D86_R80To150_E175.root",
+        "rootfiles/geantoutput_D86_R80To150_E60.root",
     ],
 
     "muon" : [

@@ -25,6 +25,9 @@ function copy()
 # main
 #++++++++++++++++++++++++++++++
 
+#create "D86_R80To150_E60"
+#create "D86_R80To150_E175"
+#create "D86_R80To150_E225"
 #create "D86_R80To150_E20"
 #create "D86_R80To150_E100"
 #create "D86_R80To150_E300"
