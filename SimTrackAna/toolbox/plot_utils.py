@@ -161,6 +161,7 @@ def reset_containers():
 
 fit_result = {}
 def record_fit_result(myTags, func):
+    print ">>> in record_fit_result...."
     global fit_result
 
     fit_const = func.GetParameter(0)
@@ -170,17 +171,21 @@ def record_fit_result(myTags, func):
     fitError_mean  = func.GetParError(1)
     fitError_sigma = func.GetParError(2)
 
-    tag = myTags[0] # beam energy
-    label = myTags[1] # odd / even
+    energyType = myTags[0] # MIP / SIM
+    tag = myTags[1] # beam energy
+    label = myTags[2] # odd / even / set0 / set1 / set2
 
-    if not tag in fit_result.keys():
-        fit_result[tag] = {}
+    if not energyType in fit_result.keys():
+        fit_result[energyType] = {}
 
-    fit_result[tag][label] = {}
-    fit_result[tag][label]["mean"] = fit_mean
-    fit_result[tag][label]["error_mean"] = fitError_mean
-    fit_result[tag][label]["sigma"] = fit_sigma
-    fit_result[tag][label]["error_sigma"] = fitError_sigma
+    if not label in fit_result[energyType].keys():
+        fit_result[energyType][label] = {}
+
+    fit_result[energyType][label][tag] = {}
+    fit_result[energyType][label][tag]["mean"] = fit_mean
+    fit_result[energyType][label][tag]["error_mean"] = fitError_mean
+    fit_result[energyType][label][tag]["sigma"] = fit_sigma
+    fit_result[energyType][label][tag]["error_sigma"] = fitError_sigma
 
     sigmaEoverE.append(fit_sigma/fit_mean)
 
@@ -203,3 +208,91 @@ def set_stat_pad(stat, positions, color):
         #print ">>>>> stat is null"
         return
 
+def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, stat_position):
+    maxbin = h.GetMaximumBin()
+    bincenter = h.GetBinCenter(maxbin)
+    binwidth = h.GetBinWidth(maxbin)
+    fit_range_lower = bincenter - 6*binwidth
+    fit_range_upper = bincenter + 6*binwidth
+
+    h.SetTitle("")
+    h.SetMaximum(max_value*1.2)
+    h.SetLineWidth(2)
+    h.SetLineColor(color)
+    h.GetXaxis().SetRangeUser(xRange[0], xRange[1])
+    h.GetXaxis().SetTitleOffset(1.1)
+    h.GetXaxis().SetTitle(xtitle)
+    h.GetYaxis().SetTitle("Entries")
+    h.Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
+
+    ## second fit
+    #h.Draw()
+    #func = h.GetListOfFunctions().FindObject("gaus")
+    #fit_mean  = func.GetParameter(1)
+    #fit_sigma = func.GetParameter(2)
+    #fit_range_lower = fit_mean - 2*fit_sigma
+    #fit_range_upper = fit_mean + 2*fit_sigma
+    #h.Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
+
+    h.Draw()
+    h.GetFunction("gaus").Draw("same")
+
+    c1.Update()
+    lof = h.GetListOfFunctions()
+    record_fit_result( myTags, lof.FindObject("gaus") ) # record in pu.sigmaEoverE and pu.fit_result
+    set_stat_pad( lof.FindObject("stats"), stat_position, color )
+
+def get_strings_for_simple_plot(energyType, selection):
+    if energyType == "ENE":
+        xtitle = "Corrected energy [keV]"
+        outputName = "h_Edep_corrected_energy_%s_" % selection
+
+        if selection == "set1_set2":
+            hname_odd = "total_ENE_set1"
+            hname_even = "total_ENE_set2"
+            labels = ["set1", "set2"]
+
+        if selection == "set0":
+            hname_odd = "total_ENE_set0"
+            hname_even = "total_ENE_set0"
+            labels = ["set0", "set0"]
+
+    if energyType == "MIP":
+        xtitle = "Deposited energy [MIP]"
+        outputName = "h_Edep_MIP_%s_" % selection
+
+        if selection == "odd_even":
+            hname_odd = "total_MIP_odd"
+            hname_even = "total_MIP_even"
+            labels = ["odd", "even"]
+
+        if selection == "set1_set2":
+            hname_odd = "total_MIP_set1"
+            hname_even = "total_MIP_set2"
+            labels = ["set1", "set2"]
+
+        if selection == "set0":
+            hname_odd = "total_MIP_set0"
+            hname_even = "total_MIP_set0"
+            labels = ["set0", "set0"]
+
+    if energyType == "SIM":
+        xtitle = "Deposited energy [keV]"
+        outputName = "h_Edep_SIM_%s_" % selection
+
+        if selection == "odd_even":
+            hname_odd = "total_SIM_odd"
+            hname_even = "total_SIM_even"
+            labels = ["odd", "even"]
+
+        if selection == "set1_set2":
+            hname_odd = "total_SIM_set1"
+            hname_even = "total_SIM_set2"
+            labels = ["set1", "set2"]
+
+        if selection == "set0":
+            hname_odd = "total_SIM_set0"
+            hname_even = "total_SIM_set0"
+            labels = ["set0", "set0"]
+
+    return xtitle, outputName, hname_odd, hname_even, labels

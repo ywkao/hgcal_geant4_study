@@ -81,7 +81,9 @@ def make_plot(varName, bool_make_logitudinal_profile):
     if bool_single_figures:
         c1.cd()
         for i, v_hists in enumerate(v_v_hists):
-            if bool_this_is_eta_phi: v_hists[0].Draw()
+            if bool_this_is_eta_phi:
+                v_hists[0].GetXaxis().SetRangeUser(1., 3.) # Eta
+                v_hists[0].Draw()
             elif bool_ntuple:
                 #nt_hit_position = fs->make<TNtuple>("nt_hit_position","nt_hit_position", "r:z:is_Silicon_w120:is_Silicon_w200:is_Silicon_w300:is_Scintillator");
                 pu.draw_2D_ntuple("hnew"+"_"+tags[i]+"_w300", v_hists, "is_Silicon_w300>0", ROOT.kMagenta, True)
@@ -201,23 +203,12 @@ def make_plot(varName, bool_make_logitudinal_profile):
 
 #----------------------------------------------------------------------------------------------------
 
-def make_simple_plot(energyType):
+def make_simple_plot(energyType, selection):
     global myRootfiles, specified_directory, fit_constraints
     
     xRanges = fit_constraints[energyType]["xRanges"]
-    fitRanges = fit_constraints[energyType]["fitRanges"]
 
-    if energyType == "MIP":
-        hname_odd = "total_MIP_odd"
-        hname_even = "total_MIP_even"
-        xtitle = "Deposited energy [MIP]"
-        outputName = "h_Edep_odd_even_"
-
-    if energyType == "SIM":
-        hname_odd  = "total_SIM_odd"
-        hname_even = "total_SIM_even"
-        xtitle = "Deposited energy [MeV]"
-        outputName = "h_Edep_SIM_odd_even_"
+    xtitle, outputName, hname_odd, hname_even, labels = pu.get_strings_for_simple_plot(energyType, selection)
 
     #++++++++++++++++++++++++++++++
     # Load histograms
@@ -242,98 +233,35 @@ def make_simple_plot(energyType):
         max_values.append(v_hists[1].GetMaximum())
         max_value = max(max_values)
 
-        #--------------------------------------------------
-        # Edep odd layers
-        #--------------------------------------------------
-        maxbin = v_hists[0].GetMaximumBin()
-        bincenter = v_hists[0].GetBinCenter(maxbin)
-        binwidth = v_hists[0].GetBinWidth(maxbin)
-        fit_range_lower = bincenter - 6*binwidth
-        fit_range_upper = bincenter + 6*binwidth
-
-        v_hists[0].SetTitle("")
-        v_hists[0].SetMaximum(max_value*1.2)
-        v_hists[0].SetLineWidth(2)
-        v_hists[0].SetLineColor(ROOT.kBlue)
-        v_hists[0].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
-        v_hists[0].GetXaxis().SetTitleOffset(1.1)
-        v_hists[0].GetXaxis().SetTitle(xtitle)
-        v_hists[0].GetYaxis().SetTitle("Entries")
-        #v_hists[0].Fit("gaus", "0", "", fitRanges[0][i][0], fitRanges[0][i][1])
-        v_hists[0].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
-        v_hists[0].Draw()
-
-        # second fit
-        func = v_hists[0].GetListOfFunctions().FindObject("gaus")
-        fit_mean  = func.GetParameter(1)
-        fit_sigma = func.GetParameter(2)
-        fit_range_lower = fit_mean - 2*fit_sigma
-        fit_range_upper = fit_mean + 2*fit_sigma
-        v_hists[0].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
-        v_hists[0].Draw()
-        v_hists[0].GetFunction("gaus").Draw("same")
-
-        c1.Update()
-        lof = v_hists[0].GetListOfFunctions()
-        pu.record_fit_result( [tags[i], "odd"], lof.FindObject("gaus") ) # record in pu.sigmaEoverE and pu.fit_result
-        pu.set_stat_pad( lof.FindObject("stats"), [0.60, 0.66, 0.88, 0.86], ROOT.kBlue )
-
-        #--------------------------------------------------
-        # Edep even layers
-        #--------------------------------------------------
-        maxbin = v_hists[1].GetMaximumBin()
-        bincenter = v_hists[1].GetBinCenter(maxbin)
-        binwidth = v_hists[1].GetBinWidth(maxbin)
-        fit_range_lower = bincenter - 6*binwidth
-        fit_range_upper = bincenter + 6*binwidth
-
-        v_hists[1].SetTitle("")
-        v_hists[1].SetMaximum(max_value*1.2)
-        v_hists[1].SetLineWidth(2)
-        v_hists[1].SetLineColor(ROOT.kGreen+3)
-        v_hists[1].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
-        v_hists[1].GetXaxis().SetTitleOffset(1.1)
-        v_hists[1].GetXaxis().SetTitle(xtitle)
-        v_hists[1].GetYaxis().SetTitle("Entries")
-        #v_hists[1].Fit("gaus", "0", "", fitRanges[1][i][0], fitRanges[1][i][1])
-        v_hists[1].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
-        v_hists[1].Draw()
-
-        # second fit
-        func = v_hists[1].GetListOfFunctions().FindObject("gaus")
-        fit_mean  = func.GetParameter(1)
-        fit_sigma = func.GetParameter(2)
-        fit_range_lower = fit_mean - 2*fit_sigma
-        fit_range_upper = fit_mean + 2*fit_sigma
-        v_hists[1].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
-        v_hists[1].Draw()
-        v_hists[1].GetFunction("gaus").Draw("same")
-
-
-        c1.Update()
-        lof = v_hists[1].GetListOfFunctions()
-        pu.record_fit_result( [tags[i], "even"], lof.FindObject("gaus") ) # record in pu.sigmaEoverE and pu.fit_result
-        pu.set_stat_pad( lof.FindObject("stats"), [0.60, 0.42, 0.88, 0.62], ROOT.kGreen+3 )
-
-        #--------------------------------------------------
-        # Overlay plots
-        #--------------------------------------------------
-        v_hists[0].Draw("same")
-        v_hists[0].GetFunction("gaus").Draw("same")
-
-        #--------------------------------------------------
-        # result
-        #--------------------------------------------------
         latex = ROOT.TLatex()
         latex.SetNDC()
         latex.SetTextFont(43)
         latex.SetTextAlign(11)
         latex.SetTextSize(24)
 
-        latex.SetTextColor(ROOT.kBlue)
-        latex.DrawLatex( 0.55, 0.30, "#sigma#left(E_{odd}#right) / #bar{E}_{odd} = %.4f" % pu.sigmaEoverE[0] )
-        latex.SetTextColor(ROOT.kGreen+3)
-        latex.DrawLatex( 0.55, 0.20, "#sigma#left(E_{even}#right) / #bar{E}_{even} = %.4f" % pu.sigmaEoverE[1] )
+        if not selection == "set0":
+            #--------------------------------------------------
+            # Edep odd/even layers
+            #--------------------------------------------------
+            pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
+            pu.draw_and_fit_a_histogram( c1, v_hists[1], [energyType, tags[i], labels[1]], xtitle, max_value, xRanges[i], ROOT.kGreen+3, [0.60, 0.42, 0.88, 0.62] )
+
+            v_hists[0].Draw("same")
+            v_hists[0].GetFunction("gaus").Draw("same")
+
+            #--------------------------------------------------
+            # result
+            #--------------------------------------------------
+            latex.SetTextColor(ROOT.kBlue)
+            latex.DrawLatex( 0.55, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0]) )
+            latex.SetTextColor(ROOT.kGreen+3)
+            latex.DrawLatex( 0.55, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f" % (labels[1], labels[1], pu.sigmaEoverE[1]) )
+
+        else:
+            pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
+
+            latex.SetTextColor(ROOT.kBlue)
+            latex.DrawLatex( 0.55, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0]) )
 
         c1.Update()
         pu.annotate()
@@ -353,8 +281,17 @@ def run(myfin, mydin):
     #make_plot( "hPhi", False )
 
     #make_plot( "nt_hit_position", False )
-    #make_simple_plot("MIP")
-    make_simple_plot("SIM")
+    #make_simple_plot("MIP", "odd_even")
+    #make_simple_plot("SIM", "odd_even")
+
+    make_simple_plot("MIP", "set1_set2")
+    make_simple_plot("MIP", "set0")
+
+    make_simple_plot("SIM", "set1_set2")
+    make_simple_plot("SIM", "set0")
+
+    make_simple_plot("ENE", "set1_set2")
+    make_simple_plot("ENE", "set0")
 
     return
 
@@ -385,22 +322,24 @@ def run(myfin, mydin):
 #----------------------------------------------------------------------------------------------------
 
 def run_linear_fit(label, dx, dy):
-    Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
-    lx  = [ dx[ene][label]["mean"]  for ene in Energy ]
-    ly  = [ dy[ene][label]["mean"]  for ene in Energy ]
-    lex = [ dx[ene][label]["sigma"] for ene in Energy ]
-    ley = [ dy[ene][label]["sigma"] for ene in Energy ]
+    #global specified_directory
 
-    gr = pu.get_graph_from_list("Energy (MIPs)", "Generated shower energy (MeV)", lx, ly, lex, ley, ROOT.kBlack)
+    Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
+    lx  = [ dx[ene]["mean"]  for ene in Energy ]
+    ly  = [ dy[ene]["mean"]  for ene in Energy ]
+    lex = [ dx[ene]["sigma"] for ene in Energy ]
+    ley = [ dy[ene]["sigma"] for ene in Energy ]
+
+    gr = pu.get_graph_from_list("Energy (MIPs)", "Generated shower energy (keV)", lx, ly, lex, ley, ROOT.kBlack)
 
     c1.cd()
     c1.Clear()
     gr.Draw("ap")
-    gr.GetXaxis().SetLimits(0, 15000) # alogn X
-    gr.GetYaxis().SetRangeUser(0, 15000)
+    gr.GetXaxis().SetLimits(0, 30000) # alogn X
+    gr.GetYaxis().SetRangeUser(0, 300000)
 
-    f1 = ROOT.TF1('f1', "[0] + [1]*x", 0, 15000)
-    gr.Fit(f1, "", "", 0, 15000)
+    f1 = ROOT.TF1('f1', "[0] + [1]*x", 0, 30000)
+    gr.Fit(f1, "", "", 0, 30000)
 
     my_stat_pos = [0.42, 0.87, 0.15, 0.15]
     ROOT.gStyle.SetStatX(my_stat_pos[0])
@@ -409,7 +348,7 @@ def run_linear_fit(label, dx, dy):
     ROOT.gStyle.SetStatH(my_stat_pos[3])
 
     pu.annotate()
-    directory = eos + "/R80To150_linearFit_v1p1/"
+    directory = eos + "/R80To150_linearFit_v1p2/"
     output = directory + "correction_generatedShowerEnergy_MIPs_" + label
     create_directory(directory)
     c1.SaveAs(output + ".png")
@@ -423,38 +362,39 @@ if __name__ == "__main__":
 
     #----------------------------------------------------------------------------------------------------
 
-    #fit_result = {'E20': {'even': {'error_mean': 37.487343950953765, 'error_sigma': 27.710359594957723, 'sigma': 61.47976861745244, 'mean': 858.6262196025224}, 'odd': {'error_mean': 29.397439276381565, 'error_sigma': 43.871378702438165, 'sigma': 75.1780500470457, 'mean': 924.9148130793444}}, 'E100': {'even': {'error_mean': 7.513301865231576, 'error_sigma': 6.707231350020294, 'sigma': 170.99987138818483, 'mean': 4141.13035686195}, 'odd': {'error_mean': 7.223517951181946, 'error_sigma': 5.7856944696025465, 'sigma': 172.96927453273378, 'mean': 4633.14694869275}}, 'E60': {'even': {'error_mean': 6.8828286202848865, 'error_sigma': 8.568164453618266, 'sigma': 132.76147556735253, 'mean': 2490.7881785595773}, 'odd': {'error_mean': 6.062134250481227, 'error_sigma': 5.031356619183768, 'sigma': 132.1744721294912, 'mean': 2795.8864797399156}}, 'E175': {'even': {'error_mean': 9.865180492475043, 'error_sigma': 8.144692826419785, 'sigma': 220.29157608314614, 'mean': 7254.84697438717}, 'odd': {'error_mean': 11.340235421855798, 'error_sigma': 11.298886436892928, 'sigma': 245.80607120860384, 'mean': 8097.216248974299}}, 'E300': {'even': {'error_mean': 21.363666977849316, 'error_sigma': 23.630688650988276, 'sigma': 382.001453366099, 'mean': 12401.700342546535}, 'odd': {'error_mean': 15.02907950451273, 'error_sigma': 14.183762101351164, 'sigma': 342.92892277046695, 'mean': 13825.15646638679}}, 'E225': {'even': {'error_mean': 11.388557417390938, 'error_sigma': 9.729141926826628, 'sigma': 257.5786789301529, 'mean': 9310.671537060663}, 'odd': {'error_mean': 13.755234490985941, 'error_sigma': 15.188224225511433, 'sigma': 270.4231235714555, 'mean': 10405.829668276068}}}
-
-    #run_linear_fit("even", fit_result, fit_result)
-    #run_linear_fit("odd", fit_result, fit_result)
-
-    #exit()
-
-    #----------------------------------------------------------------------------------------------------
-
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150"], eos + "/" + "R80To150_v2p8" )
-
-    exit()
+    run( m.input_files["R80To150"], eos + "/" + "R80To150_v4p1" )
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v3p7" )
+    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v4p1" )
 
     #----------------------------------------------------------------------------------------------------
 
-    print pu.fit_result
-
     exit()
 
-    for tag in pu.fit_result.keys():
-        print tag
-        print pu.fit_result[tag]["odd"]
-        print pu.fit_result[tag]["even"]
-        print ""
+    fit_result = pu.fit_result
+
+    for energyType in ["MIP", "SIM"]:
+        for tag in ["E20", "E60", "E100", "E175", "E225", "E300"]:
+            print energyType, tag
+            print fit_result[energyType]["odd" ][tag]
+            print fit_result[energyType]["even"][tag]
+            print fit_result[energyType]["set0"][tag]
+            print fit_result[energyType]["set1"][tag]
+            print fit_result[energyType]["set2"][tag]
+            print ""
+
+    run_linear_fit("even", fit_result["MIP"]["odd" ], fit_result["SIM"]["odd" ])
+    run_linear_fit("odd" , fit_result["MIP"]["even"], fit_result["SIM"]["even"])
+    run_linear_fit("set0", fit_result["MIP"]["set0"], fit_result["SIM"]["set0"])
+    run_linear_fit("set0_set1", fit_result["MIP"]["set1"], fit_result["SIM"]["set0"])
+    run_linear_fit("set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])
+
+    #----------------------------------------------------------------------------------------------------
 
     exit()
 

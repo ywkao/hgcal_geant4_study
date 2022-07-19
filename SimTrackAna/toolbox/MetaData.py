@@ -3,39 +3,23 @@
 # E = 300, 100, 20
 fit_constraints_v1 = {
     "MIP" : {
-        "xRanges" : [[11000, 17000], [3000, 9000], [500, 6500]],
-        "fitRanges" : [
-                [ [12967.34, 14509.10], [4244.69, 5026.41], [775.00, 1075] ], # odd
-                [ [11600.52, 12917.76], [3768.06, 4477.40], [735, 980] ],  # even
-        ]
+        #"xRanges" : [[11000, 17000], [3000, 9000], [500, 6500]],
+        "xRanges" : [[0, 30000], [0, 30000], [0, 30000]],
     },
 
-    "SIM" : {
-        "xRanges" : [[0, 150000], [0, 150000], [0, 150000]],
-        "fitRanges" : [
-            [[0, 150000], [0, 150000], [0, 150000]], #odd
-            [[0, 150000], [0, 150000], [0, 150000]], #even
-        ]
-    },
+    "SIM" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000]] },
+    "ENE" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000]] },
 }
 
 # E = 225, 175, 60
 fit_constraints_v2 = {
     "MIP" : {
-        "xRanges" : [[8000, 14000], [6000, 12000], [1000, 7000]],
-        "fitRanges" :  [
-                [ [9900, 11000], [7500, 8500], [2500, 3500] ], # odd
-                [ [8750, 9850 ], [6750, 7750], [2250, 2750] ]  # even
-        ]
+        #"xRanges" : [[8000, 14000], [6000, 12000], [1000, 7000]],
+        "xRanges" : [[0, 30000], [0, 30000], [0, 30000]],
     },
 
-    "SIM" : {
-        "xRanges" : [[0, 150000], [0, 150000], [0, 150000]],
-        "fitRanges" : [
-            [[0, 150000], [0, 150000], [0, 150000]], #odd
-            [[0, 150000], [0, 150000], [0, 150000]], #even
-        ]
-    },
+    "SIM" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000]] },
+    "ENE" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000]] },
 }
 
 input_files = {
@@ -52,18 +36,18 @@ input_files = {
     ],
 
     "R80To150" : [
-        "rootfiles/geantoutput_D86_R80To150_E300.root",
-        "rootfiles/geantoutput_D86_R80To150_E100.root",
-        "rootfiles/geantoutput_D86_R80To150_E20.root",
-        #"rootfiles/geantoutput_D86_R80To150_E300.root",
-        #"rootfiles/geantoutput_D86_R80To150_E100.root",
-        #"rootfiles/geantoutput_D86_R80To150_E20.root",
+        "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E300.root",
+        "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E100.root",
+        "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E20.root",
+        #"rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E300.root",
+        #"rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E100.root",
+        #"rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E20.root",
     ],
 
     "R80To150_v2" : [
-        "rootfiles/geantoutput_D86_R80To150_E225.root",
-        "rootfiles/geantoutput_D86_R80To150_E175.root",
-        "rootfiles/geantoutput_D86_R80To150_E60.root",
+        "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E225.root",
+        "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E175.root",
+        "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E60.root",
     ],
 
     "muon" : [
