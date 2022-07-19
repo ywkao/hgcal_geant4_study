@@ -162,6 +162,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         explicit DigiSim(const edm::ParameterSet&);
         ~DigiSim();
         double get_additional_correction(int layer);
+        bool is_this_in_set1(int layer);
+        bool is_this_in_set2(int layer);
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
         struct energysum {
@@ -291,8 +293,15 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
         TH1D *total_MIP_odd;
         TH1D *total_MIP_even;
-        TH1D *total_SIM_even;
+        TH1D *total_MIP_set0;
+        TH1D *total_MIP_set1;
+        TH1D *total_MIP_set2;
+
         TH1D *total_SIM_odd;
+        TH1D *total_SIM_even;
+        TH1D *total_SIM_set0;
+        TH1D *total_SIM_set1;
+        TH1D *total_SIM_set2;
 
         // multiplicity
         TH1D *multiplicity_digis_total_[26];
@@ -367,14 +376,24 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     hELossHEFCN = fs->make<TH1D>("hELossHEFCN" , "hELossHEFCN" , 1000 , 0. , 1000.);
     hELossHEFCK = fs->make<TH1D>("hELossHEFCK" , "hELossHEFCK" , 1000 , 0. , 1000.);
     nt_hit_position = fs->make<TNtuple>("nt_hit_position","nt_hit_position", "r:z:is_Silicon_w120:is_Silicon_w200:is_Silicon_w300:is_Scintillator");
-    //hEta = fs->make<TH1D>("hEta" , "hEta" , 20 , -5. , 5.);
-    hEta = fs->make<TH1D>("hEta" , "hEta" , 20 ,  1. , 3.);
+    hEta = fs->make<TH1D>("hEta" , "hEta" , 100 , -5. , 5.); // [1., 3.]
     hPhi = fs->make<TH1D>("hPhi" , "hPhi" , 20 , -3. , 3.);
 
-    total_MIP_odd = fs->make<TH1D>("total_MIP_odd" , "total_MIP_odd" , 200 , 0. , 30000.);
-    total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 200 , 0. , 30000.);
-    total_SIM_odd  = fs->make<TH1D>("total_SIM_odd"  , "total_SIM_odd" , 100 , 0. , 10.);
-    total_SIM_even = fs->make<TH1D>("total_SIM_even" , "total_SIM_even" , 100 , 0. , 10.);
+    //E_set0 = all CEE layers
+    //E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
+    //E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
+    
+    total_MIP_odd  = fs->make<TH1D>("total_MIP_odd"  , "total_MIP_odd"  , 200 , 0. ,  30000.);
+    total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 200 , 0. ,  30000.);
+    total_MIP_set0 = fs->make<TH1D>("total_MIP_set0" , "total_MIP_set0" , 400 , 0. ,  60000.);
+    total_MIP_set1 = fs->make<TH1D>("total_MIP_set1" , "total_MIP_set1" , 200 , 0. ,  30000.);
+    total_MIP_set2 = fs->make<TH1D>("total_MIP_set2" , "total_MIP_set2" , 200 , 0. ,  30000.);
+
+    total_SIM_odd  = fs->make<TH1D>("total_SIM_odd"  , "total_SIM_odd"  , 200 , 0. , 200000.);
+    total_SIM_even = fs->make<TH1D>("total_SIM_even" , "total_SIM_even" , 200 , 0. , 200000.);
+    total_SIM_set0 = fs->make<TH1D>("total_SIM_set0" , "total_SIM_set0" , 400 , 0. , 400000.);
+    total_SIM_set1 = fs->make<TH1D>("total_SIM_set1" , "total_SIM_set1" , 200 , 0. , 200000.);
+    total_SIM_set2 = fs->make<TH1D>("total_SIM_set2" , "total_SIM_set2" , 200 , 0. , 200000.);
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
@@ -388,7 +407,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_fine_", i+1);
         total_MIP_fine_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_total_", i+1);
-        total_SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        total_SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
         tb::set_string(hnamestr, "multiplicity_digis_total_", i+1);
         multiplicity_digis_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 2000.);
         tb::set_string(hnamestr, "multiplicity_simhits_total_", i+1);
@@ -403,7 +422,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_120mum_", i+1);
         total_MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_120mum_", i+1);
-        total_SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        total_SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
         tb::set_string(hnamestr, "multiplicity_digis_120mum_", i+1);
         multiplicity_digis_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_120mum_", i+1);
@@ -414,7 +433,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_200mum_", i+1);
         total_MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_200mum_", i+1);
-        total_SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        total_SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
         tb::set_string(hnamestr, "multiplicity_digis_200mum_", i+1);
         multiplicity_digis_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_200mum_", i+1);
@@ -425,7 +444,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_300mum_", i+1);
         total_MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_300mum_", i+1);
-        total_SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
+        total_SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
         tb::set_string(hnamestr, "multiplicity_digis_300mum_", i+1);
         multiplicity_digis_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_300mum_", i+1);
@@ -527,6 +546,44 @@ double DigiSim::get_additional_correction(int layer)
     }
 }
 
+//E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
+bool DigiSim::is_this_in_set1(int layer)
+{
+    if(layer==1)       return true;
+    else if(layer==3)  return true;
+    else if(layer==5)  return true;
+    else if(layer==7)  return true;
+    else if(layer==9)  return true;
+    else if(layer==11) return true;
+    else if(layer==13) return true;
+    else if(layer==15) return true;
+    else if(layer==17) return true;
+    else if(layer==19) return true;
+    else if(layer==21) return true;
+    else if(layer==23) return true;
+    else if(layer==25) return true;
+    else               return false;
+}
+
+//E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
+bool DigiSim::is_this_in_set2(int layer)
+{
+    if(layer==1)       return true;
+    else if(layer==3)  return true;
+    else if(layer==5)  return true;
+    else if(layer==8)  return true;
+    else if(layer==10) return true;
+    else if(layer==12) return true;
+    else if(layer==14) return true;
+    else if(layer==15) return true;
+    else if(layer==17) return true;
+    else if(layer==19) return true;
+    else if(layer==21) return true;
+    else if(layer==23) return true;
+    else if(layer==25) return true;
+    else               return false;
+}
+
 // ------------ method called for each event  ------------
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
@@ -536,8 +593,14 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     int counter = 0;
     double total_energy_mip_odd  = 0.;
     double total_energy_mip_even = 0.;
+    double total_energy_mip_set0 = 0.;
+    double total_energy_mip_set1 = 0.;
+    double total_energy_mip_set2 = 0.;
     double total_energy_sim_odd  = 0.;
     double total_energy_sim_even = 0.;
+    double total_energy_sim_set0 = 0.;
+    double total_energy_sim_set1 = 0.;
+    double total_energy_sim_set2 = 0.;
     std::vector<double> total_energy_adc_total ;
     std::vector<double> total_energy_mip_total ;
     std::vector<double> total_energy_mip_coarse ;
@@ -831,7 +894,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 double    eta        = dinfo.eta;
                 double    phi        = dinfo.phi;
                 double    amplitude  = (*itr_mydigi).second.amplitude;
-                double    energy     = esum.eTime[0] / 1.e3; // MeV
+                double    energy     = esum.eTime[0]; // keV
                 int       idx        = dinfo.layer-1;
                 int       cellType   = (*itr_sim).second.first.type;
                 bool      is_coarse  = cellType==HGCSiliconDetId::HGCalCoarseThin || cellType==HGCSiliconDetId::HGCalCoarseThick;
@@ -841,8 +904,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(!selection_on_mips) continue;
 
                 //bool selectoin_on_eta = eta > 1.8;
-                bool selectoin_on_eta = eta > 1.6 && eta < 2.0;
-                if(!selectoin_on_eta) continue;
+                //bool selectoin_on_eta = eta > 1.6 && eta < 2.0;
+                //if(!selectoin_on_eta) continue;
 
                 if(id_simhit==id_digihit){
                     double dEdx_weights = get_additional_correction(idx+1); // layer = idx+1
@@ -860,7 +923,28 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     }
                     hEta->Fill(eta);
                     hPhi->Fill(phi);
-                    // individual hit info
+
+                    //--------------------------------------------------
+                    // info for a set of layers
+                    //--------------------------------------------------
+                    total_energy_mip_set0 += amplitude;
+                    total_energy_sim_set0 += energy;
+
+                    //E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
+                    //E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
+                    bool is_in_set1 = is_this_in_set1(idx+1); // layer = idx+1
+                    bool is_in_set2 = is_this_in_set2(idx+1); // layer = idx+1
+    
+                    if(is_in_set1) {
+                        total_energy_mip_set1 += amplitude;
+                        total_energy_sim_set1 += energy;
+                    }
+
+                    if(is_in_set2) {
+                        total_energy_mip_set2 += amplitude;
+                        total_energy_sim_set2 += energy;
+                    }
+
                     if(idx%2==0) {
                         total_energy_mip_odd += amplitude;
                         total_energy_sim_odd += energy;
@@ -869,6 +953,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                         total_energy_sim_even += energy;
                     }
 
+                    //--------------------------------------------------
+                    // info for each layer
+                    //--------------------------------------------------
                     if(dinfo.layer <= 26) {
                         ADC_total_     [idx] -> Fill(adc);
                         MIP_total_     [idx] -> Fill(amplitude);
@@ -972,8 +1059,15 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     total_MIP_odd  -> Fill(total_energy_mip_odd);
     total_MIP_even -> Fill(total_energy_mip_even);
+    total_MIP_set0 -> Fill(total_energy_mip_set0) ;
+    total_MIP_set1 -> Fill(total_energy_mip_set1);
+    total_MIP_set2 -> Fill(total_energy_mip_set2);
+
     total_SIM_odd  -> Fill(total_energy_sim_odd);
     total_SIM_even -> Fill(total_energy_sim_even);
+    total_SIM_set0 -> Fill(total_energy_sim_set0) ;
+    total_SIM_set1 -> Fill(total_energy_sim_set1);
+    total_SIM_set2 -> Fill(total_energy_sim_set2);
     //}}}
 } // end of analyze
 

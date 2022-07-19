@@ -152,6 +152,12 @@ def get_graph_from_list(xtitle, ytitle, lx, ly, lex, ley, color, normalize_to_un
     #print ">>> n, total, ly, ley =", n, total, ly, ley
     return gr
 
+#----------------------------------------------------------------------------------------------------
+
+sigmaEoverE = []
+def reset_containers():
+    global sigmaEoverE 
+    sigmaEoverE = []
 
 fit_result = {}
 def record_fit_result(myTags, func):
@@ -176,8 +182,24 @@ def record_fit_result(myTags, func):
     fit_result[tag][label]["sigma"] = fit_sigma
     fit_result[tag][label]["error_sigma"] = fitError_sigma
 
-    return fit_mean, fit_sigma
+    sigmaEoverE.append(fit_sigma/fit_mean)
 
-    print ">>> result:", fit_const, fit_mean, fit_sigma 
-    print ">>> fit error:", fitError_const, fitError_mean, fitError_sigma 
+    #return fit_mean, fit_sigma
+    #print ">>> result:", fit_const, fit_mean, fit_sigma 
+    #print ">>> fit error:", fitError_const, fitError_mean, fitError_sigma 
     
+def set_stat_pad(stat, positions, color):
+    if stat:
+        #print ">>>>> check:", stat.GetName()
+        stat.GetName()
+        stat.SetX1NDC(positions[0])
+        stat.SetY1NDC(positions[1])
+        stat.SetX2NDC(positions[2])
+        stat.SetY2NDC(positions[3])
+        stat.SetTextSize(0.02)
+        stat.SetTextColor(color)
+        stat.SetLineColor(color)
+    else:
+        #print ">>>>> stat is null"
+        return
+

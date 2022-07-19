@@ -11,10 +11,10 @@ fit_constraints_v1 = {
     },
 
     "SIM" : {
-        "xRanges" : [[0, 10], [0, 10], [0, 10]],
+        "xRanges" : [[0, 150000], [0, 150000], [0, 150000]],
         "fitRanges" : [
-            [[0, 10], [0, 10], [0, 10]], #odd
-            [[0, 10], [0, 10], [0, 10]], #even
+            [[0, 150000], [0, 150000], [0, 150000]], #odd
+            [[0, 150000], [0, 150000], [0, 150000]], #even
         ]
     },
 }
@@ -30,10 +30,10 @@ fit_constraints_v2 = {
     },
 
     "SIM" : {
-        "xRanges" : [[0, 10], [0, 10], [0, 10]],
+        "xRanges" : [[0, 150000], [0, 150000], [0, 150000]],
         "fitRanges" : [
-            [[0, 10], [0, 10], [0, 10]], #odd
-            [[0, 10], [0, 10], [0, 10]], #even
+            [[0, 150000], [0, 150000], [0, 150000]], #odd
+            [[0, 150000], [0, 150000], [0, 150000]], #even
         ]
     },
 }
@@ -55,9 +55,9 @@ input_files = {
         "rootfiles/geantoutput_D86_R80To150_E300.root",
         "rootfiles/geantoutput_D86_R80To150_E100.root",
         "rootfiles/geantoutput_D86_R80To150_E20.root",
-        #"rootfiles_original/geantoutput_D86_R80To150_E300.root",
-        #"rootfiles_original/geantoutput_D86_R80To150_E100.root",
-        #"rootfiles_original/geantoutput_D86_R80To150_E20.root",
+        #"rootfiles/geantoutput_D86_R80To150_E300.root",
+        #"rootfiles/geantoutput_D86_R80To150_E100.root",
+        #"rootfiles/geantoutput_D86_R80To150_E20.root",
     ],
 
     "R80To150_v2" : [

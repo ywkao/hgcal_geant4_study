@@ -114,8 +114,6 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 gr.SetLineColor(ROOT.kBlue)
             v_gr.append(gr)
 
-            continue
-
             # 26 plots in one
             c2.cd()
             for j, h in enumerate(v_hists):
@@ -237,43 +235,62 @@ def make_simple_plot(energyType):
 
     c1.cd()
     for i, v_hists in enumerate(v_v_hists):
-        sigmaEoverE = []
+        print "\n----------------------------------------------------------------------------------------------------\n"
+        pu.reset_containers()
         max_values = []
         max_values.append(v_hists[0].GetMaximum())
         max_values.append(v_hists[1].GetMaximum())
         max_value = max(max_values)
 
+        #--------------------------------------------------
         # Edep odd layers
+        #--------------------------------------------------
         v_hists[0].SetTitle("")
+        v_hists[0].SetMaximum(max_value*1.2)
+        v_hists[0].SetLineWidth(2)
+        v_hists[0].SetLineColor(ROOT.kBlue)
         v_hists[0].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
         v_hists[0].GetXaxis().SetTitleOffset(1.1)
         v_hists[0].GetXaxis().SetTitle(xtitle)
         v_hists[0].GetYaxis().SetTitle("Entries")
-        v_hists[0].SetMaximum(max_value*1.2)
-        v_hists[0].SetStats(0)
-        v_hists[0].SetLineWidth(2)
-        v_hists[0].SetLineColor(ROOT.kBlue)
         v_hists[0].Fit("gaus", "0", "", fitRanges[0][i][0], fitRanges[0][i][1])
         v_hists[0].Draw()
         v_hists[0].GetFunction("gaus").Draw("same")
 
-        fit_mean, fit_sigma = pu.record_fit_result( [tags[i], "odd"], v_hists[0].GetListOfFunctions().FindObject("gaus") )
-        sigmaEoverE.append(fit_sigma/fit_mean)
+        c1.Update()
+        lof = v_hists[0].GetListOfFunctions()
+        pu.record_fit_result( [tags[i], "odd"], lof.FindObject("gaus") ) # record in pu.sigmaEoverE and pu.fit_result
+        pu.set_stat_pad( lof.FindObject("stats"), [0.60, 0.66, 0.88, 0.86], ROOT.kBlue )
 
+        #--------------------------------------------------
         # Edep even layers
+        #--------------------------------------------------
         v_hists[1].SetTitle("")
-        v_hists[1].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
-        v_hists[1].SetStats(0)
+        v_hists[0].SetMaximum(max_value*1.2)
         v_hists[1].SetLineWidth(2)
-        v_hists[1].SetLineColor(ROOT.kBlack)
+        v_hists[1].SetLineColor(ROOT.kGreen+3)
+        v_hists[1].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
+        v_hists[1].GetXaxis().SetTitleOffset(1.1)
+        v_hists[1].GetXaxis().SetTitle(xtitle)
+        v_hists[1].GetYaxis().SetTitle("Entries")
         v_hists[1].Fit("gaus", "0", "", fitRanges[1][i][0], fitRanges[1][i][1])
-        v_hists[1].Draw("same")
+        v_hists[1].Draw()
         v_hists[1].GetFunction("gaus").Draw("same")
 
-        fit_mean, fit_sigma = pu.record_fit_result( [tags[i], "even"], v_hists[1].GetListOfFunctions().FindObject("gaus") )
-        sigmaEoverE.append(fit_sigma/fit_mean)
+        c1.Update()
+        lof = v_hists[1].GetListOfFunctions()
+        pu.record_fit_result( [tags[i], "even"], lof.FindObject("gaus") ) # record in pu.sigmaEoverE and pu.fit_result
+        pu.set_stat_pad( lof.FindObject("stats"), [0.60, 0.42, 0.88, 0.62], ROOT.kGreen+3 )
 
+        #--------------------------------------------------
+        # Overlay plots
+        #--------------------------------------------------
+        v_hists[0].Draw("same")
+        v_hists[0].GetFunction("gaus").Draw("same")
+
+        #--------------------------------------------------
         # result
+        #--------------------------------------------------
         latex = ROOT.TLatex()
         latex.SetNDC()
         latex.SetTextFont(43)
@@ -281,9 +298,9 @@ def make_simple_plot(energyType):
         latex.SetTextSize(24)
 
         latex.SetTextColor(ROOT.kBlue)
-        latex.DrawLatex( 0.55, 0.70, "#sigma#left(E_{odd}#right) / #bar{E}_{odd} = %.4f" % sigmaEoverE[0] )
-        latex.SetTextColor(ROOT.kBlack)
-        latex.DrawLatex( 0.55, 0.60, "#sigma#left(E_{even}#right) / #bar{E}_{even} = %.4f" % sigmaEoverE[1] )
+        latex.DrawLatex( 0.55, 0.30, "#sigma#left(E_{odd}#right) / #bar{E}_{odd} = %.4f" % pu.sigmaEoverE[0] )
+        latex.SetTextColor(ROOT.kGreen+3)
+        latex.DrawLatex( 0.55, 0.20, "#sigma#left(E_{even}#right) / #bar{E}_{even} = %.4f" % pu.sigmaEoverE[1] )
 
         c1.Update()
         pu.annotate()
@@ -305,8 +322,6 @@ def run(myfin, mydin):
     #make_plot( "nt_hit_position", False )
     make_simple_plot("MIP")
     make_simple_plot("SIM")
-
-    return
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
@@ -385,12 +400,12 @@ if __name__ == "__main__":
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150"], eos + "/" + "R80To150_v2p3" )
+    run( m.input_files["R80To150"], eos + "/" + "R80To150_v2p7" )
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v3p2" )
+    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v3p6" )
 
     #----------------------------------------------------------------------------------------------------
 
