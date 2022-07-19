@@ -245,6 +245,12 @@ def make_simple_plot(energyType):
         #--------------------------------------------------
         # Edep odd layers
         #--------------------------------------------------
+        maxbin = v_hists[0].GetMaximumBin()
+        bincenter = v_hists[0].GetBinCenter(maxbin)
+        binwidth = v_hists[0].GetBinWidth(maxbin)
+        fit_range_lower = bincenter - 6*binwidth
+        fit_range_upper = bincenter + 6*binwidth
+
         v_hists[0].SetTitle("")
         v_hists[0].SetMaximum(max_value*1.2)
         v_hists[0].SetLineWidth(2)
@@ -253,7 +259,17 @@ def make_simple_plot(energyType):
         v_hists[0].GetXaxis().SetTitleOffset(1.1)
         v_hists[0].GetXaxis().SetTitle(xtitle)
         v_hists[0].GetYaxis().SetTitle("Entries")
-        v_hists[0].Fit("gaus", "0", "", fitRanges[0][i][0], fitRanges[0][i][1])
+        #v_hists[0].Fit("gaus", "0", "", fitRanges[0][i][0], fitRanges[0][i][1])
+        v_hists[0].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
+        v_hists[0].Draw()
+
+        # second fit
+        func = v_hists[0].GetListOfFunctions().FindObject("gaus")
+        fit_mean  = func.GetParameter(1)
+        fit_sigma = func.GetParameter(2)
+        fit_range_lower = fit_mean - 2*fit_sigma
+        fit_range_upper = fit_mean + 2*fit_sigma
+        v_hists[0].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
         v_hists[0].Draw()
         v_hists[0].GetFunction("gaus").Draw("same")
 
@@ -265,17 +281,34 @@ def make_simple_plot(energyType):
         #--------------------------------------------------
         # Edep even layers
         #--------------------------------------------------
+        maxbin = v_hists[1].GetMaximumBin()
+        bincenter = v_hists[1].GetBinCenter(maxbin)
+        binwidth = v_hists[1].GetBinWidth(maxbin)
+        fit_range_lower = bincenter - 6*binwidth
+        fit_range_upper = bincenter + 6*binwidth
+
         v_hists[1].SetTitle("")
-        v_hists[0].SetMaximum(max_value*1.2)
+        v_hists[1].SetMaximum(max_value*1.2)
         v_hists[1].SetLineWidth(2)
         v_hists[1].SetLineColor(ROOT.kGreen+3)
         v_hists[1].GetXaxis().SetRangeUser(xRanges[i][0], xRanges[i][1])
         v_hists[1].GetXaxis().SetTitleOffset(1.1)
         v_hists[1].GetXaxis().SetTitle(xtitle)
         v_hists[1].GetYaxis().SetTitle("Entries")
-        v_hists[1].Fit("gaus", "0", "", fitRanges[1][i][0], fitRanges[1][i][1])
+        #v_hists[1].Fit("gaus", "0", "", fitRanges[1][i][0], fitRanges[1][i][1])
+        v_hists[1].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
+        v_hists[1].Draw()
+
+        # second fit
+        func = v_hists[1].GetListOfFunctions().FindObject("gaus")
+        fit_mean  = func.GetParameter(1)
+        fit_sigma = func.GetParameter(2)
+        fit_range_lower = fit_mean - 2*fit_sigma
+        fit_range_upper = fit_mean + 2*fit_sigma
+        v_hists[1].Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
         v_hists[1].Draw()
         v_hists[1].GetFunction("gaus").Draw("same")
+
 
         c1.Update()
         lof = v_hists[1].GetListOfFunctions()
@@ -320,8 +353,10 @@ def run(myfin, mydin):
     #make_plot( "hPhi", False )
 
     #make_plot( "nt_hit_position", False )
-    make_simple_plot("MIP")
+    #make_simple_plot("MIP")
     make_simple_plot("SIM")
+
+    return
 
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
@@ -400,12 +435,14 @@ if __name__ == "__main__":
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150"], eos + "/" + "R80To150_v2p7" )
+    run( m.input_files["R80To150"], eos + "/" + "R80To150_v2p8" )
+
+    exit()
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v3p6" )
+    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v3p7" )
 
     #----------------------------------------------------------------------------------------------------
 
