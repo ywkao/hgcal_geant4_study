@@ -243,7 +243,7 @@ def make_simple_plot(energyType, selection):
             #--------------------------------------------------
             # Edep odd/even layers
             #--------------------------------------------------
-            pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
+            pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]], xtitle, max_value, xRanges[i], ROOT.kBlue   , [0.60, 0.66, 0.88, 0.86] )
             pu.draw_and_fit_a_histogram( c1, v_hists[1], [energyType, tags[i], labels[1]], xtitle, max_value, xRanges[i], ROOT.kGreen+3, [0.60, 0.42, 0.88, 0.62] )
 
             v_hists[0].Draw("same")
@@ -302,7 +302,7 @@ def run(myfin, mydin):
     for t in thickness:
         make_plot( "multiplicity_simhits_%s" % t , True  )
         make_plot( "total_MIP_%s"            % t , True  )
-        make_plot( "total_SIM_%s"            % t , True  )
+        #make_plot( "total_SIM_%s"            % t , True  )
         continue
 
         make_plot( "total_ADC_%s"            % t , True  )
@@ -348,7 +348,7 @@ def run_linear_fit(label, dx, dy):
     ROOT.gStyle.SetStatH(my_stat_pos[3])
 
     pu.annotate()
-    directory = eos + "/R80To150_linearFit_v1p2/"
+    directory = eos + "/R80To150_linearFit_v1p3/"
     output = directory + "correction_generatedShowerEnergy_MIPs_" + label
     create_directory(directory)
     c1.SaveAs(output + ".png")
@@ -365,31 +365,29 @@ if __name__ == "__main__":
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150"], eos + "/" + "R80To150_v4p1" )
+    run( m.input_files["R80To150"], eos + "/" + "R80To150_v4p2" )
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v4p1" )
+    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v4p2" )
 
     #----------------------------------------------------------------------------------------------------
-
-    exit()
 
     fit_result = pu.fit_result
 
     for energyType in ["MIP", "SIM"]:
         for tag in ["E20", "E60", "E100", "E175", "E225", "E300"]:
             print energyType, tag
-            print fit_result[energyType]["odd" ][tag]
-            print fit_result[energyType]["even"][tag]
+            #print fit_result[energyType]["odd" ][tag]
+            #print fit_result[energyType]["even"][tag]
             print fit_result[energyType]["set0"][tag]
             print fit_result[energyType]["set1"][tag]
             print fit_result[energyType]["set2"][tag]
             print ""
 
-    run_linear_fit("even", fit_result["MIP"]["odd" ], fit_result["SIM"]["odd" ])
-    run_linear_fit("odd" , fit_result["MIP"]["even"], fit_result["SIM"]["even"])
+    #run_linear_fit("even", fit_result["MIP"]["odd" ], fit_result["SIM"]["odd" ])
+    #run_linear_fit("odd" , fit_result["MIP"]["even"], fit_result["SIM"]["even"])
     run_linear_fit("set0", fit_result["MIP"]["set0"], fit_result["SIM"]["set0"])
     run_linear_fit("set0_set1", fit_result["MIP"]["set1"], fit_result["SIM"]["set0"])
     run_linear_fit("set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])

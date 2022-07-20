@@ -164,7 +164,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         double get_additional_correction(int layer);
         bool is_this_in_set1(int layer);
         bool is_this_in_set2(int layer);
-        bool convert_amplitude_to_total_energy_pedro(int type, double amplitude);
+        double convert_amplitude_to_total_energy_pedro(int type, double amplitude);
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
         struct energysum {
@@ -400,9 +400,10 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     total_SIM_set1 = fs->make<TH1D>("total_SIM_set1" , "total_SIM_set1" , 200 , 0. , 200000.);
     total_SIM_set2 = fs->make<TH1D>("total_SIM_set2" , "total_SIM_set2" , 200 , 0. , 200000.);
 
+    // energy projected from MIP to SIM_set0
     total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 400 , 0. , 400000.);
-    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 200 , 0. , 200000.);
-    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 200 , 0. , 200000.);
+    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 200 , 0. , 400000.);
+    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 200 , 0. , 400000.);
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
@@ -593,20 +594,20 @@ bool DigiSim::is_this_in_set2(int layer)
     else               return false;
 }
 
-bool DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitude)
+double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitude)
 {
-    double energy = 0.;
+    double corrected_energy = 0.;
 
-    if(type=0)
-        energy = 2.31546e+04 + 4.74438*amplitude;
+    if(type==0) // convert E_set0
+        corrected_energy = 2.31546e+04 + 4.74438*amplitude;
 
     if(type==1) // convert E_set1
-        energy = 2.28611e+04 + 9.03174*amplitude;
+        corrected_energy = 2.28611e+04 + 9.03174*amplitude;
 
     if(type==2) // convert E_set2
-        energy = 2.36739e+04 + 9.89*amplitude;
+        corrected_energy = 2.36739e+04 + 9.89*amplitude;
 
-    return energy;
+    return corrected_energy;
 }
 
 // ------------ method called for each event  ------------
@@ -758,7 +759,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         if(rhtools_.isSilicon(detId)){
             HGCSiliconDetId id(itHit->id());
-            double energy = itHit->energy()*1.e3; // from GeV to MeV
+            double energy = itHit->energy()*1.e6; // from GeV to keV
 
             if(nameDetector_ == "HGCalEESensitive"){
                 hELossEE->Fill(energy);
@@ -922,7 +923,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 double    eta        = dinfo.eta;
                 double    phi        = dinfo.phi;
                 double    amplitude  = (*itr_mydigi).second.amplitude;
-                double    energy     = esum.eTime[0]; // MeV
+                double    energy     = esum.eTime[0]; // keV
                 int       idx        = dinfo.layer-1;
                 int       cellType   = (*itr_sim).second.first.type;
                 bool      is_coarse  = cellType==HGCSiliconDetId::HGCalCoarseThin || cellType==HGCSiliconDetId::HGCalCoarseThick;
@@ -942,6 +943,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                     bool debug = false;
                     if(debug) {
+                        counter += 1;
                         tb::print_debug_info("Id_digi"   , id_digihit   );
                         tb::print_debug_info("layer"     , dinfo.layer  );
                         tb::print_debug_info("wafer type", dinfo.type   );
@@ -949,6 +951,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                         tb::print_debug_info("adc_"      , adc          );
                         tb::print_debug_info("amplitude" , amplitude    );
                         tb::print_debug_info("energy"    , energy, true );
+                        continue;
                     }
                     hEta->Fill(eta);
                     hPhi->Fill(phi);
@@ -970,17 +973,11 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     if(is_in_set1) {
                         total_energy_mip_set1 += amplitude;
                         total_energy_sim_set1 += energy;
-
-                        corrected_energy = convert_amplitude_to_total_energy_pedro(1, amplitude);
-                        total_corrected_energy_set1 += corrected_energy;
                     }
 
                     if(is_in_set2) {
                         total_energy_mip_set2 += amplitude;
                         total_energy_sim_set2 += energy;
-
-                        corrected_energy = convert_amplitude_to_total_energy_pedro(2, amplitude);
-                        total_corrected_energy_set2 += corrected_energy;
                     }
 
                     if(idx%2==0) {
@@ -1107,9 +1104,17 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     total_SIM_set1 -> Fill(total_energy_sim_set1);
     total_SIM_set2 -> Fill(total_energy_sim_set2);
 
+    total_corrected_energy_set0 = convert_amplitude_to_total_energy_pedro(0, total_energy_mip_set0);
+    total_corrected_energy_set1 = convert_amplitude_to_total_energy_pedro(1, total_energy_mip_set1);
+    total_corrected_energy_set2 = convert_amplitude_to_total_energy_pedro(2, total_energy_mip_set2);
+
     total_ENE_set0 -> Fill(total_corrected_energy_set0);
     total_ENE_set1 -> Fill(total_corrected_energy_set1);
     total_ENE_set2 -> Fill(total_corrected_energy_set2);
+
+    //tb::print_debug_info("total_energy_sim_set0", total_energy_sim_set0);
+    //tb::print_debug_info("total_energy_mip_set1", total_energy_mip_set1);
+    //tb::print_debug_info("total_corrected_energy_set1", total_corrected_energy_set1, true);
     //}}}
 } // end of analyze
 
