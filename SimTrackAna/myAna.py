@@ -290,8 +290,8 @@ def run(myfin, mydin):
     make_simple_plot("SIM", "set1_set2")
     make_simple_plot("SIM", "set0")
 
-    make_simple_plot("ENE", "set1_set2")
-    make_simple_plot("ENE", "set0")
+    #make_simple_plot("ENE", "set1_set2")
+    #make_simple_plot("ENE", "set0")
 
     return
 
@@ -348,7 +348,7 @@ def run_linear_fit(label, dx, dy):
     ROOT.gStyle.SetStatH(my_stat_pos[3])
 
     pu.annotate()
-    directory = eos + "/R80To150_linearFit_v1p3/"
+    directory = eos + "/R80To130_linearFit/"
     output = directory + "correction_generatedShowerEnergy_MIPs_" + label
     create_directory(directory)
     c1.SaveAs(output + ".png")
@@ -362,15 +362,21 @@ if __name__ == "__main__":
 
     #----------------------------------------------------------------------------------------------------
 
+    #tags = ["E300", "E100", "E20"]
+    #fit_constraints = m.fit_constraints_v1
+    #for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    #run( m.input_files["R80To100_v2"], eos + "/" + "R80To100_v5p1" )
+    #exit()
+
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150"], eos + "/" + "R80To150_v4p2" )
+    run( m.input_files["R80To130"], eos + "/" + "R80To130" )
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To150_v2"], eos + "/" + "R80To150_v4p2" )
+    run( m.input_files["R80To130_v2"], eos + "/" + "R80To130" )
 
     #----------------------------------------------------------------------------------------------------
 
@@ -397,6 +403,13 @@ if __name__ == "__main__":
     exit()
 
 # previous stdy {{{
+    tags = ["E300", "E100", "E20"]
+    tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
+    fit_constraints = m.fit_constraints_v1
+    for tag in tags: label[tag] = tag.split("_")[1] + " cm"
+    run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
+    exit()
+
     tags = ["nominal", "inverse_dEdx_X0", "dEdx_divided_X0", "inverse_X0", "applied_dEdx"]
     for tag in tags: label[tag] = tag
     run( m.input_files["X0_corrections"]    , eos + "/" + "R80To100_study_with_corrections_v2"    )

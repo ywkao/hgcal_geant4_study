@@ -26,44 +26,14 @@ if __name__ == "__main__":
     subprocess.call("mkdir -p tmp", shell=True)
 
     configs = [
-        #"python/run_digiHit_cfg_PCB.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_50mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_100mm.py",
-        #"python/run_digiHit_cfg_turnOffCompton.py",
-
-        "python/run_digiHit_cfg_nominal.py",
-        #"python/run_digiHit_cfg_PCB.py",
-        #"python/run_digiHit_cfg_turnOffCompton.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_airPCB_turnOffComptionScattering.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_100mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_10mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_5mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_1000mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_100mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_10mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_1mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_50mm.py",
-        #"python/run_digiHit_cfg_D86_R80To100_E100_turnOffComptionScattering_ProdCut_electron_5mm.py",
-        #"python/run_digiHit_cfg_ProdCut_egamma_1000mm.py",
-        #"python/run_digiHit_cfg_ProdCut_egamma_100mm.py",
-        #"python/run_digiHit_cfg_ProdCut_egamma_1mm.py",
-        #"python/run_digiHit_cfg_ProdCut_electron_1000mm.py",
-        #"python/run_digiHit_cfg_ProdCut_electron_100mm.py",
-        #"python/run_digiHit_cfg_ProdCut_electron_1mm.py",
-        #"python/run_digiHit_cfg_ProdCut_photon_1000mm.py",
-        #"python/run_digiHit_cfg_ProdCut_photon_100mm.py",
-        #"python/run_digiHit_cfg_ProdCut_photon_1mm.py",
+        "python/run_digiHit_cfg_D86_R80To110_E100.py",
+        "python/run_digiHit_cfg_D86_R80To120_E100.py",
+        "python/run_digiHit_cfg_D86_R80To130_E100.py",
+        "python/run_digiHit_cfg_D86_R80To140_E100.py",
     ]
 
     #for f in configs:
-    #for f in glob.glob("python/*air*.py"):
-    #for f in glob.glob("python/*turnOffComptionScattering_ProdCut_electron*.py"):
-    #for f in glob.glob("python/run_digiHit_cfg_turnOffCompton.py"):
-    #for f in glob.glob("python/run_digiHit_cfg_*1000*"):
-    #for f in glob.glob("python/test_digiHit_cfg*"):
-    #for f in glob.glob("python/test_digiHit_cfg*muon*"):
-    #for f in glob.glob("python/test_digiHit_cfg_D86_R80To100_E*"):
-    for f in glob.glob("python/*150*"):
+    for f in glob.glob("python/*130*"):
         tag = f.split('_cfg_')[1].split('.')[0]
         command = "time cmsRun %s 2>&1 | tee tmp/log_%s.txt" % (f, tag)
         #command = "sed -n '18p' %s" % f
