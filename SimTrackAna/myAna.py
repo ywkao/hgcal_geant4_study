@@ -15,6 +15,7 @@ ROOT.gStyle.SetTextSize(1.2)
 
 import toolbox.plot_utils as pu
 import toolbox.MetaData as m
+import toolbox.analyzer as an
 
 flag_add_reference = True
 flag_add_reference = False
@@ -85,7 +86,6 @@ def make_plot(varName, bool_make_logitudinal_profile):
                 v_hists[0].GetXaxis().SetRangeUser(1., 3.) # Eta
                 v_hists[0].Draw()
             elif bool_ntuple:
-                #nt_hit_position = fs->make<TNtuple>("nt_hit_position","nt_hit_position", "r:z:is_Silicon_w120:is_Silicon_w200:is_Silicon_w300:is_Scintillator");
                 pu.draw_2D_ntuple("hnew"+"_"+tags[i]+"_w300", v_hists, "is_Silicon_w300>0", ROOT.kMagenta, True)
                 pu.draw_2D_ntuple("hnew"+"_"+tags[i]+"_w200", v_hists, "is_Silicon_w200>0", ROOT.kGreen)
                 pu.draw_2D_ntuple("hnew"+"_"+tags[i]+"_w120", v_hists, "is_Silicon_w120>0", ROOT.kRed)
@@ -276,11 +276,15 @@ def run(myfin, mydin):
     myRootfiles = myfin
     specified_directory = mydin
 
+    analyzer = an.HitAnalyzer(myfin, mydin, tags)
+    analyzer.loop()
+
+    return
+
     create_directory( specified_directory )
     make_plot( "hEta", False )
     #make_plot( "hPhi", False )
 
-    #make_plot( "nt_hit_position", False )
     #make_simple_plot("MIP", "odd_even")
     #make_simple_plot("SIM", "odd_even")
 
@@ -361,10 +365,15 @@ if __name__ == "__main__":
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.kMagenta, ROOT.kRed-7]
 
     tags = ["E300", "E100", "E20"]
-    tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
     fit_constraints = m.fit_constraints_v1
-    for tag in tags: label[tag] = tag.split("_")[1] + " cm"
-    run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
+    for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    run( m.input_files["R80To130_v3"], eos + "/" + "R80To130_hits_study" )
+
+    #tags = ["E300", "E100", "E20"]
+    #tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
+    #fit_constraints = m.fit_constraints_v1
+    #for tag in tags: label[tag] = tag.split("_")[1] + " cm"
+    #run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
     exit()
 
     #----------------------------------------------------------------------------------------------------
