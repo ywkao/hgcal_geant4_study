@@ -290,8 +290,8 @@ def run(myfin, mydin):
     make_simple_plot("SIM", "set1_set2")
     make_simple_plot("SIM", "set0")
 
-    #make_simple_plot("ENE", "set1_set2")
-    #make_simple_plot("ENE", "set0")
+    make_simple_plot("ENE", "set1_set2")
+    make_simple_plot("ENE", "set0")
 
     return
 
@@ -360,6 +360,13 @@ if __name__ == "__main__":
     myRootfiles, specified_directory, label = [], "", {}
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.kMagenta, ROOT.kRed-7]
 
+    tags = ["E300", "E100", "E20"]
+    tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
+    fit_constraints = m.fit_constraints_v1
+    for tag in tags: label[tag] = tag.split("_")[1] + " cm"
+    run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
+    exit()
+
     #----------------------------------------------------------------------------------------------------
 
     #tags = ["E300", "E100", "E20"]
@@ -403,13 +410,6 @@ if __name__ == "__main__":
     exit()
 
 # previous stdy {{{
-    tags = ["E300", "E100", "E20"]
-    tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
-    fit_constraints = m.fit_constraints_v1
-    for tag in tags: label[tag] = tag.split("_")[1] + " cm"
-    run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
-    exit()
-
     tags = ["nominal", "inverse_dEdx_X0", "dEdx_divided_X0", "inverse_X0", "applied_dEdx"]
     for tag in tags: label[tag] = tag
     run( m.input_files["X0_corrections"]    , eos + "/" + "R80To100_study_with_corrections_v2"    )

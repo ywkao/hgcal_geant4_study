@@ -598,14 +598,17 @@ double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitu
 {
     double corrected_energy = 0.;
 
-    if(type==0) // convert E_set0
-        corrected_energy = 2.31546e+04 + 4.74438*amplitude;
+    // convert E_set0 / E_set1 / E_set2 (corresponding to type 0 / 1 / 2 respectively)
+    
+    // R80to150
+    //if(type==0) corrected_energy = 2.31546e+04 + 4.74438*amplitude;
+    //if(type==1) corrected_energy = 2.28611e+04 + 9.03174*amplitude;
+    //if(type==2) corrected_energy = 2.36739e+04 + 9.89*amplitude;
 
-    if(type==1) // convert E_set1
-        corrected_energy = 2.28611e+04 + 9.03174*amplitude;
-
-    if(type==2) // convert E_set2
-        corrected_energy = 2.36739e+04 + 9.89*amplitude;
+    // R80to130
+    if(type==0) corrected_energy = 2.18562e+04 + 4.86902e+00*amplitude;
+    if(type==1) corrected_energy = 2.15429e+04 + 9.28686e+00*amplitude;
+    if(type==2) corrected_energy = 2.22060e+04 + 1.02199e+01*amplitude;
 
     return corrected_energy;
 }
