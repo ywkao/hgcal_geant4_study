@@ -53,6 +53,7 @@
 
 #include <TH1.h>
 #include <TH2.h>
+#include <TTree.h>
 #include <TProfile.h>
 #include <TGraph.h>
 #include <TMath.h>
@@ -165,6 +166,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         bool is_this_in_set1(int layer);
         bool is_this_in_set2(int layer);
         double convert_amplitude_to_total_energy_pedro(int type, double amplitude);
+        void reset_tree_variables();
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
         struct energysum {
@@ -190,9 +192,11 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
             hitsinfo() {
                 u_cor = v_cor = type = layer = 0;
                 hitid = nhits = 0;
+                is_Silicon_w120 = is_Silicon_w200 = is_Silicon_w300 = is_Scintillator = false;
             }
             int u_cor, v_cor, type, layer;
             unsigned int hitid, nhits;
+            bool is_Silicon_w120, is_Silicon_w200, is_Silicon_w300, is_Scintillator;
         };
 
         struct digisinfo {
@@ -245,8 +249,22 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         TH1D *hPhi;
 
         // hit
+        TTree   *tr_hits;
+        int tr_evtNo;
+        int tr_layerNo;
+        float tr_x;
+        float tr_y;
+        float tr_z;
+        float tr_e;
+        float tr_r;
+        float tr_eta;
+        float tr_phi;
+        bool tr_is_Silicon_w120;
+        bool tr_is_Silicon_w200;
+        bool tr_is_Silicon_w300;
+        bool tr_is_Scintillator;
+
         std::vector<TH1D*> vechist;   
-        TNtuple *nt_hit_position;
         TNtuple *nt_total_[26];
         TNtuple *nt_120mum_[26];
         TNtuple *nt_200mum_[26];
@@ -372,6 +390,23 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 
     usesResource("TFileService");
     edm::Service<TFileService> fs; 
+    tr_hits = fs->make<TTree>("tr_hits","");
+    tr_hits -> Branch("evtNo"   , &tr_evtNo   );
+    tr_hits -> Branch("layerNo" , &tr_layerNo );
+    tr_hits -> Branch("x"       , &tr_x       );
+    tr_hits -> Branch("y"       , &tr_y       );
+    tr_hits -> Branch("z"       , &tr_z       );
+    tr_hits -> Branch("e"       , &tr_e       );
+    tr_hits -> Branch("r"       , &tr_r       );
+    tr_hits -> Branch("eta"     , &tr_eta     );
+    tr_hits -> Branch("phi"     , &tr_phi     );
+    tr_hits -> Branch("is_Silicon_w120", &tr_is_Silicon_w120);
+    tr_hits -> Branch("is_Silicon_w200", &tr_is_Silicon_w200);
+    tr_hits -> Branch("is_Silicon_w300", &tr_is_Silicon_w300);
+    tr_hits -> Branch("is_Scintillator", &tr_is_Scintillator);
+
+    tr_evtNo = 0;
+
     hELossEE    = fs->make<TH1D>("hELossEE"    , "hELossEE"    , 1000 , 0. , 1000.);
     hELossEEF   = fs->make<TH1D>("hELossEEF"   , "hELossEEF"   , 1000 , 0. , 1000.);
     hELossEECN  = fs->make<TH1D>("hELossEECN"  , "hELossEECN"  , 1000 , 0. , 1000.);
@@ -380,7 +415,6 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     hELossHEFF  = fs->make<TH1D>("hELossHEFF"  , "hELossHEFF"  , 1000 , 0. , 1000.);
     hELossHEFCN = fs->make<TH1D>("hELossHEFCN" , "hELossHEFCN" , 1000 , 0. , 1000.);
     hELossHEFCK = fs->make<TH1D>("hELossHEFCK" , "hELossHEFCK" , 1000 , 0. , 1000.);
-    nt_hit_position = fs->make<TNtuple>("nt_hit_position","nt_hit_position", "r:z:is_Silicon_w120:is_Silicon_w200:is_Silicon_w300:is_Scintillator");
     hEta = fs->make<TH1D>("hEta" , "hEta" , 100 , -5. , 5.); // [1., 3.]
     hPhi = fs->make<TH1D>("hPhi" , "hPhi" , 20 , -3. , 3.);
 
@@ -529,7 +563,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 } //}}}
 DigiSim::~DigiSim(){}
 
-double DigiSim::get_additional_correction(int layer)
+double DigiSim::get_additional_correction(int layer) //{{{
 {
     // no correction
     return 1.;
@@ -554,11 +588,10 @@ double DigiSim::get_additional_correction(int layer)
     } else {
         return 1.;
     }
-}
-
-//E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
-bool DigiSim::is_this_in_set1(int layer)
+} //}}}
+bool DigiSim::is_this_in_set1(int layer) //{{{
 {
+//E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
     if(layer==1)       return true;
     else if(layer==3)  return true;
     else if(layer==5)  return true;
@@ -573,11 +606,10 @@ bool DigiSim::is_this_in_set1(int layer)
     else if(layer==23) return true;
     else if(layer==25) return true;
     else               return false;
-}
-
-//E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
-bool DigiSim::is_this_in_set2(int layer)
+} //}}}
+bool DigiSim::is_this_in_set2(int layer) //{{{
 {
+    //E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
     if(layer==1)       return true;
     else if(layer==3)  return true;
     else if(layer==5)  return true;
@@ -592,9 +624,8 @@ bool DigiSim::is_this_in_set2(int layer)
     else if(layer==23) return true;
     else if(layer==25) return true;
     else               return false;
-}
-
-double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitude)
+} //}}}
+double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitude) //{{{
 {
     double corrected_energy = 0.;
 
@@ -611,7 +642,23 @@ double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitu
     if(type==2) corrected_energy = 2.22060e+04 + 1.02199e+01*amplitude;
 
     return corrected_energy;
-}
+} //}}}
+void DigiSim::reset_tree_variables() //{{{
+{
+    tr_evtNo = 0;
+    tr_layerNo = 0;
+    tr_x = 0.;
+    tr_y = 0.;
+    tr_z = 0.;
+    tr_e = 0.;
+    tr_r = 0.;
+    tr_eta = 0.;
+    tr_phi = 0.;
+    tr_is_Silicon_w120 = false;
+    tr_is_Silicon_w200 = false;
+    tr_is_Silicon_w300 = false;
+    tr_is_Scintillator = false;
+} //}}}
 
 // ------------ method called for each event  ------------
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
@@ -717,8 +764,11 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     iEvent.getByToken(tSimCaloHitContainer, simhit);
     for(PCaloHitContainer::const_iterator itHit= simhit->begin(); itHit!= simhit->end(); ++itHit) {
         DetId detId = static_cast<DetId>(itHit->id());
+        bool isSilicon = rhtools_.isSilicon(detId);
+        bool isScintillator = rhtools_.isScintillator(detId);
+        int wafer_type = HGCSiliconDetId(detId).type();
 
-        bool store_hit_position_info = true;
+        bool store_hit_position_info = false; //{{{
         if(store_hit_position_info) {
             // Warn: Might need to set proper sub detector configuration.
             // Currently the code is for CEE analayis
@@ -727,9 +777,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             float y = gp.y();
             float z = gp.z();
             float Rxy = sqrt(pow(x, 2) + pow(y, 2));
-            bool isSilicon = rhtools_.isSilicon(detId);
-            bool isScintillator = rhtools_.isScintillator(detId);
-            int wafer_type = HGCSiliconDetId(detId).type();
 
             bool is_Silicon_w120 = false;
             bool is_Silicon_w200 = false;
@@ -742,7 +789,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(wafer_type==2) is_Silicon_w300 = true;
             }
 
-            nt_hit_position->Fill(Rxy, z, is_Silicon_w120, is_Silicon_w200, is_Silicon_w300, is_Scintillator);
+            //tr_hits->Fill(Rxy, z, is_Silicon_w120, is_Silicon_w200, is_Silicon_w300, is_Scintillator);
 
             bool debug = false;
             if(debug) {
@@ -758,9 +805,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 tb::print_debug_info("is_Silicon_w300" , is_Silicon_w300        );
                 tb::print_debug_info("is_Scintillator" , is_Scintillator , true );
             }
-        }
+        } //}}}
 
-        if(rhtools_.isSilicon(detId)){
+        if(isSilicon){
             HGCSiliconDetId id(itHit->id());
             double energy = itHit->energy()*1.e6; // from GeV to keV
 
@@ -778,23 +825,23 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(id.type()==HGCSiliconDetId::HGCalCoarseThick) hELossHEFCK->Fill(energy);
             }  
 
-            //GlobalPoint gp = rhtools_.getPosition(detId);
-            //std::cout << "check: " << gp.x() << ", " << gp.y() << std::endl;
-
-            //std::cout<<" hit energy = "<<itHit->energy()<<std::endl;
             uint32_t id_ = itHit->id();
             energysum esum;
             hitsinfo hinfo;
 
-            if (map_Simhits.count(id_) != 0) {
-                hinfo = map_Simhits[id_].first;
-                esum = map_Simhits[id_].second;
-            } else {
+            if (map_Simhits.count(id_) == 0) {
                 hinfo.hitid = nofSiHits;
                 hinfo.u_cor = rhtools_.getCell(detId).first ;
                 hinfo.v_cor = rhtools_.getCell(detId).second ;
-                hinfo.type  = id.type();
+                hinfo.type  = id.type(); // wafer_type
                 hinfo.layer = rhtools_.getLayerWithOffset(detId);
+                hinfo.is_Silicon_w120 = (wafer_type==0);
+                hinfo.is_Silicon_w200 = (wafer_type==1);
+                hinfo.is_Silicon_w300 = (wafer_type==2);
+                hinfo.is_Scintillator = isScintillator;
+            } else {
+                hinfo = map_Simhits[id_].first;
+                esum = map_Simhits[id_].second;
             }	
             esum.etotal += energy;
             esum.eTime[0] = energy;
@@ -802,13 +849,18 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
             bool debug = false;
             if(debug) {
-                tb::print_debug_info("hinfo.hitid"   , hinfo.hitid         );
-                tb::print_debug_info("hinfo.layer"   , hinfo.layer         );
-                tb::print_debug_info("hinfo.type"    , hinfo.type          );
-                tb::print_debug_info("hinfo.u_cor"   , hinfo.u_cor         );
-                tb::print_debug_info("hinfo.v_cor"   , hinfo.v_cor         );
-                tb::print_debug_info("esum.etotal"   , esum.etotal         );
-                tb::print_debug_info("esum.eTime[0]" , esum.eTime[0], true );
+                tb::print_debug_info("hinfo.hitid"           , hinfo.hitid           );
+                tb::print_debug_info("hinfo.layer"           , hinfo.layer           );
+                tb::print_debug_info("hinfo.type (wafer)"    , hinfo.type            );
+                tb::print_debug_info("hinfo.u_cor"           , hinfo.u_cor           );
+                tb::print_debug_info("hinfo.v_cor"           , hinfo.v_cor           );
+                tb::print_debug_info("hinfo.is_Silicon_w120" , hinfo.is_Silicon_w120 );
+                tb::print_debug_info("hinfo.is_Silicon_w200" , hinfo.is_Silicon_w200 );
+                tb::print_debug_info("hinfo.is_Silicon_w300" , hinfo.is_Silicon_w300 );
+                tb::print_debug_info("hinfo.is_Scintillator" , hinfo.is_Scintillator );
+                tb::print_debug_info("esum.etotal"           , esum.etotal           );
+                tb::print_debug_info("esum.eTime[0]"         , esum.eTime[0], true   );
+                counter += 1;
             }
         } // end of isSilicon bool
     } // end of simhit loop
@@ -908,15 +960,16 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::map<uint32_t, myDigis>::iterator itr_mydigi;
     std::map<uint32_t, std::pair<digisinfo, adcinfo>>::iterator itr_digi;
     std::map<uint32_t, std::pair<hitsinfo, energysum> >::iterator itr_sim;
-    Double_t max_energy=0; 
-    for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
-        energysum esum = (*itr_sim).second.second;
-        if(max_energy<esum.eTime[0]) max_energy=esum.eTime[0];
-    }
+    //Double_t max_energy=0; 
+    //for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
+    //    energysum esum = (*itr_sim).second.second;
+    //    if(max_energy<esum.eTime[0]) max_energy=esum.eTime[0];
+    //}
 
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
         uint32_t id_simhit = (*itr_sim).first;
         energysum esum = (*itr_sim).second.second;
+        hitsinfo hinfo = (*itr_sim).second.first;
         if(esum.etotal>0) // && esum.eTime[0]==max_energy)
         {
             for (itr_mydigi = my_map_digihits.begin(); itr_mydigi != my_map_digihits.end(); ++itr_mydigi) {
@@ -943,6 +996,21 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     double dEdx_weights = get_additional_correction(idx+1); // layer = idx+1
                     amplitude = amplitude * dEdx_weights;
 
+                    //reset_tree_variables();
+                    //tr_evtNo = 0;
+                    tr_layerNo = idx+1;
+                    tr_x = dinfo.x_pos;
+                    tr_y = dinfo.y_pos;
+                    tr_z = dinfo.z_pos;
+                    tr_e = energy; // keV
+                    tr_r = sqrt(pow(tr_x, 2) + pow(tr_y, 2));
+                    tr_eta = eta;
+                    tr_phi = phi;
+                    tr_is_Silicon_w120 = hinfo.is_Silicon_w120;
+                    tr_is_Silicon_w200 = hinfo.is_Silicon_w200;
+                    tr_is_Silicon_w300 = hinfo.is_Silicon_w300;
+                    tr_is_Scintillator = hinfo.is_Scintillator;
+                    tr_hits->Fill();
 
                     bool debug = false;
                     if(debug) {
@@ -1119,6 +1187,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //tb::print_debug_info("total_energy_mip_set1", total_energy_mip_set1);
     //tb::print_debug_info("total_corrected_energy_set1", total_corrected_energy_set1, true);
     //}}}
+    tr_evtNo += 1;
 } // end of analyze
 
 // others {{{
