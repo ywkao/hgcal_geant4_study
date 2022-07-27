@@ -275,13 +275,14 @@ def run(myfin, mydin):
     global flag_add_reference, myRootfiles, specified_directory
     myRootfiles = myfin
     specified_directory = mydin
+    create_directory( specified_directory )
+
 
     analyzer = an.HitAnalyzer(myfin, mydin, tags)
     analyzer.loop()
 
     return
 
-    create_directory( specified_directory )
     make_plot( "hEta", False )
     #make_plot( "hPhi", False )
 
@@ -367,7 +368,7 @@ if __name__ == "__main__":
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To130_v3"], eos + "/" + "R80To130_hits_study" )
+    run( m.input_files["R80To130_v3"], eos + "/" + "R80To130_hits_study_v1" )
 
     #tags = ["E300", "E100", "E20"]
     #tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]

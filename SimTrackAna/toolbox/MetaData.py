@@ -53,6 +53,12 @@ input_files = {
         "rootfiles_R80To130/geantoutput_D86_R80To130_E60.root",
     ],
 
+    "R80To130_v3" : [
+        "rootfiles_hit_position/geantoutput_D86_R80To130_E300.root",
+        "rootfiles_hit_position/geantoutput_D86_R80To130_E100.root",
+        "rootfiles_hit_position/geantoutput_D86_R80To130_E20.root",
+    ],
+
     "R80To150" : [
         "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E300.root",
         "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To150_E100.root",
