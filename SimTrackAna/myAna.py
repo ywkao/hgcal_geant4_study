@@ -31,16 +31,18 @@ c2.SetLeftMargin(0.)
 c2.SetRightMargin(0.)
 c2.Divide(7,4)
 
+c3 = ROOT.TCanvas("c3", "", 1200, 600)
+c3.SetGrid()
+c3.SetTicks(1,1)
+c3.SetLeftMargin(0.12)
+c3.SetRightMargin(0.08)
+
 X0 = {
     "uniform" : [1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,16.,17.,18.,19.,20.,21.,22.,23.,24.,25.,26.],
     "alternative" : [0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659],
 }
 
 eos = "./eos"
-def create_directory(dir_output):
-    if not os.path.isdir(dir_output):
-        subprocess.call("mkdir %s" % dir_output, shell=True)
-        subprocess.call("cp -p %s/index.php %s" % (eos, dir_output), shell=True)
 
 #----------------------------------------------------------------------------------------------------
 
@@ -55,7 +57,7 @@ def make_plot(varName, bool_make_logitudinal_profile):
     bool_this_is_eta_phi = "Eta" in varName or "Phi" in varName
     bool_single_figures = bool_ntuple or bool_this_is_eta_phi
     dir_output = specified_directory + "/" + pu.sub_directory[varName]
-    create_directory(dir_output)
+    pu.create_directory(dir_output)
     processes = [str(i) for i in range(1,27)]
 
     #++++++++++++++++++++++++++++++
@@ -253,15 +255,15 @@ def make_simple_plot(energyType, selection):
             # result
             #--------------------------------------------------
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.55, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0]) )
+            latex.DrawLatex( 0.45, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
             latex.SetTextColor(ROOT.kGreen+3)
-            latex.DrawLatex( 0.55, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f" % (labels[1], labels[1], pu.sigmaEoverE[1]) )
+            latex.DrawLatex( 0.45, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[1], labels[1], pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
 
         else:
             pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
 
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.55, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0]) )
+            latex.DrawLatex( 0.45, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
 
         c1.Update()
         pu.annotate()
@@ -275,13 +277,10 @@ def run(myfin, mydin):
     global flag_add_reference, myRootfiles, specified_directory
     myRootfiles = myfin
     specified_directory = mydin
-    create_directory( specified_directory )
+    pu.create_directory( specified_directory )
 
-
-    analyzer = an.HitAnalyzer(myfin, mydin, tags)
-    analyzer.loop()
-
-    return
+    #analyzer = an.HitAnalyzer(myfin, mydin, tags)
+    #analyzer.loop()
 
     make_plot( "hEta", False )
     #make_plot( "hPhi", False )
@@ -326,74 +325,33 @@ def run(myfin, mydin):
 
 #----------------------------------------------------------------------------------------------------
 
-def run_linear_fit(label, dx, dy):
-    #global specified_directory
-
-    Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
-    lx  = [ dx[ene]["mean"]  for ene in Energy ]
-    ly  = [ dy[ene]["mean"]  for ene in Energy ]
-    lex = [ dx[ene]["sigma"] for ene in Energy ]
-    ley = [ dy[ene]["sigma"] for ene in Energy ]
-
-    gr = pu.get_graph_from_list("Energy (MIPs)", "Generated shower energy (keV)", lx, ly, lex, ley, ROOT.kBlack)
-
-    c1.cd()
-    c1.Clear()
-    gr.Draw("ap")
-    gr.GetXaxis().SetLimits(0, 30000) # alogn X
-    gr.GetYaxis().SetRangeUser(0, 300000)
-
-    f1 = ROOT.TF1('f1', "[0] + [1]*x", 0, 30000)
-    gr.Fit(f1, "", "", 0, 30000)
-
-    my_stat_pos = [0.42, 0.87, 0.15, 0.15]
-    ROOT.gStyle.SetStatX(my_stat_pos[0])
-    ROOT.gStyle.SetStatY(my_stat_pos[1])
-    ROOT.gStyle.SetStatW(my_stat_pos[2])
-    ROOT.gStyle.SetStatH(my_stat_pos[3])
-
-    pu.annotate()
-    directory = eos + "/R80To130_linearFit/"
-    output = directory + "correction_generatedShowerEnergy_MIPs_" + label
-    create_directory(directory)
-    c1.SaveAs(output + ".png")
-    c1.SaveAs(output + ".pdf")
-
-#----------------------------------------------------------------------------------------------------
-
 if __name__ == "__main__":
     myRootfiles, specified_directory, label = [], "", {}
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.kMagenta, ROOT.kRed-7]
 
-    tags = ["E300", "E100", "E20"]
-    fit_constraints = m.fit_constraints_v1
-    for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To130_v3"], eos + "/" + "R80To130_hits_study_v1" )
+    #tags = ["E300", "E100", "E20"]
+    #fit_constraints = m.fit_constraints_v1
+    #for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    #run( m.input_files["R80To130_v3"], eos + "/" + "R80To130_hits_study_v2" )
 
     #tags = ["E300", "E100", "E20"]
     #tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
     #fit_constraints = m.fit_constraints_v1
     #for tag in tags: label[tag] = tag.split("_")[1] + " cm"
     #run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
-    exit()
-
-    #----------------------------------------------------------------------------------------------------
-
-    #tags = ["E300", "E100", "E20"]
-    #fit_constraints = m.fit_constraints_v1
-    #for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    #run( m.input_files["R80To100_v2"], eos + "/" + "R80To100_v5p1" )
     #exit()
 
-    tags = ["E300", "E100", "E20"]
-    fit_constraints = m.fit_constraints_v1
-    for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To130"], eos + "/" + "R80To130" )
+    #----------------------------------------------------------------------------------------------------
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R80To130_v2"], eos + "/" + "R80To130" )
+    run( m.input_files["R90To130_v2"], eos + "/" + "R90To130_v1" )
+
+    tags = ["E300", "E100", "E20"]
+    fit_constraints = m.fit_constraints_v1
+    for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    run( m.input_files["R90To130"], eos + "/" + "R90To130_v1" )
 
     #----------------------------------------------------------------------------------------------------
 
@@ -409,17 +367,27 @@ if __name__ == "__main__":
             print fit_result[energyType]["set2"][tag]
             print ""
 
-    #run_linear_fit("even", fit_result["MIP"]["odd" ], fit_result["SIM"]["odd" ])
-    #run_linear_fit("odd" , fit_result["MIP"]["even"], fit_result["SIM"]["even"])
-    run_linear_fit("set0", fit_result["MIP"]["set0"], fit_result["SIM"]["set0"])
-    run_linear_fit("set0_set1", fit_result["MIP"]["set1"], fit_result["SIM"]["set0"])
-    run_linear_fit("set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])
+    #pu.run_linear_fit(c1, "even", fit_result["MIP"]["odd" ], fit_result["SIM"]["odd" ])
+    #pu.run_linear_fit(c1, "odd" , fit_result["MIP"]["even"], fit_result["SIM"]["even"])
+    pu.run_linear_fit(c1, "set0", fit_result["MIP"]["set0"], fit_result["SIM"]["set0"])
+    pu.run_linear_fit(c1, "set0_set1", fit_result["MIP"]["set1"], fit_result["SIM"]["set0"])
+    pu.run_linear_fit(c1, "set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])
+
+    labels = ["#sigma#left(E_{set1}#right) / #bar{E}_{set1}", "#sigma#left(E_{set2}#right) / #bar{E}_{set2}"]
+    labels = ["Resolution of E_set1", "Resolution of E_set2"]
+    pu.run_resolution_summary(c3, labels, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
 
     #----------------------------------------------------------------------------------------------------
 
     exit()
 
 # previous stdy {{{
+    #tags = ["E300", "E100", "E20"]
+    #fit_constraints = m.fit_constraints_v1
+    #for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    #run( m.input_files["R80To100_v2"], eos + "/" + "R80To100_v5p1" )
+    #exit()
+
     tags = ["nominal", "inverse_dEdx_X0", "dEdx_divided_X0", "inverse_X0", "applied_dEdx"]
     for tag in tags: label[tag] = tag
     run( m.input_files["X0_corrections"]    , eos + "/" + "R80To100_study_with_corrections_v2"    )

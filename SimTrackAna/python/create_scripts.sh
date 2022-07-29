@@ -4,9 +4,13 @@ function create()
 {
     echo ">>> tag: $1"
     target="run_digiHit_cfg_${1}.py"
-    cp run_digiHit_cfg_ProdCut_electron_1mm.py $target
-    echo $1 >> $target
-    vim $target
+    cp run_digiHit_cfg_D86_R80To130_E100.py $target
+    sed -i '9s/10/100/g' ${target}
+    sed -i '18ctag = '"\"$1\""'' ${target}
+    sed -n '9p' ${target}
+    sed -n '18p' ${target}
+    #echo $1 >> $target
+    #vim $target
 
     return 
 
@@ -25,17 +29,12 @@ function copy()
 # main
 #++++++++++++++++++++++++++++++
 
-#create "D86_R80To110_E100"
-#create "D86_R80To120_E100"
-#create "D86_R80To130_E100"
-#create "D86_R80To140_E100"
-
-#create "D86_R80To130_E20"
-#create "D86_R80To130_E60"
-#create "D86_R80To130_E100"
-#create "D86_R80To130_E175"
-#create "D86_R80To130_E225"
-#create "D86_R80To130_E300"
+#create "D86_R90To130_E20"
+#create "D86_R90To130_E60"
+#create "D86_R90To130_E100"
+#create "D86_R90To130_E175"
+#create "D86_R90To130_E225"
+#create "D86_R90To130_E300"
 
 #create D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_10mm
 #create D86_R80To100_E100_airPCB_turnOffComptionScattering_ProdCut_electron_5mm
@@ -58,11 +57,3 @@ copy run_digiHit_cfg_ProdCut_egamma_1mm.py run_digiHit_cfg_ProdCut_egamma_1000mm
 copy run_digiHit_cfg_ProdCut_electron_1mm.py run_digiHit_cfg_ProdCut_electron_1000mm.py
 copy run_digiHit_cfg_ProdCut_photon_1mm.py run_digiHit_cfg_ProdCut_photon_1000mm.py
 
-exit
-
-create "D86_R35To60_E20"
-create "D86_R35To60_E100"
-create "D86_R35To60_E300"
-create "D86_R80To100_E20"
-create "D86_R80To100_E100"
-create "D86_R80To100_E300"

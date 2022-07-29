@@ -1,3 +1,7 @@
 
 clue_performance/python/*pyc
 clue_performance/python/__pycache__
+
+SimTrackAna/python/run*
+SimTrackAna/root*
+SimTrackAna/toolbox/*pyc

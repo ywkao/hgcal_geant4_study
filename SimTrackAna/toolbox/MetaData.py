@@ -2,24 +2,18 @@
 
 # E = 300, 100, 20
 fit_constraints_v1 = {
-    "MIP" : {
-        #"xRanges" : [[11000, 17000], [3000, 9000], [500, 6500]],
-        "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]],
-    },
-
-    "SIM" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000], [0, 30000]] },
-    "ENE" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000], [0, 30000]] },
+    #"MIP" : { "xRanges" : [[11000, 17000], [3000, 9000], [500, 6500]], },
+    "MIP" : { "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]] },
+    "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300], [0, 300]] },
+    "ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300], [0, 300]] },
 }
 
 # E = 225, 175, 60
 fit_constraints_v2 = {
-    "MIP" : {
-        #"xRanges" : [[8000, 14000], [6000, 12000], [1000, 7000]],
-        "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]],
-    },
-
-    "SIM" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000], [0, 30000]] },
-    "ENE" : { "xRanges" : [[0, 300000], [0, 300000], [0, 300000], [0, 30000]] },
+    #"MIP" : { "xRanges" : [[8000, 14000], [6000, 12000], [1000, 7000]], },
+    "MIP" : { "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]] },
+    "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300], [0, 300]] },
+    "ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300], [0, 300]] },
 }
 
 input_files = {
@@ -39,6 +33,18 @@ input_files = {
         "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To100_E300.root",
         "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To100_E100.root",
         "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To100_E20.root",
+    ],
+
+    "R90To130" : [
+        "rootfiles_hit_position/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/geantoutput_D86_R90To130_E20.root",
+    ],
+
+    "R90To130_v2" : [
+        "rootfiles_hit_position/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/geantoutput_D86_R90To130_E60.root",
     ],
 
     "R80To130" : [

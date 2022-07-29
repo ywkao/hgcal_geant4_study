@@ -8,6 +8,12 @@ ROOT.gROOT.SetBatch(True)
 
 import MetaData as m
 
+eos = "./eos"
+def create_directory(dir_output):
+    if not os.path.isdir(dir_output):
+        subprocess.call("mkdir %s" % dir_output, shell=True)
+        subprocess.call("cp -p %s/index.php %s" % (eos, dir_output), shell=True)
+
 def annotate(rshift=0):
     latex = ROOT.TLatex()
     latex.SetNDC()
@@ -15,7 +21,7 @@ def annotate(rshift=0):
     latex.SetTextAlign(11)
     #latex.SetTextSize(24)
     latex.SetTextSize(20)
-    latex.DrawLatex( 0.12, 0.912, "#bf{CMS} #it{work in progress}" )
+    latex.DrawLatex( 0.12, 0.912, "#bf{CMS} #it{Preliminary}" )
     latex.DrawLatex( 0.56+rshift, 0.912, "D86 Simulation with 1,000 events" )
     #latex.DrawLatex( 0.58+rshift, 0.912, "D86 Simulation with 1,000 events" )
     #latex.DrawLatex( 0.69+rshift, 0.912, "%s fb^{-1} (13 TeV)" % str(lumi["RunII"]) )
@@ -154,15 +160,15 @@ def get_graph_from_list(xtitle, ytitle, lx, ly, lex, ley, color, normalize_to_un
 
 #----------------------------------------------------------------------------------------------------
 
-sigmaEoverE = []
+sigmaEoverE, error_sigmaEoverE = [], []
 def reset_containers():
-    global sigmaEoverE 
-    sigmaEoverE = []
+    global sigmaEoverE , error_sigmaEoverE
+    sigmaEoverE, error_sigmaEoverE = [], []
 
 fit_result = {}
 def record_fit_result(myTags, func):
     print ">>> in record_fit_result...."
-    global fit_result
+    global fit_result, sigmaEoverE, error_sigmaEoverE
 
     fit_const = func.GetParameter(0)
     fit_mean  = func.GetParameter(1)
@@ -187,7 +193,11 @@ def record_fit_result(myTags, func):
     fit_result[energyType][label][tag]["sigma"] = fit_sigma
     fit_result[energyType][label][tag]["error_sigma"] = fitError_sigma
 
-    sigmaEoverE.append(fit_sigma/fit_mean)
+    ratio = fit_sigma/fit_mean
+    uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+    
+    sigmaEoverE.append(ratio)
+    error_sigmaEoverE.append(uncertainty)
 
     #return fit_mean, fit_sigma
     #print ">>> result:", fit_const, fit_mean, fit_sigma 
@@ -244,7 +254,7 @@ def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, st
 
 def get_strings_for_simple_plot(energyType, selection):
     if energyType == "ENE":
-        xtitle = "Corrected energy [keV]"
+        xtitle = "Corrected energy [MeV]"
         outputName = "h_Edep_corrected_energy_%s_" % selection
 
         if selection == "set1_set2":
@@ -277,7 +287,7 @@ def get_strings_for_simple_plot(energyType, selection):
             labels = ["set0", "set0"]
 
     if energyType == "SIM":
-        xtitle = "Deposited energy [keV]"
+        xtitle = "Deposited energy [MeV]"
         outputName = "h_Edep_SIM_%s_" % selection
 
         if selection == "odd_even":
@@ -296,3 +306,110 @@ def get_strings_for_simple_plot(energyType, selection):
             labels = ["set0", "set0"]
 
     return xtitle, outputName, hname_odd, hname_even, labels
+
+#----------------------------------------------------------------------------------------------------
+
+def run_linear_fit(c1, label, dx, dy):
+    #global specified_directory
+
+    Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
+    lx  = [ dx[ene]["mean"]  for ene in Energy ]
+    ly  = [ dy[ene]["mean"]  for ene in Energy ]
+    lex = [ dx[ene]["sigma"] for ene in Energy ]
+    ley = [ dy[ene]["sigma"] for ene in Energy ]
+
+    gr = get_graph_from_list("Energy (MIPs)", "Generated shower energy (MeV)", lx, ly, lex, ley, ROOT.kBlack)
+
+    c1.cd()
+    c1.Clear()
+    gr.Draw("ap")
+    gr.GetXaxis().SetLimits(0, 30000) # alogn X
+    gr.GetYaxis().SetRangeUser(0, 300)
+
+    f1 = ROOT.TF1('f1', "[0] + [1]*x", 0, 30000)
+    gr.Fit(f1, "", "", 0, 30000)
+
+    my_stat_pos = [0.42, 0.87, 0.15, 0.15]
+    ROOT.gStyle.SetStatX(my_stat_pos[0])
+    ROOT.gStyle.SetStatY(my_stat_pos[1])
+    ROOT.gStyle.SetStatW(my_stat_pos[2])
+    ROOT.gStyle.SetStatH(my_stat_pos[3])
+
+    annotate()
+    directory = "./eos/R90To130_linearFit/"
+    output = directory + "correction_generatedShowerEnergy_MIPs_" + label
+    create_directory(directory)
+    c1.SaveAs(output + ".png")
+    c1.SaveAs(output + ".pdf")
+
+#----------------------------------------------------------------------------------------------------
+
+def run_resolution_summary(c1, labels, dy1, dy2):
+    #global specified_directory
+
+    Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
+    lx  = [ float(ene.split('E')[1]) for ene in Energy ]
+    lex = [0.]*6
+
+    ly1, ly2, ley1, ley2 = [], [], [], []
+    for ene in Energy:
+        fit_mean = dy1[ene]["mean"]
+        fit_sigma = dy1[ene]["sigma"]
+        fitError_mean  = dy1[ene]["error_mean"]
+        fitError_sigma = dy1[ene]["error_sigma"]
+
+        ratio = fit_sigma/fit_mean
+        uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+
+        ly1.append(ratio)
+        ley1.append(uncertainty)
+
+
+        fit_mean = dy2[ene]["mean"]
+        fit_sigma = dy2[ene]["sigma"]
+        fitError_mean  = dy2[ene]["error_mean"]
+        fitError_sigma = dy2[ene]["error_sigma"]
+
+        ratio = fit_sigma/fit_mean
+        uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+
+        ly2.append(ratio)
+        ley2.append(uncertainty)
+
+
+    gr1 = get_graph_from_list("Positron energy (GeV)", "#sigma#left(E#right) / #bar{E}", lx, ly1, lex, ley1,  ROOT.kBlue)
+    gr2 = get_graph_from_list("Positron energy (GeV)", "#sigma#left(E#right) / #bar{E}", lx, ly2, lex, ley2,  ROOT.kGreen+3)
+
+
+    #legend = ROOT.TLegend(0.52, 0.65, 0.88, 0.85)
+    #legend.SetLineColor(0)
+    legend = ROOT.TLegend(0.62, 0.65, 0.89, 0.85)
+    legend.SetTextSize(0.04)
+    legend.AddEntry(gr1, labels[0], "ep")
+    legend.AddEntry(gr2, labels[1], "ep")
+
+    c1.cd()
+    c1.Clear()
+
+    gr1.SetLineWidth(2)
+    gr1.SetMarkerStyle(20)
+    gr1.SetMarkerSize(1.25)
+    gr1.GetXaxis().SetTitleSize(0.04)
+    gr1.GetYaxis().SetTitleSize(0.04)
+    gr1.Draw("ap")
+    gr1.GetXaxis().SetLimits(0, 350) # alogn X
+    gr1.GetYaxis().SetRangeUser(0.018, 0.043)
+
+    gr2.SetLineWidth(2)
+    gr2.SetMarkerStyle(20)
+    gr2.SetMarkerSize(1.25)
+    gr2.Draw("p;same")
+    legend.Draw("same")
+
+    annotate(0.12)
+    directory = "./eos/R90To130_linearFit/"
+    output = directory + "summary_resolution"
+    create_directory(directory)
+    c1.SaveAs(output + ".png")
+    c1.SaveAs(output + ".pdf")
+

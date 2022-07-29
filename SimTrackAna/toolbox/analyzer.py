@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy
 import ROOT
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(2210)
@@ -25,7 +26,7 @@ class HitAnalyzer:
     def loop(self):
         vt, vf = [], []
         for i, rootfile in enumerate(self.input_files):
-            if not i==1: continue # use E100 for check
+            #if not i==1: continue # use E100 for check
 
             print ">>> rootfile", rootfile
             fin = ROOT.TFile.Open(rootfile, "R")
@@ -65,7 +66,7 @@ class HitAnalyzer:
         for i, hit in enumerate(tree):
             total_energy[hit.evtNo] += hit.e
 
-        print "total_energy =", total_energy
+        #print "total_energy =", total_energy
 
         #----------------------------------------
         # register histograms
@@ -76,6 +77,7 @@ class HitAnalyzer:
 
         vh_Rxy_z = []
         colors = [ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta]
+        colors = [ROOT.kBlack, ROOT.kBlack, ROOT.kBlack]
         wafer_types = ["is_Silicon_w120", "is_Silicon_w200", "is_Silicon_w300"]
         for i, wafer in enumerate(wafer_types):
             name, title = "h_hits_Rxy_Z_%s" % wafer, "Hits R_{xy} vs Z"
@@ -104,18 +106,52 @@ class HitAnalyzer:
             h.GetYaxis().SetTitleOffset(1.0)
             vh_x_y.append(h)
 
+        e_set0 = ROOT.TH1D("e_set0", ";E_{set0} (keV);Entries", 400, 0, 400000)
+        e_set0.SetTitle("")
+        e_set0.SetLineWidth(2)
+        e_set0.SetLineColor(ROOT.kBlack)
+        e_set0.GetXaxis().SetRangeUser(0, 150000)
+        e_set0.GetXaxis().SetTitleOffset(1.1)
+
+        h_Rxy_e = ROOT.TH2D("h_Rxy_e", ";E_{set0} (keV);R_{xy} (cm)", 60, 40000, 100000, 600, 0, 300)
+
+        h_eta = ROOT.TH1D("h_eta", ";Eta;Entries", 20, 1., 3.)
+
+        #----------------------------------------
+        # deepcopy
+        #----------------------------------------
+        a, b = copy.deepcopy(vh_Rxy_z), copy.deepcopy(vh_x_y)
+        c = e_set0.Clone()
+
         #----------------------------------------
         # fill histograms
         #----------------------------------------
+        for evtNo in range(len(total_energy)):
+            if total_energy[evtNo] > 65000.:
+                e_set0.Fill(total_energy[evtNo])
+            else:
+                c.Fill(total_energy[evtNo])
+
         for i, hit in enumerate(tree):
-            if not total_energy[hit.evtNo] > 65000.: continue # 65 MeV
+            h_Rxy_e.Fill(total_energy[hit.evtNo], hit.r)
+            h_eta.Fill(hit.eta)
 
-            if hit.is_Silicon_w120: vh_Rxy_z[0].Fill(hit.z, hit.r)
-            if hit.is_Silicon_w200: vh_Rxy_z[1].Fill(hit.z, hit.r)
-            if hit.is_Silicon_w300: vh_Rxy_z[2].Fill(hit.z, hit.r)
+            if total_energy[hit.evtNo] > 65000.:
+                if hit.is_Silicon_w120: vh_Rxy_z[0].Fill(hit.z, hit.r)
+                if hit.is_Silicon_w200: vh_Rxy_z[1].Fill(hit.z, hit.r)
+                if hit.is_Silicon_w300: vh_Rxy_z[2].Fill(hit.z, hit.r)
 
-            idx = hit.layerNo-1
-            vh_x_y[idx].Fill(hit.x, hit.y)
+                idx = hit.layerNo-1
+                vh_x_y[idx].Fill(hit.x, hit.y)
+
+            # to be observed (kRed)
+            else:
+                if hit.is_Silicon_w120: a[0].Fill(hit.z, hit.r)
+                if hit.is_Silicon_w200: a[1].Fill(hit.z, hit.r)
+                if hit.is_Silicon_w300: a[2].Fill(hit.z, hit.r)
+
+                idx = hit.layerNo-1
+                b[idx].Fill(hit.x, hit.y)
 
         #----------------------------------------
         # make plots
@@ -124,13 +160,19 @@ class HitAnalyzer:
             if i==0: h.Draw()
             else:    h.Draw("same")
 
-        legend.Draw("same")
+        for i, h in enumerate(a):
+            h.SetMarkerColor(ROOT.kRed)
+            h.Draw("same")
+
+        #legend.Draw("same")
         output_file = self.output_directory + "/hits_Rxy_Z"
         self.canvas.SaveAs(output_file + ".png")
         self.canvas.Print(self.output_pdf_file + "(", "pdf")
 
         for i, h in enumerate(vh_x_y):
             h.Draw()
+            b[i].SetMarkerColor(ROOT.kRed)
+            b[i].Draw("same")
 
             layer = i+1
             tag = "0%d" % layer if layer < 10 else "%d" % layer
@@ -141,6 +183,18 @@ class HitAnalyzer:
                 self.canvas.Print(self.output_pdf_file + ")", "pdf")
             else:
                 self.canvas.Print(self.output_pdf_file, "pdf")
+
+        c.SetFillColorAlpha(ROOT.kRed, 0.5)
+        e_set0.Draw()
+        c.Draw("same")
+        self.canvas.SaveAs(self.output_directory + "/h_sim_E_set0.png")
+
+        ROOT.TGaxis.SetExponentOffset(0.01, -0.05, "x")
+        h_Rxy_e.Draw("colz")
+        self.canvas.SaveAs(self.output_directory + "/h_Rxy_e.png")
+
+        h_eta.Draw()
+        self.canvas.SaveAs(self.output_directory + "/h_eta.png")
 
 
     def __retrieve_hit_plots(self, tree):

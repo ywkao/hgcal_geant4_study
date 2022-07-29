@@ -428,16 +428,16 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     total_MIP_set1 = fs->make<TH1D>("total_MIP_set1" , "total_MIP_set1" , 200 , 0. ,  30000.);
     total_MIP_set2 = fs->make<TH1D>("total_MIP_set2" , "total_MIP_set2" , 200 , 0. ,  30000.);
 
-    total_SIM_odd  = fs->make<TH1D>("total_SIM_odd"  , "total_SIM_odd"  , 200 , 0. , 200000.);
-    total_SIM_even = fs->make<TH1D>("total_SIM_even" , "total_SIM_even" , 200 , 0. , 200000.);
-    total_SIM_set0 = fs->make<TH1D>("total_SIM_set0" , "total_SIM_set0" , 400 , 0. , 400000.);
-    total_SIM_set1 = fs->make<TH1D>("total_SIM_set1" , "total_SIM_set1" , 200 , 0. , 200000.);
-    total_SIM_set2 = fs->make<TH1D>("total_SIM_set2" , "total_SIM_set2" , 200 , 0. , 200000.);
+    total_SIM_odd  = fs->make<TH1D>("total_SIM_odd"  , "total_SIM_odd"  , 200 , 0. , 200.);
+    total_SIM_even = fs->make<TH1D>("total_SIM_even" , "total_SIM_even" , 200 , 0. , 200.);
+    total_SIM_set0 = fs->make<TH1D>("total_SIM_set0" , "total_SIM_set0" , 400 , 0. , 400.);
+    total_SIM_set1 = fs->make<TH1D>("total_SIM_set1" , "total_SIM_set1" , 200 , 0. , 200.);
+    total_SIM_set2 = fs->make<TH1D>("total_SIM_set2" , "total_SIM_set2" , 200 , 0. , 200.);
 
     // energy projected from MIP to SIM_set0
-    total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 400 , 0. , 400000.);
-    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 200 , 0. , 400000.);
-    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 200 , 0. , 400000.);
+    total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 400 , 0. , 400.);
+    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 200 , 0. , 400.);
+    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 200 , 0. , 400.);
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
@@ -451,7 +451,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_fine_", i+1);
         total_MIP_fine_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_total_", i+1);
-        total_SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
+        total_SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10.);
         tb::set_string(hnamestr, "multiplicity_digis_total_", i+1);
         multiplicity_digis_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 2000.);
         tb::set_string(hnamestr, "multiplicity_simhits_total_", i+1);
@@ -466,7 +466,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_120mum_", i+1);
         total_MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_120mum_", i+1);
-        total_SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
+        total_SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10.);
         tb::set_string(hnamestr, "multiplicity_digis_120mum_", i+1);
         multiplicity_digis_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_120mum_", i+1);
@@ -477,7 +477,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_200mum_", i+1);
         total_MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_200mum_", i+1);
-        total_SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
+        total_SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10.);
         tb::set_string(hnamestr, "multiplicity_digis_200mum_", i+1);
         multiplicity_digis_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_200mum_", i+1);
@@ -488,7 +488,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "total_MIP_300mum_", i+1);
         total_MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
         tb::set_string(hnamestr, "total_SIM_300mum_", i+1);
-        total_SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10000.);
+        total_SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 10.);
         tb::set_string(hnamestr, "multiplicity_digis_300mum_", i+1);
         multiplicity_digis_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 200.);
         tb::set_string(hnamestr, "multiplicity_simhits_300mum_", i+1);
@@ -500,7 +500,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "MIP_total_layer_", i+1);
         MIP_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
         tb::set_string(hnamestr, "SIM_total_layer_", i+1);
-        SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
+        SIM_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 1.);
         tb::set_string(hnamestr, "ADC_SimhitE_total_layer_", i+1);
         adc_sim_total_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
         tb::set_string(hnamestr, "ADC_MIP_total_layer_", i+1);
@@ -513,7 +513,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "MIP_120mum_layer_", i+1);
         MIP_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
         tb::set_string(hnamestr, "SIM_120mum_layer_", i+1);
-        SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
+        SIM_120mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 1.);
         tb::set_string(hnamestr, "ADC_SimhitE_120mum_layer_", i+1);
         adc_sim_120mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
         tb::set_string(hnamestr, "ADC_MIP_120mum_layer_", i+1);
@@ -526,7 +526,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "MIP_200mum_layer_", i+1);
         MIP_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
         tb::set_string(hnamestr, "SIM_200mum_layer_", i+1);
-        SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
+        SIM_200mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 1.);
         tb::set_string(hnamestr, "ADC_SimhitE_200mum_layer_", i+1);
         adc_sim_200mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
         tb::set_string(hnamestr, "ADC_MIP_200mum_layer_", i+1);
@@ -539,7 +539,7 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tb::set_string(hnamestr, "MIP_300mum_layer_", i+1);
         MIP_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 150, 0, 150.);
         tb::set_string(hnamestr, "SIM_300mum_layer_", i+1);
-        SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 80, 0, 800.);
+        SIM_300mum_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 1.);
         tb::set_string(hnamestr, "ADC_SimhitE_300mum_layer_", i+1);
         adc_sim_300mum_[i] = fs->make<TProfile>(hnamestr.str().c_str(), hnamestr.str().c_str(), 800., 0, 800., 0., 800.);
         tb::set_string(hnamestr, "ADC_MIP_300mum_layer_", i+1);
@@ -637,9 +637,14 @@ double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitu
     //if(type==2) corrected_energy = 2.36739e+04 + 9.89*amplitude;
 
     // R80to130
-    if(type==0) corrected_energy = 2.18562e+04 + 4.86902e+00*amplitude;
-    if(type==1) corrected_energy = 2.15429e+04 + 9.28686e+00*amplitude;
-    if(type==2) corrected_energy = 2.22060e+04 + 1.02199e+01*amplitude;
+    //if(type==0) corrected_energy = 2.18562e+04 + 4.86902e+00*amplitude;
+    //if(type==1) corrected_energy = 2.15429e+04 + 9.28686e+00*amplitude;
+    //if(type==2) corrected_energy = 2.22060e+04 + 1.02199e+01*amplitude;
+
+    // R90to130 (MIPs to MeV)
+    if(type==0) corrected_energy = 2.17293e+01 + 4.96546e-03*amplitude;
+    if(type==1) corrected_energy = 2.15038e+01 + 9.45215e-03*amplitude;
+    if(type==2) corrected_energy = 2.22265e+01 + 1.03710e-02*amplitude;
 
     return corrected_energy;
 } //}}}
@@ -809,7 +814,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
         if(isSilicon){
             HGCSiliconDetId id(itHit->id());
-            double energy = itHit->energy()*1.e6; // from GeV to keV
+            double energy = itHit->energy()*1.e3; // from GeV to MeV
 
             if(nameDetector_ == "HGCalEESensitive"){
                 hELossEE->Fill(energy);
@@ -979,7 +984,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 double    eta        = dinfo.eta;
                 double    phi        = dinfo.phi;
                 double    amplitude  = (*itr_mydigi).second.amplitude;
-                double    energy     = esum.eTime[0]; // keV
+                double    energy     = esum.eTime[0]; // MeV
                 int       idx        = dinfo.layer-1;
                 int       cellType   = (*itr_sim).second.first.type;
                 bool      is_coarse  = cellType==HGCSiliconDetId::HGCalCoarseThin || cellType==HGCSiliconDetId::HGCalCoarseThick;
@@ -1002,7 +1007,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     tr_x = dinfo.x_pos;
                     tr_y = dinfo.y_pos;
                     tr_z = dinfo.z_pos;
-                    tr_e = energy; // keV
+                    tr_e = energy; // MeV
                     tr_r = sqrt(pow(tr_x, 2) + pow(tr_y, 2));
                     tr_eta = eta;
                     tr_phi = phi;

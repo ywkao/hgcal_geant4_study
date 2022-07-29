@@ -33,7 +33,7 @@ if __name__ == "__main__":
     ]
 
     #for f in configs:
-    for f in glob.glob("python/*130*"):
+    for f in glob.glob("python/*90*"):
         tag = f.split('_cfg_')[1].split('.')[0]
         command = "time cmsRun %s 2>&1 | tee tmp/log_%s.txt" % (f, tag)
         #command = "sed -n '18p' %s" % f
