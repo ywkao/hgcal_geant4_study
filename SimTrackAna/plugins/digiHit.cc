@@ -1,6 +1,6 @@
 #include "digiHit.h"
 
-// ------------ method called for each event  ------------
+// ------------ method called for each event  ------------ //
 void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
     // init {{{
@@ -20,15 +20,15 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     double total_corrected_energy_set0 = 0.;
     double total_corrected_energy_set1 = 0.;
     double total_corrected_energy_set2 = 0.;
-    std::vector<double> total_energy_adc_total ;
-    std::vector<double> total_energy_mip_total ;
+    std::vector<double> total_energy_adc_total  ;
+    std::vector<double> total_energy_mip_total  ;
     std::vector<double> total_energy_mip_coarse ;
-    std::vector<double> total_energy_mip_fine ;
-    std::vector<double> total_energy_sim_total ;
-    std::vector<int>    num_digis_total        ;
-    std::vector<int>    num_simhits_total      ;
+    std::vector<double> total_energy_mip_fine   ;
+    std::vector<double> total_energy_sim_total  ;
+    std::vector<int>    num_digis_total         ;
+    std::vector<int>    num_simhits_total       ;
     std::vector<int>    num_simhits_coarse      ;
-    std::vector<int>    num_simhits_fine      ;
+    std::vector<int>    num_simhits_fine        ;
 
     std::vector<double> total_energy_adc_120mum ;
     std::vector<double> total_energy_mip_120mum ;
@@ -96,6 +96,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     
     //----------------------------------------------------------------------------------------------------}}}
     // Primary vertex {{{
+    //----------------------------------------------------------------------------------------------------
     // Not used becasue it is checked that (px, py, pz) of gen-particle can be used for linear trajectory
     edm::Handle<edm::HepMCProduct> mcHandle;
     iEvent.getByToken(mc_, mcHandle);
@@ -108,8 +109,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         tb::print_debug_info("pv.z()" , primaryVertex->position().z()       );
         tb::print_debug_info("pv.t()" , primaryVertex->position().t(), true );
     }
-    //}}}
+    //----------------------------------------------------------------------------------------------------}}}
     // Gen particles {{{
+    //----------------------------------------------------------------------------------------------------
     std::vector<reco::GenParticle> truth_positron;
     Handle<std::vector<reco::GenParticle> > genParticleHandle;
     iEvent.getByToken(genParticles_, genParticleHandle);
@@ -153,8 +155,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         tb::print_debug_info("r.py()"    , primaryVertex->position().y()/truth_positron[0].py()        );
         tb::print_debug_info("r.pz()"    , primaryVertex->position().z()/truth_positron[0].pz(), true  );
     }
-    //}}}
 
+    //----------------------------------------------------------------------------------------------------}}}
     // SimHit Handle {{{
     //----------------------------------------------------------------------------------------------------
     std::map<uint32_t, std::pair<hitsinfo, energysum> > map_Simhits;

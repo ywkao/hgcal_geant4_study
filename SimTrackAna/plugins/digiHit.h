@@ -132,10 +132,10 @@ void configureIt(const edm::ParameterSet& conf, HGCalUncalibRecHitRecWeightsAlgo
         maker.set_fCPerMIP(std::vector<double>({1.0}));
     }
 } //}}}
-class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
+
+class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     public:
         //Implemented following Validation/HGCalValidation/plugins/HGCalSimHitValidation.cc
-
         explicit DigiSim(const edm::ParameterSet&);
         ~DigiSim();
         double get_additional_correction(int layer);
@@ -145,7 +145,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         void reset_tree_variables();
         GlobalPoint projectHitPositionAt(float z,float eta,float phi);
         float get_distance_from_expected_hit(double x, double y, double z, double eta, double phi);
-
+        // details {{{
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
         struct energysum {
             energysum() {
@@ -193,13 +193,13 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
             adcinfo ainfo;
             double amplitude;
         };
-
+        //}}}
     private:
         virtual void beginJob() override;
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
         //const std::string name;
-
+        // details {{{
         const std::string nameDetector_; 
         const bool ifNose_;
         const int verbosity_, SampleIndx_;
@@ -326,13 +326,13 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
                                                     58.63, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 83.08, 83.08, 83.43, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61 };
 
         std::vector<double> x_D86 = { 0., 0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659 };
+        //}}}
 
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
         edm::ESGetToken<SetupData, SetupRecord> setupToken_;
 #endif
-
 };
-// }}}
+
 DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         //auto temp = iConfig.getUntrackedParameter<edm::InputTag>("digihits");
         nameDetector_(iconfig.getParameter<std::string>("Detector")),
@@ -557,10 +557,11 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 #ifdef this_is_an_eventsetup_example
     setupdatatoken_ = esConsumes<setupdata, setuprecord>();
 #endif
-} //}}}
+} 
+//}}}
 DigiSim::~DigiSim(){}
 
-double DigiSim::get_additional_correction(int layer) //{{{
+double DigiSim::get_additional_correction(int layer)
 {
     // no correction
     return 1.;
@@ -585,10 +586,11 @@ double DigiSim::get_additional_correction(int layer) //{{{
     } else {
         return 1.;
     }
-} //}}}
-bool DigiSim::is_this_in_set1(int layer) //{{{
+}
+
+bool DigiSim::is_this_in_set1(int layer)
 {
-//E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
+    //E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
     if(layer==1)       return true;
     else if(layer==3)  return true;
     else if(layer==5)  return true;
@@ -603,8 +605,9 @@ bool DigiSim::is_this_in_set1(int layer) //{{{
     else if(layer==23) return true;
     else if(layer==25) return true;
     else               return false;
-} //}}}
-bool DigiSim::is_this_in_set2(int layer) //{{{
+}
+
+bool DigiSim::is_this_in_set2(int layer)
 {
     //E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
     if(layer==1)       return true;
@@ -621,8 +624,9 @@ bool DigiSim::is_this_in_set2(int layer) //{{{
     else if(layer==23) return true;
     else if(layer==25) return true;
     else               return false;
-} //}}}
-double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitude) //{{{
+}
+
+double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitude)
 {
     double corrected_energy = 0.;
 
@@ -644,8 +648,9 @@ double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitu
     if(type==2) corrected_energy = 2.22265e+01 + 1.03710e-02*amplitude;
 
     return corrected_energy;
-} //}}}
-void DigiSim::reset_tree_variables() //{{{
+}
+
+void DigiSim::reset_tree_variables()
 {
     tr_evtNo = 0;
     tr_layerNo = 0;
@@ -662,20 +667,21 @@ void DigiSim::reset_tree_variables() //{{{
     tr_is_Silicon_w200 = false;
     tr_is_Silicon_w300 = false;
     tr_is_Scintillator = false;
-} //}}}
-GlobalPoint DigiSim::projectHitPositionAt(float z,float eta,float phi) //{{{
+}
+
+GlobalPoint DigiSim::projectHitPositionAt(float z,float eta,float phi)
 {
   float theta=2*TMath::ATan(exp(-eta));
   float rho=z*TMath::Tan(theta);
   GlobalPoint xyz(rho*TMath::Cos(phi),rho*TMath::Sin(phi),z);
   return xyz;
-}//}}}
-float DigiSim::get_distance_from_expected_hit(double x, double y, double z, double eta, double phi) //{{{
+}
+
+float DigiSim::get_distance_from_expected_hit(double x, double y, double z, double eta, double phi)
 {
     TVector2 xy(x,y);
     GlobalPoint xyzExp = projectHitPositionAt(z, eta, phi);
     TVector2 xyExp(xyzExp.x(),xyzExp.y());
     float d = (xyExp-xy).Mod();
     return d;
-} //}}}
-
+}
