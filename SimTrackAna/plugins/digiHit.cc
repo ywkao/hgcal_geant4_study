@@ -100,6 +100,8 @@
 #include "DataFormats/HGCRecHit/interface/HGCRecHitCollections.h"
 #include "RecoLocalCalo/HGCalRecAlgos/interface/HGCalUncalibRecHitRecWeightsAlgo.h"
 //}}}
+#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 #include "../interface/toolbox.h"
 #include <TNtuple.h>
 #include <TVector3.h>
@@ -167,6 +169,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         bool is_this_in_set2(int layer);
         double convert_amplitude_to_total_energy_pedro(int type, double amplitude);
         void reset_tree_variables();
+        GlobalPoint projectHitPositionAt(float z,float eta,float phi);
+        float get_distance_from_expected_hit(double x, double y, double z, double eta, double phi);
 
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
         struct energysum {
@@ -229,6 +233,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
         const edm::ESGetToken<HGCalGeometry, IdealGeometryRecord> tok_hgcalg_;
         int firstLayer_; 
         edm::EDGetTokenT<edm::PCaloHitContainer> tSimCaloHitContainer; 
+        edm::EDGetTokenT<edm::HepMCProduct> mc_;
+        edm::EDGetTokenT<reco::GenParticleCollection> genParticles_;
         //edm::EDGetTokenT<HGCalDigiCollection> eeDigiCollection_;     // collection of HGCEE digis
         //edm::EDGetTokenT<HGCalDigiCollection> hefDigiCollection_;    // collection of HGCHEF digis
         //edm::EDGetTokenT<HGCalDigiCollection> hebDigiCollection_;    // collection of HGCHEB digis
@@ -250,13 +256,16 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> { //{{{
 
         // hit
         TTree   *tr_hits;
+        TTree   *tr_positron;
         int tr_evtNo;
         int tr_layerNo;
+        int tr_signal_region;
         float tr_x;
         float tr_y;
         float tr_z;
         float tr_e;
         float tr_r;
+        float tr_d;
         float tr_eta;
         float tr_phi;
         bool tr_is_Silicon_w120;
@@ -359,6 +368,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
         tok_hgcalg_(esConsumes<HGCalGeometry, IdealGeometryRecord>(edm::ESInputTag{"", nameDetector_})), 
         firstLayer_(1), 
         tSimCaloHitContainer(consumes<edm::PCaloHitContainer>(iconfig.getUntrackedParameter<edm::InputTag>("simhits"))),
+        mc_( consumes<edm::HepMCProduct>(edm::InputTag("generatorSmeared")) ),
+        genParticles_( consumes<std::vector<reco::GenParticle>>(edm::InputTag("genParticles")) ),
         //eeDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCEEdigiCollection"))),
         //hefDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHEFdigiCollection"))),
         //hebDigiCollection_(consumes<HGCalDigiCollection>(iconfig.getParameter<edm::InputTag>("HGCHEBdigiCollection"))),
@@ -390,6 +401,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 
     usesResource("TFileService");
     edm::Service<TFileService> fs; 
+
+    // tree of hits
     tr_hits = fs->make<TTree>("tr_hits","");
     tr_hits -> Branch("evtNo"   , &tr_evtNo   );
     tr_hits -> Branch("layerNo" , &tr_layerNo );
@@ -398,8 +411,10 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     tr_hits -> Branch("z"       , &tr_z       );
     tr_hits -> Branch("e"       , &tr_e       );
     tr_hits -> Branch("r"       , &tr_r       );
+    tr_hits -> Branch("d"       , &tr_d       );
     tr_hits -> Branch("eta"     , &tr_eta     );
     tr_hits -> Branch("phi"     , &tr_phi     );
+    tr_hits -> Branch("signal_region"  , &tr_signal_region  );
     tr_hits -> Branch("is_Silicon_w120", &tr_is_Silicon_w120);
     tr_hits -> Branch("is_Silicon_w200", &tr_is_Silicon_w200);
     tr_hits -> Branch("is_Silicon_w300", &tr_is_Silicon_w300);
@@ -407,6 +422,14 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 
     tr_evtNo = 0;
 
+    // tree of truth positron
+    tr_positron = fs->make<TTree>("tr_positron","");
+    tr_positron -> Branch("evtNo"   , &tr_evtNo   );
+    tr_positron -> Branch("e"       , &tr_e       );
+    tr_positron -> Branch("eta"     , &tr_eta     );
+    tr_positron -> Branch("phi"     , &tr_phi     );
+
+    // histograms
     hELossEE    = fs->make<TH1D>("hELossEE"    , "hELossEE"    , 1000 , 0. , 1000.);
     hELossEEF   = fs->make<TH1D>("hELossEEF"   , "hELossEEF"   , 1000 , 0. , 1000.);
     hELossEECN  = fs->make<TH1D>("hELossEECN"  , "hELossEECN"  , 1000 , 0. , 1000.);
@@ -652,17 +675,34 @@ void DigiSim::reset_tree_variables() //{{{
 {
     tr_evtNo = 0;
     tr_layerNo = 0;
+    tr_signal_region = -1;
     tr_x = 0.;
     tr_y = 0.;
     tr_z = 0.;
     tr_e = 0.;
     tr_r = 0.;
+    tr_d = 0.;
     tr_eta = 0.;
     tr_phi = 0.;
     tr_is_Silicon_w120 = false;
     tr_is_Silicon_w200 = false;
     tr_is_Silicon_w300 = false;
     tr_is_Scintillator = false;
+} //}}}
+GlobalPoint DigiSim::projectHitPositionAt(float z,float eta,float phi) //{{{
+{
+  float theta=2*TMath::ATan(exp(-eta));
+  float rho=z*TMath::Tan(theta);
+  GlobalPoint xyz(rho*TMath::Cos(phi),rho*TMath::Sin(phi),z);
+  return xyz;
+}//}}}
+float DigiSim::get_distance_from_expected_hit(double x, double y, double z, double eta, double phi) //{{{
+{
+    TVector2 xy(x,y);
+    GlobalPoint xyzExp = projectHitPositionAt(z, eta, phi);
+    TVector2 xyExp(xyzExp.x(),xyzExp.y());
+    float d = (xyExp-xy).Mod();
+    return d;
 } //}}}
 
 // ------------ method called for each event  ------------
@@ -760,6 +800,66 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     rhtools_.setGeometry(geomCalo);
     
     //----------------------------------------------------------------------------------------------------}}}
+    // Primary vertex {{{
+    // Not used becasue it is checked that (px, py, pz) of gen-particle can be used for linear trajectory
+    edm::Handle<edm::HepMCProduct> mcHandle;
+    iEvent.getByToken(mc_, mcHandle);
+    HepMC::GenVertex *primaryVertex = *(mcHandle)->GetEvent()->vertices_begin();
+
+    if(false) {
+        // PV (x, y, z) in unit of mm
+        tb::print_debug_info("pv.x()" , primaryVertex->position().x()       );
+        tb::print_debug_info("pv.y()" , primaryVertex->position().y()       );
+        tb::print_debug_info("pv.z()" , primaryVertex->position().z()       );
+        tb::print_debug_info("pv.t()" , primaryVertex->position().t(), true );
+    }
+    //}}}
+    // Gen particles {{{
+    std::vector<reco::GenParticle> truth_positron;
+    Handle<std::vector<reco::GenParticle> > genParticleHandle;
+    iEvent.getByToken(genParticles_, genParticleHandle);
+    for(size_t i = 0; i < genParticleHandle->size(); ++i )  {    
+        const reco::GenParticle &p = (*genParticleHandle)[i];
+        if(fabs(p.pdgId())!=11) continue;
+        if(!p.isPromptFinalState()) continue;    
+        if(fabs(p.eta())<1.5 || fabs(p.eta())>2.9) continue;
+        
+        truth_positron.push_back(p);
+
+        if(false) {
+            tb::print_debug_info("p.pdgId()" , p.pdgId()     );
+            tb::print_debug_info("p.pt()"    , p.pt()        );
+            tb::print_debug_info("p.energy()", p.energy()    );
+            tb::print_debug_info("p.px()"    , p.px()        );
+            tb::print_debug_info("p.py()"    , p.py()        );
+            tb::print_debug_info("p.px()"    , p.pz()        );
+            tb::print_debug_info("p.eta()"   , p.eta(), true );
+        }
+    }
+
+    // Efficiency is 100% for the cases of R90To130 positron beam
+    if(truth_positron.size()!=1) return;
+
+    // Record gen-info
+    double gen_eta = truth_positron[0].eta();
+    double gen_phi = truth_positron[0].phi();
+    tr_e = truth_positron[0].energy(); // GeV
+    tr_eta = gen_eta;
+    tr_phi = gen_phi;
+    tr_positron->Fill();
+
+    // CloseByParticle gun: PV (x, y, z) is parallel with gen-particle momentum (px, py, pz)
+    if(false) {
+        tb::print_debug_info("p.px()"    , truth_positron[0].px()        );
+        tb::print_debug_info("p.py()"    , truth_positron[0].py()        );
+        tb::print_debug_info("p.pz()"    , truth_positron[0].pz(), true  );
+
+        tb::print_debug_info("r.px()"    , primaryVertex->position().x()/truth_positron[0].px()        );
+        tb::print_debug_info("r.py()"    , primaryVertex->position().y()/truth_positron[0].py()        );
+        tb::print_debug_info("r.pz()"    , primaryVertex->position().z()/truth_positron[0].pz(), true  );
+    }
+    //}}}
+
     // SimHit Handle {{{
     //----------------------------------------------------------------------------------------------------
     std::map<uint32_t, std::pair<hitsinfo, energysum> > map_Simhits;
@@ -972,6 +1072,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     //}
 
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
+        //if(counter>9) break;
         uint32_t id_simhit = (*itr_sim).first;
         energysum esum = (*itr_sim).second.second;
         hitsinfo hinfo = (*itr_sim).second.first;
@@ -1015,10 +1116,24 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     tr_is_Silicon_w200 = hinfo.is_Silicon_w200;
                     tr_is_Silicon_w300 = hinfo.is_Silicon_w300;
                     tr_is_Scintillator = hinfo.is_Scintillator;
+
+                    tr_d = get_distance_from_expected_hit(tr_x, tr_y, tr_z, gen_eta, gen_phi);
+
+                    if(tr_d<=1.3)      tr_signal_region = 1;
+                    else if(tr_d<=2.6) tr_signal_region = 2;
+                    else if(tr_d<=5.3) tr_signal_region = 3;
+                    else               tr_signal_region = -1;
+
                     tr_hits->Fill();
 
-                    bool debug = false;
-                    if(debug) {
+                    if(false) {
+                        counter += 1;
+                        tb::print_debug_info("tr_d" , tr_d    );
+                        tb::print_debug_info("tr_signal_region" , tr_signal_region, true );
+                        continue;
+                    }
+
+                    if(false) {
                         counter += 1;
                         tb::print_debug_info("Id_digi"   , id_digihit   );
                         tb::print_debug_info("layer"     , dinfo.layer  );
