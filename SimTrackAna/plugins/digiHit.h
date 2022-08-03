@@ -143,6 +143,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         bool is_this_in_set2(int layer);
         double convert_amplitude_to_total_energy_pedro(int type, double amplitude);
         void reset_tree_variables();
+        void reset_per_event_counters();
+        void fill_event_info();
         GlobalPoint projectHitPositionAt(float z,float eta,float phi);
         float get_distance_from_expected_hit(double x, double y, double z, double eta, double phi);
         // details {{{
@@ -326,6 +328,51 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
                                                     58.63, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 83.08, 83.08, 83.43, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61 };
 
         std::vector<double> x_D86 = { 0., 0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659 };
+        //double Z_[47] = {322.155,323.149,325.212,326.206,328.269,329.263,331.326,332.32,334.383,335.377,337.44,338.434,340.497,341.491,343.554,344.548,346.611,347.605,349.993,350.987,353.375,354.369,356.757,357.751,360.139,361.133,367.976,374.281,380.586,386.891,393.196,399.501,405.806,412.111,418.416,424.721,431.026,439.251,447.476,455.701,463.926,472.151,480.376,488.601,496.826,505.051,513.276};
+        //}}}
+        // per event counters {{{
+        int counter = 0;
+        double total_energy_mip_odd  = 0.;
+        double total_energy_mip_even = 0.;
+        double total_energy_mip_set0 = 0.;
+        double total_energy_mip_set1 = 0.;
+        double total_energy_mip_set2 = 0.;
+        double total_energy_sim_odd  = 0.;
+        double total_energy_sim_even = 0.;
+        double total_energy_sim_set0 = 0.;
+        double total_energy_sim_set1 = 0.;
+        double total_energy_sim_set2 = 0.;
+        double total_corrected_energy_set0 = 0.;
+        double total_corrected_energy_set1 = 0.;
+        double total_corrected_energy_set2 = 0.;
+
+        std::vector<double> total_energy_adc_total  ;
+        std::vector<double> total_energy_mip_total  ;
+        std::vector<double> total_energy_mip_coarse ;
+        std::vector<double> total_energy_mip_fine   ;
+        std::vector<double> total_energy_sim_total  ;
+        std::vector<int>    num_digis_total         ;
+        std::vector<int>    num_simhits_total       ;
+        std::vector<int>    num_simhits_coarse      ;
+        std::vector<int>    num_simhits_fine        ;
+
+        std::vector<double> total_energy_adc_120mum ;
+        std::vector<double> total_energy_mip_120mum ;
+        std::vector<double> total_energy_sim_120mum ;
+        std::vector<int>    num_digis_120mum        ;
+        std::vector<int>    num_simhits_120mum      ;
+
+        std::vector<double> total_energy_adc_200mum ;
+        std::vector<double> total_energy_mip_200mum ;
+        std::vector<double> total_energy_sim_200mum ;
+        std::vector<int>    num_digis_200mum        ;
+        std::vector<int>    num_simhits_200mum      ;
+
+        std::vector<double> total_energy_adc_300mum ;
+        std::vector<double> total_energy_mip_300mum ;
+        std::vector<double> total_energy_sim_300mum ;
+        std::vector<int>    num_digis_300mum        ;
+        std::vector<int>    num_simhits_300mum      ;
         //}}}
 
 #ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
@@ -561,6 +608,82 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 //}}}
 DigiSim::~DigiSim(){}
 
+void DigiSim::reset_per_event_counters()
+{
+    counter = 0;
+    total_energy_mip_odd  = 0.;
+    total_energy_mip_even = 0.;
+    total_energy_mip_set0 = 0.;
+    total_energy_mip_set1 = 0.;
+    total_energy_mip_set2 = 0.;
+    total_energy_sim_odd  = 0.;
+    total_energy_sim_even = 0.;
+    total_energy_sim_set0 = 0.;
+    total_energy_sim_set1 = 0.;
+    total_energy_sim_set2 = 0.;
+    total_corrected_energy_set0 = 0.;
+    total_corrected_energy_set1 = 0.;
+    total_corrected_energy_set2 = 0.;
+
+    total_energy_adc_total  .clear();
+    total_energy_mip_total  .clear();
+    total_energy_mip_coarse .clear();
+    total_energy_mip_fine   .clear();
+    total_energy_sim_total  .clear();
+    num_digis_total         .clear();
+    num_simhits_total       .clear();
+    num_simhits_coarse      .clear();
+    num_simhits_fine        .clear();
+
+    total_energy_adc_120mum .clear();
+    total_energy_mip_120mum .clear();
+    total_energy_sim_120mum .clear();
+    num_digis_120mum        .clear();
+    num_simhits_120mum      .clear();
+
+    total_energy_adc_200mum .clear();
+    total_energy_mip_200mum .clear();
+    total_energy_sim_200mum .clear();
+    num_digis_200mum        .clear();
+    num_simhits_200mum      .clear();
+
+    total_energy_adc_300mum .clear();
+    total_energy_mip_300mum .clear();
+    total_energy_sim_300mum .clear();
+    num_digis_300mum        .clear();
+    num_simhits_300mum      .clear();
+
+    for(int idx=0; idx<26; ++idx) {
+        total_energy_adc_total .push_back(0);
+        total_energy_mip_total .push_back(0);
+        total_energy_mip_coarse.push_back(0);
+        total_energy_mip_fine  .push_back(0);
+        total_energy_sim_total .push_back(0);
+        num_digis_total        .push_back(0);
+        num_simhits_total      .push_back(0);
+        num_simhits_coarse     .push_back(0);
+        num_simhits_fine       .push_back(0);
+
+        total_energy_adc_120mum .push_back(0);
+        total_energy_mip_120mum .push_back(0);
+        total_energy_sim_120mum .push_back(0);
+        num_digis_120mum        .push_back(0);
+        num_simhits_120mum      .push_back(0);
+
+        total_energy_adc_200mum .push_back(0);
+        total_energy_mip_200mum .push_back(0);
+        total_energy_sim_200mum .push_back(0);
+        num_digis_200mum        .push_back(0);
+        num_simhits_200mum      .push_back(0);
+
+        total_energy_adc_300mum .push_back(0);
+        total_energy_mip_300mum .push_back(0);
+        total_energy_sim_300mum .push_back(0);
+        num_digis_300mum        .push_back(0);
+        num_simhits_300mum      .push_back(0);
+    }
+}
+
 double DigiSim::get_additional_correction(int layer)
 {
     // no correction
@@ -684,4 +807,67 @@ float DigiSim::get_distance_from_expected_hit(double x, double y, double z, doub
     TVector2 xyExp(xyzExp.x(),xyzExp.y());
     float d = (xyExp-xy).Mod();
     return d;
+}
+
+void DigiSim::fill_event_info()
+{
+    // Fill information of an event
+    for(int idx=0; idx<26; ++idx) {
+        //tb::print_debug_info("num_digis_total"  , num_digis_total  [idx]        );
+        //tb::print_debug_info("num_digis_120mum" , num_digis_120mum [idx]        );
+        //tb::print_debug_info("num_digis_200mum" , num_digis_200mum [idx]        );
+        //tb::print_debug_info("num_digis_300mum" , num_digis_300mum [idx] , true );
+
+        total_ADC_total_             [idx] -> Fill( total_energy_adc_total  [idx] );
+        total_MIP_total_             [idx] -> Fill( total_energy_mip_total  [idx] );
+        total_MIP_coarse_            [idx] -> Fill( total_energy_mip_coarse [idx] );
+        total_MIP_fine_              [idx] -> Fill( total_energy_mip_fine   [idx] );
+        total_SIM_total_             [idx] -> Fill( total_energy_sim_total  [idx] );
+        multiplicity_digis_total_    [idx] -> Fill( num_digis_total         [idx] );
+        multiplicity_simhits_total_  [idx] -> Fill( num_simhits_total       [idx] );
+        multiplicity_simhits_coarse_ [idx] -> Fill( num_simhits_coarse      [idx] );
+        multiplicity_simhits_fine_   [idx] -> Fill( num_simhits_fine        [idx] );
+
+        total_ADC_120mum_            [idx] -> Fill( total_energy_adc_120mum [idx] );
+        total_MIP_120mum_            [idx] -> Fill( total_energy_mip_120mum [idx] );
+        total_SIM_120mum_            [idx] -> Fill( total_energy_sim_120mum [idx] );
+        multiplicity_digis_120mum_   [idx] -> Fill( num_digis_120mum        [idx] );
+        multiplicity_simhits_120mum_ [idx] -> Fill( num_simhits_120mum      [idx] );
+
+        total_ADC_200mum_            [idx] -> Fill( total_energy_adc_200mum [idx] );
+        total_MIP_200mum_            [idx] -> Fill( total_energy_mip_200mum [idx] );
+        total_SIM_200mum_            [idx] -> Fill( total_energy_sim_200mum [idx] );
+        multiplicity_digis_200mum_   [idx] -> Fill( num_digis_200mum        [idx] );
+        multiplicity_simhits_200mum_ [idx] -> Fill( num_simhits_200mum      [idx] );
+
+        total_ADC_300mum_            [idx] -> Fill( total_energy_adc_300mum [idx] );
+        total_MIP_300mum_            [idx] -> Fill( total_energy_mip_300mum [idx] );
+        total_SIM_300mum_            [idx] -> Fill( total_energy_sim_300mum [idx] );
+        multiplicity_digis_300mum_   [idx] -> Fill( num_digis_300mum        [idx] );
+        multiplicity_simhits_300mum_ [idx] -> Fill( num_simhits_300mum      [idx] );
+    }
+
+    total_MIP_odd  -> Fill(total_energy_mip_odd);
+    total_MIP_even -> Fill(total_energy_mip_even);
+    total_MIP_set0 -> Fill(total_energy_mip_set0);
+    total_MIP_set1 -> Fill(total_energy_mip_set1);
+    total_MIP_set2 -> Fill(total_energy_mip_set2);
+
+    total_SIM_odd  -> Fill(total_energy_sim_odd);
+    total_SIM_even -> Fill(total_energy_sim_even);
+    total_SIM_set0 -> Fill(total_energy_sim_set0);
+    total_SIM_set1 -> Fill(total_energy_sim_set1);
+    total_SIM_set2 -> Fill(total_energy_sim_set2);
+
+    total_corrected_energy_set0 = convert_amplitude_to_total_energy_pedro(0, total_energy_mip_set0);
+    total_corrected_energy_set1 = convert_amplitude_to_total_energy_pedro(1, total_energy_mip_set1);
+    total_corrected_energy_set2 = convert_amplitude_to_total_energy_pedro(2, total_energy_mip_set2);
+
+    total_ENE_set0 -> Fill(total_corrected_energy_set0);
+    total_ENE_set1 -> Fill(total_corrected_energy_set1);
+    total_ENE_set2 -> Fill(total_corrected_energy_set2);
+
+    //tb::print_debug_info("total_energy_sim_set0", total_energy_sim_set0);
+    //tb::print_debug_info("total_energy_mip_set1", total_energy_mip_set1);
+    //tb::print_debug_info("total_corrected_energy_set1", total_corrected_energy_set1, true);
 }
