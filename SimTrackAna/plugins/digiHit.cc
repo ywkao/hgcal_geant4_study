@@ -289,10 +289,16 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::map<uint32_t, myDigis>::iterator itr_mydigi;
     std::map<uint32_t, std::pair<digisinfo, adcinfo>>::iterator itr_digi;
     std::map<uint32_t, std::pair<hitsinfo, energysum> >::iterator itr_sim;
-    //Double_t max_energy=0; 
+
+    //// determine maximum hit for each layer
+    //Double_t max_energy = 0; 
+    //uint32_t max_id_simhit = -1;
     //for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
     //    energysum esum = (*itr_sim).second.second;
-    //    if(max_energy<esum.eTime[0]) max_energy=esum.eTime[0];
+    //    if(max_energy<esum.eTime[0]) {
+    //        max_energy=esum.eTime[0];
+    //        max_id_simhit = (*itr_sim).first;
+    //    }
     //}
 
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
@@ -347,6 +353,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 else               tr_signal_region = -1;
 
                 tr_hits->Fill();
+
+                // apply selection on signal region for histograms
+                if(!(tr_signal_region==1 || tr_signal_region==2)) continue;
 
                 if(false) {
                     counter += 1;
