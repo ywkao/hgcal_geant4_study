@@ -155,13 +155,17 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             }  
 
             uint32_t id_ = itHit->id();
+            GlobalPoint gp = rhtools_.getPosition(detId);
+
             energysum esum;
             hitsinfo hinfo;
-
             if (map_Simhits.count(id_) == 0) {
                 hinfo.hitid = nofSiHits;
                 hinfo.u_cor = rhtools_.getCell(detId).first ;
                 hinfo.v_cor = rhtools_.getCell(detId).second ;
+                hinfo.x_pos = gp.x();
+                hinfo.y_pos = gp.y();
+                hinfo.z_pos = gp.z();
                 hinfo.type  = id.type(); // wafer_type
                 hinfo.layer = rhtools_.getLayerWithOffset(detId);
                 hinfo.is_Silicon_w120 = (wafer_type==0);
@@ -183,6 +187,9 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 tb::print_debug_info("hinfo.type (wafer)"    , hinfo.type            );
                 tb::print_debug_info("hinfo.u_cor"           , hinfo.u_cor           );
                 tb::print_debug_info("hinfo.v_cor"           , hinfo.v_cor           );
+                tb::print_debug_info("hinfo.x_pos"           , hinfo.x_pos           );
+                tb::print_debug_info("hinfo.y_pos"           , hinfo.y_pos           );
+                tb::print_debug_info("hinfo.z_pos"           , hinfo.z_pos           );
                 tb::print_debug_info("hinfo.is_Silicon_w120" , hinfo.is_Silicon_w120 );
                 tb::print_debug_info("hinfo.is_Silicon_w200" , hinfo.is_Silicon_w200 );
                 tb::print_debug_info("hinfo.is_Silicon_w300" , hinfo.is_Silicon_w300 );
@@ -290,17 +297,53 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::map<uint32_t, std::pair<digisinfo, adcinfo>>::iterator itr_digi;
     std::map<uint32_t, std::pair<hitsinfo, energysum> >::iterator itr_sim;
 
-    //// determine maximum hit for each layer
-    //Double_t max_energy = 0; 
-    //uint32_t max_id_simhit = -1;
-    //for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
-    //    energysum esum = (*itr_sim).second.second;
-    //    if(max_energy<esum.eTime[0]) {
-    //        max_energy=esum.eTime[0];
-    //        max_id_simhit = (*itr_sim).first;
-    //    }
-    //}
+    // determine hit with maximum energy for each CEE layer
+    reset_expected_hit_containers(mv_max_cell);
+    for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
+        hitsinfo hinfo = (*itr_sim).second.first;
+        energysum esum = (*itr_sim).second.second;
+        int layer = hinfo.layer;
+        int idx = layer-1;
 
+        if(mv_max_cell.tr_ve[idx]<esum.eTime[0]) {
+            mv_max_cell.tr_vx[idx] = hinfo.x_pos;
+            mv_max_cell.tr_vy[idx] = hinfo.y_pos;
+            mv_max_cell.tr_vz[idx] = hinfo.z_pos;
+            mv_max_cell.tr_ve[idx] = esum.eTime[0];
+        }
+    }
+    tr_max_cell->Fill();
+
+    // store expected position of gen-particle trajectory
+    reset_expected_hit_containers(mv_linear_track);
+    for(int idx=0; idx<26; ++idx) {
+        if(mv_max_cell.tr_ve[idx]>0.) {
+            GlobalPoint xyzExp = projectHitPositionAt(mv_max_cell.tr_vz[idx], gen_eta, gen_phi);
+            mv_linear_track.tr_vx[idx] = xyzExp.x();
+            mv_linear_track.tr_vy[idx] = xyzExp.y();
+            mv_linear_track.tr_vz[idx] = xyzExp.z();
+            mv_linear_track.tr_ve[idx] = mv_max_cell.tr_ve[idx];
+        }
+    }
+    tr_linear_trajectory->Fill();
+
+    if(false) {
+        for(int idx=0; idx<26; ++idx) {
+            tb::print_debug_info(Form("mv_max_cell.tr_vx[%2d]", idx), mv_max_cell.tr_vx[idx]    );
+            tb::print_debug_info(Form("mv_max_cell.tr_vy[%2d]", idx), mv_max_cell.tr_vy[idx]    );
+            tb::print_debug_info(Form("mv_max_cell.tr_vz[%2d]", idx), mv_max_cell.tr_vz[idx]    );
+            tb::print_debug_info(Form("mv_max_cell.tr_ve[%2d]", idx), mv_max_cell.tr_ve[idx], true );
+        }
+
+        for(int idx=0; idx<26; ++idx) {
+            tb::print_debug_info(Form("mv_linear_track.tr_vx[%2d]", idx), mv_linear_track.tr_vx[idx]    );
+            tb::print_debug_info(Form("mv_linear_track.tr_vy[%2d]", idx), mv_linear_track.tr_vy[idx]    );
+            tb::print_debug_info(Form("mv_linear_track.tr_vz[%2d]", idx), mv_linear_track.tr_vz[idx]    );
+            tb::print_debug_info(Form("mv_linear_track.tr_ve[%2d]", idx), mv_linear_track.tr_ve[idx], true );
+        }
+    }
+
+    // matching
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
         //if(counter>9) break;
         uint32_t id_simhit = (*itr_sim).first;
@@ -354,7 +397,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                 tr_hits->Fill();
 
-                // apply selection on signal region for histograms
+                // apply selection on signal region for histograms based on the lineaer track
                 if(!(tr_signal_region==1 || tr_signal_region==2)) continue;
 
                 if(false) {

@@ -136,19 +136,7 @@ void configureIt(const edm::ParameterSet& conf, HGCalUncalibRecHitRecWeightsAlgo
 class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
     public:
         //Implemented following Validation/HGCalValidation/plugins/HGCalSimHitValidation.cc
-        explicit DigiSim(const edm::ParameterSet&);
-        ~DigiSim();
-        double get_additional_correction(int layer);
-        bool is_this_in_set1(int layer);
-        bool is_this_in_set2(int layer);
-        double convert_amplitude_to_total_energy_pedro(int type, double amplitude);
-        void reset_tree_variables();
-        void reset_per_event_counters();
-        void fill_event_info();
-        GlobalPoint projectHitPositionAt(float z,float eta,float phi);
-        float get_distance_from_expected_hit(double x, double y, double z, double eta, double phi);
-        // details {{{
-        static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+        // structures {{{
         struct energysum {
             energysum() {
                 etotal = 0;
@@ -171,10 +159,12 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         struct hitsinfo {
             hitsinfo() {
                 u_cor = v_cor = type = layer = 0;
+                x_pos = y_pos = z_pos = 0.;
                 hitid = nhits = 0;
                 is_Silicon_w120 = is_Silicon_w200 = is_Silicon_w300 = is_Scintillator = false;
             }
             int u_cor, v_cor, type, layer;
+            float x_pos, y_pos, z_pos;
             unsigned int hitid, nhits;
             bool is_Silicon_w120, is_Silicon_w200, is_Silicon_w300, is_Scintillator;
         };
@@ -195,7 +185,28 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
             adcinfo ainfo;
             double amplitude;
         };
+
+        struct myVector {
+            // expected hits for 26 layers (energy, id, vector of x, y, z positions)
+            std::vector<float> tr_vx;
+            std::vector<float> tr_vy;
+            std::vector<float> tr_vz;
+            std::vector<float> tr_ve;
+        };
         //}}}
+        explicit DigiSim(const edm::ParameterSet&);
+        ~DigiSim();
+        double get_additional_correction(int layer);
+        bool is_this_in_set1(int layer);
+        bool is_this_in_set2(int layer);
+        double convert_amplitude_to_total_energy_pedro(int type, double amplitude);
+        void reset_tree_variables();
+        void reset_per_event_counters();
+        void reset_expected_hit_containers(myVector &mv);
+        void fill_event_info();
+        GlobalPoint projectHitPositionAt(float z,float eta,float phi);
+        float get_distance_from_expected_hit(double x, double y, double z, double eta, double phi);
+        static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
     private:
         virtual void beginJob() override;
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -233,6 +244,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         // hit
         TTree   *tr_hits;
         TTree   *tr_positron;
+        TTree   *tr_max_cell;
+        TTree   *tr_linear_trajectory;
         int tr_evtNo;
         int tr_layerNo;
         int tr_signal_region;
@@ -249,6 +262,11 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         bool tr_is_Silicon_w300;
         bool tr_is_Scintillator;
 
+        // expected hits for 26 layers (energy, vector of x, y, z positions)
+        myVector mv_max_cell;
+        myVector mv_linear_track;
+
+        // hiistograms
         std::vector<TH1D*> vechist;   
         TNtuple *nt_total_[26];
         TNtuple *nt_120mum_[26];
@@ -450,6 +468,20 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     tr_positron -> Branch("eta"     , &tr_eta     );
     tr_positron -> Branch("phi"     , &tr_phi     );
 
+    tr_max_cell = fs->make<TTree>("tr_max_cell","");
+    tr_max_cell -> Branch("evtNo"   , &tr_evtNo  );
+    tr_max_cell -> Branch("vx"      , &mv_max_cell.tr_vx     );
+    tr_max_cell -> Branch("vy"      , &mv_max_cell.tr_vy     );
+    tr_max_cell -> Branch("vz"      , &mv_max_cell.tr_vz     );
+    tr_max_cell -> Branch("ve"      , &mv_max_cell.tr_ve     );
+
+    tr_linear_trajectory = fs->make<TTree>("tr_linear_trajectory","");
+    tr_linear_trajectory -> Branch("evtNo"   , &tr_evtNo  );
+    tr_linear_trajectory -> Branch("vx"      , &mv_linear_track.tr_vx     );
+    tr_linear_trajectory -> Branch("vy"      , &mv_linear_track.tr_vy     );
+    tr_linear_trajectory -> Branch("vz"      , &mv_linear_track.tr_vz     );
+    tr_linear_trajectory -> Branch("ve"      , &mv_linear_track.tr_ve     );
+
     // histograms
     hELossEE    = fs->make<TH1D>("hELossEE"    , "hELossEE"    , 1000 , 0. , 1000.);
     hELossEEF   = fs->make<TH1D>("hELossEEF"   , "hELossEEF"   , 1000 , 0. , 1000.);
@@ -607,6 +639,40 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 } 
 //}}}
 DigiSim::~DigiSim(){}
+
+void DigiSim::reset_tree_variables()
+{
+    tr_evtNo = 0;
+    tr_layerNo = 0;
+    tr_signal_region = -1;
+    tr_x = 0.;
+    tr_y = 0.;
+    tr_z = 0.;
+    tr_e = 0.;
+    tr_r = 0.;
+    tr_d = 0.;
+    tr_eta = 0.;
+    tr_phi = 0.;
+    tr_is_Silicon_w120 = false;
+    tr_is_Silicon_w200 = false;
+    tr_is_Silicon_w300 = false;
+    tr_is_Scintillator = false;
+}
+
+void DigiSim::reset_expected_hit_containers(myVector &mv)
+{
+    mv.tr_vx.clear();
+    mv.tr_vy.clear();
+    mv.tr_vz.clear();
+    mv.tr_ve.clear();
+
+    for(int idx=0; idx<26; ++idx) {
+        mv.tr_vx.push_back(0.);
+        mv.tr_vy.push_back(0.);
+        mv.tr_vz.push_back(0.);
+        mv.tr_ve.push_back(0.);
+    }
+}
 
 void DigiSim::reset_per_event_counters()
 {
@@ -771,25 +837,6 @@ double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitu
     if(type==2) corrected_energy = 2.22265e+01 + 1.03710e-02*amplitude;
 
     return corrected_energy;
-}
-
-void DigiSim::reset_tree_variables()
-{
-    tr_evtNo = 0;
-    tr_layerNo = 0;
-    tr_signal_region = -1;
-    tr_x = 0.;
-    tr_y = 0.;
-    tr_z = 0.;
-    tr_e = 0.;
-    tr_r = 0.;
-    tr_d = 0.;
-    tr_eta = 0.;
-    tr_phi = 0.;
-    tr_is_Silicon_w120 = false;
-    tr_is_Silicon_w200 = false;
-    tr_is_Silicon_w300 = false;
-    tr_is_Scintillator = false;
 }
 
 GlobalPoint DigiSim::projectHitPositionAt(float z,float eta,float phi)
