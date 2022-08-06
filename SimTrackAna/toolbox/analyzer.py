@@ -26,19 +26,13 @@ class HitAnalyzer:
     def loop(self):
         vt, vf = [], []
         for i, rootfile in enumerate(self.input_files):
-            #if not i==1: continue # use E100 for check
+            if not i==1: continue # use E100 for check
 
             print ">>> rootfile", rootfile
-            fin = ROOT.TFile.Open(rootfile, "R")
-            tree = fin.Get("prodEE_DigiSim/tr_hits")
-            vf.append(fin)
+            self.fin = ROOT.TFile.Open(rootfile, "R")
+            tree = self.fin.Get("prodEE_DigiSim/tr_hits")
+            vf.append(self.fin)
             vt.append(tree)
-
-            # add energy selection
-            self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
-            self.__make_plots(tree)
-
-            break
 
             # total event
             self.check_individual_event = False 
@@ -49,14 +43,22 @@ class HitAnalyzer:
 
             # specific event
             self.check_individual_event = True
-            for evtNo in range(3, 5):
+            for evtNo in range(4, 5):
                 self.evtNo = evtNo 
                 self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + "_evtNo%d.pdf" % self.evtNo
                 self.__retrieve_hit_plots(tree)
 
+            break
+
+            # add energy selection
+            self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
+            self.__make_plots(tree)
+
+            break
+
     #====================================================================================================
 
-    def __make_plots(self, tree):
+    def __make_plots(self, tree): #{{{
         # branches: evtNo, layerNo, x, y, z, e, r, eta, phi, is_Silicon_w120, is_Silicon_w200, is_Silicon_w300, is_Scintillator
         
         #----------------------------------------
@@ -106,14 +108,14 @@ class HitAnalyzer:
             h.GetYaxis().SetTitleOffset(1.0)
             vh_x_y.append(h)
 
-        e_set0 = ROOT.TH1D("e_set0", ";E_{set0} (keV);Entries", 400, 0, 400000)
+        e_set0 = ROOT.TH1D("e_set0", ";E_{set0} (MeV);Entries", 400, 0, 400)
         e_set0.SetTitle("")
         e_set0.SetLineWidth(2)
         e_set0.SetLineColor(ROOT.kBlack)
-        e_set0.GetXaxis().SetRangeUser(0, 150000)
+        e_set0.GetXaxis().SetRangeUser(0, 150)
         e_set0.GetXaxis().SetTitleOffset(1.1)
 
-        h_Rxy_e = ROOT.TH2D("h_Rxy_e", ";E_{set0} (keV);R_{xy} (cm)", 60, 40000, 100000, 600, 0, 300)
+        h_Rxy_e = ROOT.TH2D("h_Rxy_e", ";E_{set0} (MeV);R_{xy} (cm)", 60, 40, 100, 600, 0, 300)
 
         h_eta = ROOT.TH1D("h_eta", ";Eta;Entries", 20, 1., 3.)
 
@@ -127,7 +129,7 @@ class HitAnalyzer:
         # fill histograms
         #----------------------------------------
         for evtNo in range(len(total_energy)):
-            if total_energy[evtNo] > 65000.:
+            if total_energy[evtNo] > 65.:
                 e_set0.Fill(total_energy[evtNo])
             else:
                 c.Fill(total_energy[evtNo])
@@ -136,7 +138,7 @@ class HitAnalyzer:
             h_Rxy_e.Fill(total_energy[hit.evtNo], hit.r)
             h_eta.Fill(hit.eta)
 
-            if total_energy[hit.evtNo] > 65000.:
+            if total_energy[hit.evtNo] > 65.:
                 if hit.is_Silicon_w120: vh_Rxy_z[0].Fill(hit.z, hit.r)
                 if hit.is_Silicon_w200: vh_Rxy_z[1].Fill(hit.z, hit.r)
                 if hit.is_Silicon_w300: vh_Rxy_z[2].Fill(hit.z, hit.r)
@@ -196,23 +198,123 @@ class HitAnalyzer:
         h_eta.Draw()
         self.canvas.SaveAs(self.output_directory + "/h_eta.png")
 
+    #}}}
 
     def __retrieve_hit_plots(self, tree):
         #------------------------------
         # Rxy-Z distribution
         #------------------------------
+        self.tree = tree
+        vh = self.draw_RZ_hitstogram()
+        output_file = self.output_directory + "/hits_Rxy_Z"
+        self.canvas.SaveAs(output_file + ".png")
+        self.canvas.Print(self.output_pdf_file + "(", "pdf")
+
+        #------------------------------
+        # X-Y distributions
+        #------------------------------
+        tree_max_cell = self.fin.Get("prodEE_DigiSim/tr_max_cell")
+        tree_linear_track = self.fin.Get("prodEE_DigiSim/tr_linear_trajectory")
+
+        for layer in range(1,27):
+            #self.canvas.cd()
+            #self.canvas.Clear()
+
+            self.layer = layer
+            self.name = "h_2d_hits_layer%d" % layer
+            self.title = "Layer-0%d" % layer if layer < 10 else "Layer-%d" % layer
+            self.selection = "evtNo==%d && layerNo==%d" % (self.evtNo, layer) if self.check_individual_event else "layerNo==%d" % layer
+
+            # Rec hits
+            self.tree = tree
+            self.color = ROOT.kGray+2
+            self.show_rec_hits = True
+            self.first_histogram = True
+            h = self.draw_XY_hitstogram()
+            h.Draw()
+
+            if self.check_individual_event:
+                # expected hit position
+                self.show_rec_hits = False 
+                self.first_histogram = False
+
+                self.tag = "max_cell"
+                self.tree = tree_max_cell
+                self.color = ROOT.kRed
+                h1 = self.draw_XY_hitstogram()
+                h1.Draw("same")
+
+                self.tag = "linear_track"
+                self.tree = tree_linear_track
+                self.color = ROOT.kBlue
+                h2 = self.draw_XY_hitstogram()
+                h2.Draw("same")
+
+                legend = ROOT.TLegend(0.20, 0.20, 0.65, 0.35)
+                legend.SetTextSize(0.04)
+                legend.AddEntry(h,  "Rec. hits", "p")
+                legend.AddEntry(h1, "Expected from max cell", "p")
+                legend.AddEntry(h2, "Expected from linear track", "p")
+                legend.Draw("same")
+
+            # ploting
+            tag = "0%d" % layer if layer < 10 else "%d" % layer
+            output_file = self.output_directory + "/hits_x_y_layer" + tag
+            self.canvas.SaveAs(output_file + ".png")
+
+            if layer == 26:
+                self.canvas.Print(self.output_pdf_file + ")", "pdf")
+            else:
+                self.canvas.Print(self.output_pdf_file, "pdf")
+
+    #====================================================================================================
+
+    def draw_XY_hitstogram(self):
+        fullname = self.name if self.show_rec_hits else self.name + "_" + self.tag
+        h = ROOT.TH2D(fullname, self.title, 680, -170, 170, 680, -170, 170 )
+
+        if self.show_rec_hits:
+            self.tree.Draw("y:x>>%s" % self.name, self.selection)
+            h = ROOT.gPad.GetPrimitive(self.name)
+
+        else: # expected position
+            for i, hit in enumerate(self.tree):
+                if not i == self.evtNo: continue
+                x = hit.vx[self.layer-1]
+                y = hit.vy[self.layer-1]
+                h.Fill(x,y);
+                break
+
+        h.SetStats(0)
+        h.SetMarkerStyle(20)
+        h.SetMarkerSize(0.5)
+        h.SetMarkerColor(self.color)
+        h.GetXaxis().SetTitle("X (cm)")
+        h.GetYaxis().SetTitle("Y (cm)")
+        h.GetXaxis().SetTitleOffset(1.1)
+        h.GetYaxis().SetTitleOffset(1.0)
+
+        #if self.first_histogram:
+        #    h.Draw()
+        #else:
+        #    h.Draw("same")
+
+        return h
+
+    def draw_RZ_hitstogram(self):
         legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85)
         legend.SetLineColor(0)
         legend.SetTextSize(0.04)
 
         vh = []
         colors = [ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta]
+        colors = [ROOT.kBlack, ROOT.kBlack, ROOT.kBlack]
         wafer_types = ["is_Silicon_w120", "is_Silicon_w200", "is_Silicon_w300"]
         for i, wafer in enumerate(wafer_types):
             name, title = "h_hits_Rxy_Z_%s" % wafer, "Hits R_{xy} vs Z"
             selection = "evtNo==%d && %s==1" % (self.evtNo, wafer) if self.check_individual_event else "%s==1" % wafer
             h = ROOT.TH2D(name, title, 160, 300, 380, 600, 0, 300 )
-            tree.Draw("r:z>>%s" % name, selection)
+            self.tree.Draw("r:z>>%s" % name, selection)
             htemp = ROOT.gPad.GetPrimitive(name)
             htemp.SetStats(0)
             htemp.SetLineWidth(2)
@@ -231,33 +333,13 @@ class HitAnalyzer:
             else:    h.Draw("same")
 
         legend.Draw("same")
-        output_file = self.output_directory + "/hits_Rxy_Z"
-        self.canvas.SaveAs(output_file + ".png")
-        self.canvas.Print(self.output_pdf_file + "(", "pdf")
 
-        #------------------------------
-        # X-Y distributions
-        #------------------------------
-        for layer in range(1,27):
+        return vh
 
-            name = "h_2d_hits_layer%d" % layer
-            title = "Layer-0%d" % layer if layer < 10 else "Layer-%d" % layer
-            selection = "evtNo==%d && layerNo==%d" % (self.evtNo, layer) if self.check_individual_event else "layerNo==%d" % layer
+    def get_TLegend(self, x0, y0, x1, y1):
+        #legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85)
+        legend = ROOT.TLegend(x0, y0, x1, y1)
+        legend.SetLineColor(0)
+        legend.SetTextSize(0.04)
+        return legend
 
-            h = ROOT.TH2D(name, title, 680, -170, 170, 680, -170, 170 )
-            tree.Draw("y:x>>%s" % name, selection)
-            htemp = ROOT.gPad.GetPrimitive(name)
-            htemp.SetStats(0)
-            htemp.GetXaxis().SetTitle("X (cm)")
-            htemp.GetYaxis().SetTitle("Y (cm)")
-            htemp.GetXaxis().SetTitleOffset(1.1)
-            htemp.GetYaxis().SetTitleOffset(1.0)
-
-            tag = "0%d" % layer if layer < 10 else "%d" % layer
-            output_file = self.output_directory + "/hits_x_y_layer" + tag
-            self.canvas.SaveAs(output_file + ".png")
-
-            if layer == 26:
-                self.canvas.Print(self.output_pdf_file + ")", "pdf")
-            else:
-                self.canvas.Print(self.output_pdf_file, "pdf")

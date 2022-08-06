@@ -302,7 +302,6 @@ def run(myfin, mydin):
     thickness = ["120mum", "200mum", "300mum", "total"]
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
     thickness = ["total"]
-
     for t in thickness:
         make_plot( "multiplicity_simhits_%s" % t , True  )
         make_plot( "total_MIP_%s"            % t , True  )
@@ -329,29 +328,29 @@ if __name__ == "__main__":
     myRootfiles, specified_directory, label = [], "", {}
     colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.kMagenta, ROOT.kRed-7]
 
-    #tags = ["E300", "E100", "E20"]
-    #fit_constraints = m.fit_constraints_v1
-    #for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    #run( m.input_files["R80To130_v3"], eos + "/" + "R80To130_hits_study_v2" )
+    # tags = ["E300", "E100", "E20"]
+    # fit_constraints = m.fit_constraints_v1
+    # for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
+    # run( m.input_files["R90To130"], eos + "/" + "R90To130_v2p1" )
 
-    #tags = ["E300", "E100", "E20"]
-    #tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
-    #fit_constraints = m.fit_constraints_v1
-    #for tag in tags: label[tag] = tag.split("_")[1] + " cm"
-    #run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
-    #exit()
+    # #tags = ["E300", "E100", "E20"]
+    # #tags = ["E100_R110", "E100_R120", "E100_R130", "E100_R140"]
+    # #fit_constraints = m.fit_constraints_v1
+    # #for tag in tags: label[tag] = tag.split("_")[1] + " cm"
+    # #run( m.input_files["eta_scanning"], eos + "/" + "eta_scanning" )
+    # exit()
 
     #----------------------------------------------------------------------------------------------------
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R90To130_v2"], eos + "/" + "R90To130_v1" )
+    run( m.input_files["R90To130_v2"], eos + "/" + "R90To130_v2p1" )
 
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
     for tag in tags: label[tag] = tag.split("E")[1] + " GeV"
-    run( m.input_files["R90To130"], eos + "/" + "R90To130_v1" )
+    run( m.input_files["R90To130"], eos + "/" + "R90To130_v2p1" )
 
     #----------------------------------------------------------------------------------------------------
 

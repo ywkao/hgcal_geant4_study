@@ -337,6 +337,7 @@ def run_linear_fit(c1, label, dx, dy):
 
     annotate()
     directory = "./eos/R90To130_linearFit/"
+    directory = "./eos/R90To130_v2p1/"
     output = directory + "correction_generatedShowerEnergy_MIPs_" + label
     create_directory(directory)
     c1.SaveAs(output + ".png")
@@ -408,6 +409,7 @@ def run_resolution_summary(c1, labels, dy1, dy2):
 
     annotate(0.12)
     directory = "./eos/R90To130_linearFit/"
+    directory = "./eos/R90To130_v2p1/"
     output = directory + "summary_resolution"
     create_directory(directory)
     c1.SaveAs(output + ".png")

@@ -47,6 +47,18 @@ input_files = {
         "rootfiles_hit_position/geantoutput_D86_R90To130_E60.root",
     ],
 
+    "R90To130_v3" : [
+        "rootfiles_hit_position/20220803/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20220803/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20220803/geantoutput_D86_R90To130_E20.root",
+    ],
+
+    "R90To130_v4" : [
+        "rootfiles_hit_position/20220803/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20220803/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20220803/geantoutput_D86_R90To130_E60.root",
+    ],
+
     "R80To130" : [
         "rootfiles_R80To130/geantoutput_D86_R80To130_E300.root",
         "rootfiles_R80To130/geantoutput_D86_R80To130_E100.root",
