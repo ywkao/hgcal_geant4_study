@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import copy
+import math
 import ROOT
 ROOT.gROOT.SetBatch(True)
 ROOT.gStyle.SetOptStat(2210)
@@ -204,22 +205,61 @@ class HitAnalyzer:
         self.flag_make_png_file = not self.check_individual_event
         self.flag_make_pdf_file = self.check_individual_event
 
+        # expected hit positions
+        tree_max_cell = self.fin.Get("prodEE_DigiSim/tr_max_cell")
+        tree_energy_weighted = self.fin.Get("prodEE_DigiSim/tr_energy_weighted")
+        tree_linear_track = self.fin.Get("prodEE_DigiSim/tr_linear_trajectory")
+
         #------------------------------
         # Rxy-Z distribution
         #------------------------------
+        legend = self.get_TLegend(0.15, 0.65, 0.45, 0.85)
+
+        # Rec hits
         self.tree = tree
+        self.show_rec_hits = True
         vh = self.draw_RZ_hitstogram()
 
-        legend = self.get_TLegend(0.15, 0.65, 0.45, 0.85)
-        for i, h in enumerate(vh):
-            if i==0: h.Draw()
-            else:    h.Draw("same")
+        vh[0].Draw()
+        vh[1].Draw("same")
+        vh[2].Draw("same")
 
-            if not self.check_individual_event:
-                legend.AddEntry(h, self.wafer_types[i], "l")
-
-        if not self.check_individual_event:
+        if self.check_individual_event:
+            legend.AddEntry(vh[0], "Rec. hits", "l")
+        else:
+            legend.AddEntry(vh[0], self.wafer_types[0], "l")
+            legend.AddEntry(vh[1], self.wafer_types[1], "l")
+            legend.AddEntry(vh[2], self.wafer_types[2], "l")
             legend.Draw("same")
+
+        # expected hit position
+        if self.check_individual_event:
+            self.show_rec_hits = False 
+
+            self.algo_type = "max_cell"
+            self.tree = tree_max_cell
+            self.settings = (20, 0.3, ROOT.kBlue)
+            h1 = self.draw_RZ_hitstogram()
+            h1.Draw("same")
+
+            self.algo_type = "energy_weighted"
+            self.tree = tree_energy_weighted
+            self.settings = (20, 0.3, ROOT.kGreen)
+            h2 = self.draw_RZ_hitstogram()
+            h2.Draw("same")
+
+            self.algo_type = "linear_track"
+            self.tree = tree_linear_track
+            self.settings = (20, 0.3, ROOT.kRed)
+            h3 = self.draw_RZ_hitstogram()
+            h3.Draw("same")
+
+            legend.AddEntry(h1, "Expected from max cell", "l")
+            legend.AddEntry(h2, "Expected from energy weight", "l")
+            legend.AddEntry(h3, "Expected from linear track", "l")
+            legend.Draw("same")
+
+        self.canvas.Update()
 
         output_file = self.output_directory + "/hits_Rxy_Z_" + self.tag
         if self.flag_make_pdf_file: self.canvas.Print(self.output_pdf_file + "(", "pdf")
@@ -228,14 +268,7 @@ class HitAnalyzer:
         #------------------------------
         # X-Y distributions
         #------------------------------
-        tree_max_cell = self.fin.Get("prodEE_DigiSim/tr_max_cell")
-        tree_energy_weighted = self.fin.Get("prodEE_DigiSim/tr_energy_weighted")
-        tree_linear_track = self.fin.Get("prodEE_DigiSim/tr_linear_trajectory")
-
         for layer in range(1,27):
-            #self.canvas.cd()
-            #self.canvas.Clear()
-
             self.layer = layer
             self.name = "h_2d_hits_layer%d" % layer
             self.title = "Layer-0%d" % layer if layer < 10 else "Layer-%d" % layer
@@ -245,18 +278,16 @@ class HitAnalyzer:
             self.tree = tree
             self.settings = (20, 0.5, ROOT.kGray+2)
             self.show_rec_hits = True
-            self.first_histogram = True
             h = self.draw_XY_hitstogram()
             h.Draw()
 
             # expected hit position
             if self.check_individual_event:
                 self.show_rec_hits = False 
-                self.first_histogram = False
 
                 self.algo_type = "max_cell"
                 self.tree = tree_max_cell
-                self.settings = (29, 1, ROOT.kRed)
+                self.settings = (29, 1, ROOT.kBlue)
                 h1 = self.draw_XY_hitstogram()
                 h1.Draw("same")
 
@@ -268,7 +299,7 @@ class HitAnalyzer:
 
                 self.algo_type = "linear_track"
                 self.tree = tree_linear_track
-                self.settings = (29, 1, ROOT.kBlue)
+                self.settings = (29, 1, ROOT.kRed)
                 h3 = self.draw_XY_hitstogram()
                 h3.Draw("same")
 
@@ -278,7 +309,7 @@ class HitAnalyzer:
                 legend.AddEntry(h1, "Expected from max cell", "p")
                 legend.AddEntry(h2, "Expected from energy weight", "p")
                 legend.AddEntry(h3, "Expected from linear track", "p")
-                legend.Draw("same")
+                #legend.Draw("same")
 
             # ploting
             str_number = "0%d" % layer if layer < 10 else "%d" % layer
@@ -292,6 +323,7 @@ class HitAnalyzer:
 
             if self.flag_make_png_file:
                 self.canvas.SaveAs(output_file + ".png")
+
     #====================================================================================================
 
     def draw_XY_hitstogram(self):
@@ -320,50 +352,63 @@ class HitAnalyzer:
         h.GetXaxis().SetTitleOffset(1.1)
         h.GetYaxis().SetTitleOffset(1.0)
 
-        #if self.first_histogram:
-        #    h.Draw()
-        #else:
-        #    h.Draw("same")
-
         return h
 
+
     def draw_RZ_hitstogram(self):
-        #legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85)
-        #legend.SetLineColor(0)
-        #legend.SetTextSize(0.04)
+        if self.show_rec_hits:
+            vh, colors = [], []
+            if self.check_individual_event:
+                colors = [ROOT.kBlack, ROOT.kBlack, ROOT.kBlack]
+            else:
+                colors = [ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta]
 
-        vh, colors = [], []
-        if self.check_individual_event:
-            colors = [ROOT.kBlack, ROOT.kBlack, ROOT.kBlack]
-        else:
-            colors = [ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta]
+            self.wafer_types = ["is_Silicon_w120", "is_Silicon_w200", "is_Silicon_w300"]
+            for i, wafer in enumerate(self.wafer_types):
+                name, title = "h_hits_Rxy_Z_%s" % wafer, "Hits R_{xy} vs Z"
+                selection = "evtNo==%d && %s==1" % (self.evtNo, wafer) if self.check_individual_event else "%s==1" % wafer
+                h = ROOT.TH2D(name, title, 160, 300, 380, 600, 0, 300 )
+                self.tree.Draw("r:z>>%s" % name, selection)
+                htemp = ROOT.gPad.GetPrimitive(name)
+                htemp.SetStats(0)
+                htemp.SetLineWidth(2)
+                htemp.SetLineColor(colors[i])
+                htemp.SetMarkerColor(colors[i])
+                htemp.GetXaxis().SetTitle("Z (cm)")
+                htemp.GetYaxis().SetTitle("R_{xy} (cm)")
+                htemp.GetXaxis().SetTitleOffset(1.1)
+                htemp.GetYaxis().SetTitleOffset(1.2)
+                vh.append(htemp)
 
-        self.wafer_types = ["is_Silicon_w120", "is_Silicon_w200", "is_Silicon_w300"]
-        for i, wafer in enumerate(self.wafer_types):
-            name, title = "h_hits_Rxy_Z_%s" % wafer, "Hits R_{xy} vs Z"
-            selection = "evtNo==%d && %s==1" % (self.evtNo, wafer) if self.check_individual_event else "%s==1" % wafer
+            return vh
+
+        else: # expected position
+            name, title = "h_hits_Rxy_Z_%s" % self.algo_type, "Hits R_{xy} vs Z"
             h = ROOT.TH2D(name, title, 160, 300, 380, 600, 0, 300 )
-            self.tree.Draw("r:z>>%s" % name, selection)
-            htemp = ROOT.gPad.GetPrimitive(name)
-            htemp.SetStats(0)
-            htemp.SetLineWidth(2)
-            htemp.SetLineColor(colors[i])
-            htemp.SetMarkerColor(colors[i])
-            htemp.GetXaxis().SetTitle("Z (cm)")
-            htemp.GetYaxis().SetTitle("R_{xy} (cm)")
-            htemp.GetXaxis().SetTitleOffset(1.1)
-            htemp.GetYaxis().SetTitleOffset(1.2)
-            vh.append(htemp)
+            for i, hit in enumerate(self.tree):
+                if not i == self.evtNo: continue
+                for layer in range(1,27):
+                    x = hit.vx[layer-1]
+                    y = hit.vy[layer-1]
+                    z = hit.vz[layer-1]
+                    r = math.sqrt(pow(x,2)+pow(y,2))
+                    h.Fill(z,r);
+                break
 
-            #legend.AddEntry(htemp, wafer, "l")
+            style, size, color = self.settings
+            h.SetStats(0)
+            h.SetLineWidth(2)
+            h.SetLineColor(color)
+            h.SetMarkerStyle(style)
+            h.SetMarkerSize(size)
+            h.SetMarkerColor(color)
+            h.GetXaxis().SetTitle("Z (cm)")
+            h.GetYaxis().SetTitle("R_{xy} (cm)")
+            h.GetXaxis().SetTitleOffset(1.1)
+            h.GetYaxis().SetTitleOffset(1.2)
 
-        #for i, h in enumerate(vh):
-        #    if i==0: h.Draw()
-        #    else:    h.Draw("same")
+            return h
 
-        #legend.Draw("same")
-
-        return vh
 
     def get_TLegend(self, x0, y0, x1, y1):
         #legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85)
