@@ -27,6 +27,7 @@ class HitAnalyzer:
         vt, vf = [], []
         for i, rootfile in enumerate(self.input_files):
             if not i==1: continue # use E100 for check
+            self.tag = self.tags[i]
 
             print ">>> rootfile", rootfile
             self.fin = ROOT.TFile.Open(rootfile, "R")
@@ -38,8 +39,6 @@ class HitAnalyzer:
             self.check_individual_event = False 
             self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
             self.__retrieve_hit_plots(tree)
-
-            break
 
             # specific event
             self.check_individual_event = True
@@ -167,7 +166,7 @@ class HitAnalyzer:
             h.Draw("same")
 
         #legend.Draw("same")
-        output_file = self.output_directory + "/hits_Rxy_Z"
+        output_file = self.output_directory + "/hits_Rxy_Z_" + self.tag
         self.canvas.SaveAs(output_file + ".png")
         self.canvas.Print(self.output_pdf_file + "(", "pdf")
 
@@ -177,8 +176,8 @@ class HitAnalyzer:
             b[i].Draw("same")
 
             layer = i+1
-            tag = "0%d" % layer if layer < 10 else "%d" % layer
-            output_file = self.output_directory + "/hits_x_y_layer" + tag
+            str_number = "0%d" % layer if layer < 10 else "%d" % layer
+            output_file = self.output_directory + "/hits_x_y_layer" + str_number + "_" + self.tag
             self.canvas.SaveAs(output_file + ".png")
 
             if layer == 26:
@@ -201,14 +200,30 @@ class HitAnalyzer:
     #}}}
 
     def __retrieve_hit_plots(self, tree):
+        # output pdf only when checking single events -> save disk space
+        self.flag_make_png_file = not self.check_individual_event
+        self.flag_make_pdf_file = self.check_individual_event
+
         #------------------------------
         # Rxy-Z distribution
         #------------------------------
         self.tree = tree
         vh = self.draw_RZ_hitstogram()
-        output_file = self.output_directory + "/hits_Rxy_Z"
-        self.canvas.SaveAs(output_file + ".png")
-        self.canvas.Print(self.output_pdf_file + "(", "pdf")
+
+        legend = self.get_TLegend(0.15, 0.65, 0.45, 0.85)
+        for i, h in enumerate(vh):
+            if i==0: h.Draw()
+            else:    h.Draw("same")
+
+            if not self.check_individual_event:
+                legend.AddEntry(h, self.wafer_types[i], "l")
+
+        if not self.check_individual_event:
+            legend.Draw("same")
+
+        output_file = self.output_directory + "/hits_Rxy_Z_" + self.tag
+        if self.flag_make_pdf_file: self.canvas.Print(self.output_pdf_file + "(", "pdf")
+        if self.flag_make_png_file: self.canvas.SaveAs(output_file + ".png")
 
         #------------------------------
         # X-Y distributions
@@ -233,18 +248,18 @@ class HitAnalyzer:
             h = self.draw_XY_hitstogram()
             h.Draw()
 
+            # expected hit position
             if self.check_individual_event:
-                # expected hit position
                 self.show_rec_hits = False 
                 self.first_histogram = False
 
-                self.tag = "max_cell"
+                self.algo_type = "max_cell"
                 self.tree = tree_max_cell
                 self.color = ROOT.kRed
                 h1 = self.draw_XY_hitstogram()
                 h1.Draw("same")
 
-                self.tag = "linear_track"
+                self.algo_type = "linear_track"
                 self.tree = tree_linear_track
                 self.color = ROOT.kBlue
                 h2 = self.draw_XY_hitstogram()
@@ -258,19 +273,21 @@ class HitAnalyzer:
                 legend.Draw("same")
 
             # ploting
-            tag = "0%d" % layer if layer < 10 else "%d" % layer
-            output_file = self.output_directory + "/hits_x_y_layer" + tag
-            self.canvas.SaveAs(output_file + ".png")
+            str_number = "0%d" % layer if layer < 10 else "%d" % layer
+            output_file = self.output_directory + "/hits_x_y_layer" + str_number + "_" + self.tag
 
-            if layer == 26:
-                self.canvas.Print(self.output_pdf_file + ")", "pdf")
-            else:
-                self.canvas.Print(self.output_pdf_file, "pdf")
+            if self.flag_make_pdf_file:
+                if layer == 26:
+                    self.canvas.Print(self.output_pdf_file + ")", "pdf")
+                else:
+                    self.canvas.Print(self.output_pdf_file, "pdf")
 
+            if self.flag_make_png_file:
+                self.canvas.SaveAs(output_file + ".png")
     #====================================================================================================
 
     def draw_XY_hitstogram(self):
-        fullname = self.name if self.show_rec_hits else self.name + "_" + self.tag
+        fullname = self.name if self.show_rec_hits else self.name + "_" + self.algo_type
         h = ROOT.TH2D(fullname, self.title, 680, -170, 170, 680, -170, 170 )
 
         if self.show_rec_hits:
@@ -302,15 +319,18 @@ class HitAnalyzer:
         return h
 
     def draw_RZ_hitstogram(self):
-        legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85)
-        legend.SetLineColor(0)
-        legend.SetTextSize(0.04)
+        #legend = ROOT.TLegend(0.15, 0.65, 0.45, 0.85)
+        #legend.SetLineColor(0)
+        #legend.SetTextSize(0.04)
 
-        vh = []
-        colors = [ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta]
-        colors = [ROOT.kBlack, ROOT.kBlack, ROOT.kBlack]
-        wafer_types = ["is_Silicon_w120", "is_Silicon_w200", "is_Silicon_w300"]
-        for i, wafer in enumerate(wafer_types):
+        vh, colors = [], []
+        if self.check_individual_event:
+            colors = [ROOT.kBlack, ROOT.kBlack, ROOT.kBlack]
+        else:
+            colors = [ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta]
+
+        self.wafer_types = ["is_Silicon_w120", "is_Silicon_w200", "is_Silicon_w300"]
+        for i, wafer in enumerate(self.wafer_types):
             name, title = "h_hits_Rxy_Z_%s" % wafer, "Hits R_{xy} vs Z"
             selection = "evtNo==%d && %s==1" % (self.evtNo, wafer) if self.check_individual_event else "%s==1" % wafer
             h = ROOT.TH2D(name, title, 160, 300, 380, 600, 0, 300 )
@@ -326,13 +346,13 @@ class HitAnalyzer:
             htemp.GetYaxis().SetTitleOffset(1.2)
             vh.append(htemp)
 
-            legend.AddEntry(htemp, wafer, "l")
+            #legend.AddEntry(htemp, wafer, "l")
 
-        for i, h in enumerate(vh):
-            if i==0: h.Draw()
-            else:    h.Draw("same")
+        #for i, h in enumerate(vh):
+        #    if i==0: h.Draw()
+        #    else:    h.Draw("same")
 
-        legend.Draw("same")
+        #legend.Draw("same")
 
         return vh
 
