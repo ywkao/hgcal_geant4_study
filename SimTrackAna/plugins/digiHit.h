@@ -206,6 +206,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         void fill_event_info();
         GlobalPoint projectHitPositionAt(float z,float eta,float phi);
         float get_distance_from_expected_hit(double x, double y, double z, double eta, double phi);
+        float get_distance_from_expected_hit(double x, double y, double x0, double y0);
+        int get_signal_region(float d);
         static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
     private:
         virtual void beginJob() override;
@@ -245,16 +247,21 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         TTree   *tr_hits;
         TTree   *tr_positron;
         TTree   *tr_max_cell;
+        TTree   *tr_energy_weighted;
         TTree   *tr_linear_trajectory;
         int tr_evtNo;
         int tr_layerNo;
-        int tr_signal_region;
+        int tr_signal_region_max_cell;
+        int tr_signal_region_energy_weighted;
+        int tr_signal_region_linear_track;
         float tr_x;
         float tr_y;
         float tr_z;
         float tr_e;
         float tr_r;
-        float tr_d;
+        float tr_d_max_cell;
+        float tr_d_energy_weighted;
+        float tr_d_linear_track;
         float tr_eta;
         float tr_phi;
         bool tr_is_Silicon_w120;
@@ -264,6 +271,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 
         // expected hits for 26 layers (energy, vector of x, y, z positions)
         myVector mv_max_cell;
+        myVector mv_energy_weighted;
         myVector mv_linear_track;
 
         // hiistograms
@@ -450,10 +458,17 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     tr_hits -> Branch("z"       , &tr_z       );
     tr_hits -> Branch("e"       , &tr_e       );
     tr_hits -> Branch("r"       , &tr_r       );
-    tr_hits -> Branch("d"       , &tr_d       );
     tr_hits -> Branch("eta"     , &tr_eta     );
     tr_hits -> Branch("phi"     , &tr_phi     );
-    tr_hits -> Branch("signal_region"  , &tr_signal_region  );
+
+    tr_hits -> Branch("d_max_cell"                    , &tr_d_max_cell                    );
+    tr_hits -> Branch("d_energy_weighted"             , &tr_d_energy_weighted             );
+    tr_hits -> Branch("d_linear_track"                , &tr_d_linear_track                );
+
+    tr_hits -> Branch("signal_region_linear_track"    , &tr_signal_region_linear_track    );
+    tr_hits -> Branch("signal_region_max_cell"        , &tr_signal_region_max_cell        );
+    tr_hits -> Branch("signal_region_energy_weighted" , &tr_signal_region_energy_weighted );
+
     tr_hits -> Branch("is_Silicon_w120", &tr_is_Silicon_w120);
     tr_hits -> Branch("is_Silicon_w200", &tr_is_Silicon_w200);
     tr_hits -> Branch("is_Silicon_w300", &tr_is_Silicon_w300);
@@ -474,6 +489,13 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     tr_max_cell -> Branch("vy"      , &mv_max_cell.tr_vy     );
     tr_max_cell -> Branch("vz"      , &mv_max_cell.tr_vz     );
     tr_max_cell -> Branch("ve"      , &mv_max_cell.tr_ve     );
+
+    tr_energy_weighted = fs->make<TTree>("tr_energy_weighted","");
+    tr_energy_weighted -> Branch("evtNo"   , &tr_evtNo  );
+    tr_energy_weighted -> Branch("vx"      , &mv_energy_weighted.tr_vx     );
+    tr_energy_weighted -> Branch("vy"      , &mv_energy_weighted.tr_vy     );
+    tr_energy_weighted -> Branch("vz"      , &mv_energy_weighted.tr_vz     );
+    tr_energy_weighted -> Branch("ve"      , &mv_energy_weighted.tr_ve     );
 
     tr_linear_trajectory = fs->make<TTree>("tr_linear_trajectory","");
     tr_linear_trajectory -> Branch("evtNo"   , &tr_evtNo  );
@@ -644,13 +666,17 @@ void DigiSim::reset_tree_variables()
 {
     tr_evtNo = 0;
     tr_layerNo = 0;
-    tr_signal_region = -1;
+    tr_signal_region_max_cell = -1;
+    tr_signal_region_energy_weighted = -1;
+    tr_signal_region_linear_track = -1;
     tr_x = 0.;
     tr_y = 0.;
     tr_z = 0.;
     tr_e = 0.;
     tr_r = 0.;
-    tr_d = 0.;
+    tr_d_max_cell = 0.;
+    tr_d_energy_weighted = 0.;
+    tr_d_linear_track = 0.;
     tr_eta = 0.;
     tr_phi = 0.;
     tr_is_Silicon_w120 = false;
@@ -832,9 +858,14 @@ double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitu
     //if(type==2) corrected_energy = 2.22060e+04 + 1.02199e+01*amplitude;
 
     // R90to130 (MIPs to MeV)
-    if(type==0) corrected_energy = 2.17293e+01 + 4.96546e-03*amplitude;
-    if(type==1) corrected_energy = 2.15038e+01 + 9.45215e-03*amplitude;
-    if(type==2) corrected_energy = 2.22265e+01 + 1.03710e-02*amplitude;
+    //if(type==0) corrected_energy = 2.17293e+01 + 4.96546e-03*amplitude;
+    //if(type==1) corrected_energy = 2.15038e+01 + 9.45215e-03*amplitude;
+    //if(type==2) corrected_energy = 2.22265e+01 + 1.03710e-02*amplitude;
+
+    // R90to130 (Anne-Marie algo + linear track)
+    if(type==0) corrected_energy = 1.70404e+01 + 1.01105e-03*amplitude;
+    if(type==1) corrected_energy = 1.70133e+01 + 1.94038e-03*amplitude;
+    if(type==2) corrected_energy = 1.72140e+01 + 2.11144e-03*amplitude;
 
     return corrected_energy;
 }
@@ -854,6 +885,24 @@ float DigiSim::get_distance_from_expected_hit(double x, double y, double z, doub
     TVector2 xyExp(xyzExp.x(),xyzExp.y());
     float d = (xyExp-xy).Mod();
     return d;
+}
+
+float DigiSim::get_distance_from_expected_hit(double x, double y, double x0, double y0)
+{
+    TVector2 xy(x,y);
+    TVector2 xyExp(x0,y0);
+    float d = (xyExp-xy).Mod();
+    return d;
+}
+
+int DigiSim::get_signal_region(float d)
+{
+    int signal_region = -1;
+    if(d<=1.3)      signal_region = 1;
+    else if(d<=2.6) signal_region = 2;
+    else if(d<=5.3) signal_region = 3;
+    else            signal_region = -1;
+    return signal_region;
 }
 
 void DigiSim::fill_event_info()

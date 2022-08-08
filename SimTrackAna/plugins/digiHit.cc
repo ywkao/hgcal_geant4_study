@@ -299,20 +299,39 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
     // determine hit with maximum energy for each CEE layer
     reset_expected_hit_containers(mv_max_cell);
+    reset_expected_hit_containers(mv_energy_weighted);
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
         hitsinfo hinfo = (*itr_sim).second.first;
         energysum esum = (*itr_sim).second.second;
         int layer = hinfo.layer;
         int idx = layer-1;
 
+        // Method: max cell
         if(mv_max_cell.tr_ve[idx]<esum.eTime[0]) {
             mv_max_cell.tr_vx[idx] = hinfo.x_pos;
             mv_max_cell.tr_vy[idx] = hinfo.y_pos;
             mv_max_cell.tr_vz[idx] = hinfo.z_pos;
             mv_max_cell.tr_ve[idx] = esum.eTime[0];
         }
+
+        // Method: energy weghted
+        mv_energy_weighted.tr_vx[idx] += hinfo.x_pos * esum.eTime[0];
+        mv_energy_weighted.tr_vy[idx] += hinfo.y_pos * esum.eTime[0];
+        mv_energy_weighted.tr_vz[idx] += hinfo.z_pos * esum.eTime[0];
+        mv_energy_weighted.tr_ve[idx] += esum.eTime[0];
     }
     tr_max_cell->Fill();
+
+    // store energy weighted positions
+    for(int idx=0; idx<26; ++idx) {
+        // sum of energy is not empty
+        if(mv_energy_weighted.tr_ve[idx]>0.) {
+            mv_energy_weighted.tr_vx[idx] /= mv_energy_weighted.tr_ve[idx];
+            mv_energy_weighted.tr_vy[idx] /= mv_energy_weighted.tr_ve[idx];
+            mv_energy_weighted.tr_vz[idx] /= mv_energy_weighted.tr_ve[idx];
+        }
+    }
+    tr_energy_weighted->Fill();
 
     // store expected position of gen-particle trajectory
     reset_expected_hit_containers(mv_linear_track);
@@ -333,6 +352,13 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             tb::print_debug_info(Form("mv_max_cell.tr_vy[%2d]", idx), mv_max_cell.tr_vy[idx]    );
             tb::print_debug_info(Form("mv_max_cell.tr_vz[%2d]", idx), mv_max_cell.tr_vz[idx]    );
             tb::print_debug_info(Form("mv_max_cell.tr_ve[%2d]", idx), mv_max_cell.tr_ve[idx], true );
+        }
+
+        for(int idx=0; idx<26; ++idx) {
+            tb::print_debug_info(Form("mv_energy_weighted.tr_vx[%2d]", idx), mv_energy_weighted.tr_vx[idx]    );
+            tb::print_debug_info(Form("mv_energy_weighted.tr_vy[%2d]", idx), mv_energy_weighted.tr_vy[idx]    );
+            tb::print_debug_info(Form("mv_energy_weighted.tr_vz[%2d]", idx), mv_energy_weighted.tr_vz[idx]    );
+            tb::print_debug_info(Form("mv_energy_weighted.tr_ve[%2d]", idx), mv_energy_weighted.tr_ve[idx], true );
         }
 
         for(int idx=0; idx<26; ++idx) {
@@ -388,26 +414,37 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 tr_is_Silicon_w300 = hinfo.is_Silicon_w300;
                 tr_is_Scintillator = hinfo.is_Scintillator;
 
-                tr_d = get_distance_from_expected_hit(tr_x, tr_y, tr_z, gen_eta, gen_phi);
+                float x0, y0;
+                x0 = mv_max_cell.tr_vx[idx];
+                y0 = mv_max_cell.tr_vy[idx];
+                tr_d_max_cell = get_distance_from_expected_hit(tr_x, tr_y, x0, y0);
+                tr_signal_region_max_cell = get_signal_region(tr_d_max_cell);
 
-                if(tr_d<=1.3)      tr_signal_region = 1;
-                else if(tr_d<=2.6) tr_signal_region = 2;
-                else if(tr_d<=5.3) tr_signal_region = 3;
-                else               tr_signal_region = -1;
+                x0 = mv_energy_weighted.tr_vx[idx];
+                y0 = mv_energy_weighted.tr_vy[idx];
+                tr_d_energy_weighted = get_distance_from_expected_hit(tr_x, tr_y, x0, y0);
+                tr_signal_region_energy_weighted = get_signal_region(tr_d_energy_weighted);
+
+                tr_d_linear_track = get_distance_from_expected_hit(tr_x, tr_y, tr_z, gen_eta, gen_phi);
+                tr_signal_region_linear_track = get_signal_region(tr_d_linear_track);
 
                 tr_hits->Fill();
 
                 // apply selection on signal region for histograms based on the lineaer track
-                if(!(tr_signal_region==1 || tr_signal_region==2)) continue;
+                if(!(tr_signal_region_linear_track==1 || tr_signal_region_linear_track==2)) continue;
 
                 if(false) {
                     counter += 1;
                     tb::print_debug_info("tr_layerNo" , tr_layerNo    );
-                    tb::print_debug_info("tr_x" , tr_x    );
-                    tb::print_debug_info("tr_y" , tr_y    );
-                    tb::print_debug_info("tr_z" , tr_z    );
-                    tb::print_debug_info("tr_d" , tr_d    );
-                    tb::print_debug_info("tr_signal_region" , tr_signal_region, true );
+                    tb::print_debug_info("tr_x" , tr_x      );
+                    tb::print_debug_info("tr_y" , tr_y      );
+                    tb::print_debug_info("tr_z" , tr_z, true);
+                    tb::print_debug_info("tr_d_max_cell" , tr_d_max_cell    );
+                    tb::print_debug_info("tr_signal_region_max_cell" , tr_signal_region_max_cell, true );
+                    tb::print_debug_info("tr_d_energy_weighted" , tr_d_energy_weighted    );
+                    tb::print_debug_info("tr_signal_region_energy_weighted" , tr_signal_region_energy_weighted, true );
+                    tb::print_debug_info("tr_d_linear_track" , tr_d_linear_track    );
+                    tb::print_debug_info("tr_signal_region_linear_track" , tr_signal_region_linear_track, true );
                     continue;
                 }
 
@@ -431,9 +468,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 //--------------------------------------------------
                 total_energy_mip_set0 += amplitude;
                 total_energy_sim_set0 += energy;
-
-                double corrected_energy = convert_amplitude_to_total_energy_pedro(0, amplitude);
-                total_corrected_energy_set0 += corrected_energy;
 
                 //E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
                 //E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
