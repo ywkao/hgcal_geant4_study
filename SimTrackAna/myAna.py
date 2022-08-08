@@ -112,9 +112,9 @@ def run_manager(myfin, mydin):
     pu.create_directory( pl.specified_directory )
 
     # runners
-    #run_hit_distribution()
+    run_hit_distribution()
     #run_logitudinal_profile()
-    run_energy_resolution()
+    #run_energy_resolution()
 
 #----------------------------------------------------------------------------------------------------
 
@@ -122,11 +122,13 @@ if __name__ == "__main__":
 
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v1
-    run_manager( m.input_files["R90To130"], eos + "/" + "R90To130_v2p1" )
+    run_manager( m.input_files["R90To130_v1p1"], eos + "/" + "R90To130_v2p2" )
+
+    exit()
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2
-    run_manager( m.input_files["R90To130_v2"], eos + "/" + "R90To130_v2p1" )
+    run_manager( m.input_files["R90To130_v1p2"], eos + "/" + "R90To130_v2p2" )
 
     run_fitters_and_summary()
 

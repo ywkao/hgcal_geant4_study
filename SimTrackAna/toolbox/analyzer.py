@@ -36,13 +36,13 @@ class HitAnalyzer:
             vt.append(tree)
 
             # total event
-            self.check_individual_event = False 
-            self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
-            self.__retrieve_hit_plots(tree)
+            #self.check_individual_event = False 
+            #self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
+            #self.__retrieve_hit_plots(tree)
 
             # specific event
             self.check_individual_event = True
-            for evtNo in range(4, 5):
+            for evtNo in range(0, 5):
                 self.evtNo = evtNo 
                 self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + "_evtNo%d.pdf" % self.evtNo
                 self.__retrieve_hit_plots(tree)
@@ -229,6 +229,7 @@ class HitAnalyzer:
         # X-Y distributions
         #------------------------------
         tree_max_cell = self.fin.Get("prodEE_DigiSim/tr_max_cell")
+        tree_energy_weighted = self.fin.Get("prodEE_DigiSim/tr_energy_weighted")
         tree_linear_track = self.fin.Get("prodEE_DigiSim/tr_linear_trajectory")
 
         for layer in range(1,27):
@@ -242,7 +243,7 @@ class HitAnalyzer:
 
             # Rec hits
             self.tree = tree
-            self.color = ROOT.kGray+2
+            self.settings = (20, 0.5, ROOT.kGray+2)
             self.show_rec_hits = True
             self.first_histogram = True
             h = self.draw_XY_hitstogram()
@@ -255,21 +256,28 @@ class HitAnalyzer:
 
                 self.algo_type = "max_cell"
                 self.tree = tree_max_cell
-                self.color = ROOT.kRed
+                self.settings = (29, 1, ROOT.kRed)
                 h1 = self.draw_XY_hitstogram()
                 h1.Draw("same")
 
-                self.algo_type = "linear_track"
-                self.tree = tree_linear_track
-                self.color = ROOT.kBlue
+                self.algo_type = "energy_weighted"
+                self.tree = tree_energy_weighted
+                self.settings = (29, 1, ROOT.kGreen)
                 h2 = self.draw_XY_hitstogram()
                 h2.Draw("same")
 
+                self.algo_type = "linear_track"
+                self.tree = tree_linear_track
+                self.settings = (29, 1, ROOT.kBlue)
+                h3 = self.draw_XY_hitstogram()
+                h3.Draw("same")
+
                 legend = ROOT.TLegend(0.20, 0.20, 0.65, 0.35)
-                legend.SetTextSize(0.04)
+                legend.SetTextSize(0.03)
                 legend.AddEntry(h,  "Rec. hits", "p")
                 legend.AddEntry(h1, "Expected from max cell", "p")
-                legend.AddEntry(h2, "Expected from linear track", "p")
+                legend.AddEntry(h2, "Expected from energy weight", "p")
+                legend.AddEntry(h3, "Expected from linear track", "p")
                 legend.Draw("same")
 
             # ploting
@@ -302,10 +310,11 @@ class HitAnalyzer:
                 h.Fill(x,y);
                 break
 
+        style, size, color = self.settings
         h.SetStats(0)
-        h.SetMarkerStyle(20)
-        h.SetMarkerSize(0.5)
-        h.SetMarkerColor(self.color)
+        h.SetMarkerStyle(style)
+        h.SetMarkerSize(size)
+        h.SetMarkerColor(color)
         h.GetXaxis().SetTitle("X (cm)")
         h.GetYaxis().SetTitle("Y (cm)")
         h.GetXaxis().SetTitleOffset(1.1)
