@@ -214,8 +214,6 @@ def make_plot(varName, dir_output="", bool_make_logitudinal_profile=False):
 def make_simple_plot(energyType, dir_output, selection):
     global myRootfiles, specified_directory, fit_constraints
     
-    xRanges = fit_constraints[energyType]["xRanges"]
-
     xtitle, outputName, hname_odd, hname_even, labels = pu.get_strings_for_simple_plot(energyType, selection)
 
     #++++++++++++++++++++++++++++++
@@ -251,6 +249,8 @@ def make_simple_plot(energyType, dir_output, selection):
             #--------------------------------------------------
             # Edep odd/even layers
             #--------------------------------------------------
+            xRanges = fit_constraints["set1set2"][energyType]["xRanges"]
+
             pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]], xtitle, max_value, xRanges[i], ROOT.kBlue   , [0.60, 0.66, 0.88, 0.86] )
             pu.draw_and_fit_a_histogram( c1, v_hists[1], [energyType, tags[i], labels[1]], xtitle, max_value, xRanges[i], ROOT.kGreen+3, [0.60, 0.42, 0.88, 0.62] )
 
@@ -266,6 +266,8 @@ def make_simple_plot(energyType, dir_output, selection):
             latex.DrawLatex( 0.45, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[1], labels[1], pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
 
         else:
+            xRanges = fit_constraints["set0"][energyType]["xRanges"]
+
             pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
 
             latex.SetTextColor(ROOT.kBlue)
@@ -294,7 +296,8 @@ def run_linear_fit(dir_output, label, dx, dy):
     c1.Clear()
     gr.Draw("ap")
     gr.GetXaxis().SetLimits(0, 30000) # alogn X
-    gr.GetYaxis().SetRangeUser(0, 300)
+    gr.GetYaxis().SetRangeUser(0, 300) # v1p1, v1p2
+    gr.GetYaxis().SetRangeUser(0, 100) # v2p1, v2p2
 
     f1 = ROOT.TF1('f1', "[0] + [1]*x", 0, 30000)
     gr.Fit(f1, "", "", 0, 30000)
@@ -366,7 +369,8 @@ def run_resolution_summary(dir_output, labels, dy1, dy2):
     gr1.GetYaxis().SetTitleSize(0.04)
     gr1.Draw("ap")
     gr1.GetXaxis().SetLimits(0, 350) # alogn X
-    gr1.GetYaxis().SetRangeUser(0.018, 0.043)
+    gr1.GetYaxis().SetRangeUser(0.018, 0.043) # v1p1, v1p2
+    gr1.GetYaxis().SetRangeUser(0.0, 0.040) # v2p1, v2p2
 
     gr2.SetLineWidth(2)
     gr2.SetMarkerStyle(20)

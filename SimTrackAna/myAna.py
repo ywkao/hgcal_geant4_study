@@ -64,6 +64,10 @@ def run_hit_distribution():
     pl.make_plot( "hEta", output_directory, False )
     pl.make_plot( "hPhi", output_directory, False )
 
+def run_hit_analyzer():
+    output_directory = pl.specified_directory + "/hit_distributions"
+    pu.create_directory(output_directory)
+
     analyzer = an.HitAnalyzer(pl.myRootfiles, output_directory, tags)
     analyzer.loop()
 
@@ -112,23 +116,27 @@ def run_manager(myfin, mydin):
     pu.create_directory( pl.specified_directory )
 
     # runners
-    run_hit_distribution()
+    #run_hit_analyzer()
+    #run_hit_distribution()
     #run_logitudinal_profile()
-    #run_energy_resolution()
+    run_energy_resolution()
 
 #----------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
-    tags = ["E300", "E100", "E20"]
-    fit_constraints = m.fit_constraints_v1
-    run_manager( m.input_files["R90To130_v1p1"], eos + "/" + "R90To130_v2p2" )
+    target_directory = "R90To130_v1p1"
+    target_directory = "R90To130_v2p3"
 
-    exit()
+    tags = ["E300", "E100", "E20"]
+    fit_constraints = m.fit_constraints_v2p1
+    run_manager( m.input_files["R90To130_v2p1"], eos + "/" + target_directory )
+
+    #exit()
 
     tags = ["E225", "E175", "E60"]
-    fit_constraints = m.fit_constraints_v2
-    run_manager( m.input_files["R90To130_v1p2"], eos + "/" + "R90To130_v2p2" )
+    fit_constraints = m.fit_constraints_v2p2
+    run_manager( m.input_files["R90To130_v2p2"], eos + "/" + target_directory )
 
     run_fitters_and_summary()
 

@@ -36,17 +36,46 @@ class HitAnalyzer:
             vf.append(self.fin)
             vt.append(tree)
 
+            #--------------------------------------------------
             # total event
+            #--------------------------------------------------
             #self.check_individual_event = False 
             #self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
             #self.__retrieve_hit_plots(tree)
 
+            #--------------------------------------------------
             # specific event
+            #--------------------------------------------------
             self.check_individual_event = True
+
+            self.flag_make_plots = True
             for evtNo in range(0, 5):
                 self.evtNo = evtNo 
                 self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + "_evtNo%d.pdf" % self.evtNo
                 self.__retrieve_hit_plots(tree)
+
+            break
+
+            # False for evaluating efficiency
+            self.flag_make_plots = False
+
+            # 30 min processing time
+            self.efficiency = []
+            for layer in range(1, 27):
+                h = ROOT.TH1D("eff_layer-%d" % layer, ";Efficiency (%);Entries", 50, 0, 100)
+                self.efficiency.append(h)
+
+            for evtNo in range(0, 1000):
+                self.evtNo = evtNo 
+                self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + "_evtNo%d.pdf" % self.evtNo
+                self.__retrieve_hit_plots(tree)
+
+            for layer in range(1, 27):
+                self.efficiency[layer-1].Draw()
+                # ploting
+                str_number = "0%d" % layer if layer < 10 else "%d" % layer
+                output_file = self.output_directory + "/hit_efficiency_x_y_layer" + str_number + "_" + self.tag
+                self.canvas.SaveAs(output_file + ".png")
 
             break
 
@@ -201,6 +230,7 @@ class HitAnalyzer:
     #}}}
 
     def __retrieve_hit_plots(self, tree):
+
         # output pdf only when checking single events -> save disk space
         self.flag_make_png_file = not self.check_individual_event
         self.flag_make_pdf_file = self.check_individual_event
@@ -213,73 +243,25 @@ class HitAnalyzer:
         #------------------------------
         # Rxy-Z distribution
         #------------------------------
-        legend = self.get_TLegend(0.15, 0.65, 0.45, 0.85)
-
-        # Rec hits
-        self.tree = tree
-        self.show_rec_hits = True
-        vh = self.draw_RZ_hitstogram()
-
-        vh[0].Draw()
-        vh[1].Draw("same")
-        vh[2].Draw("same")
-
-        if self.check_individual_event:
-            legend.AddEntry(vh[0], "Rec. hits", "l")
-        else:
-            legend.AddEntry(vh[0], self.wafer_types[0], "l")
-            legend.AddEntry(vh[1], self.wafer_types[1], "l")
-            legend.AddEntry(vh[2], self.wafer_types[2], "l")
-            legend.Draw("same")
-
-        # expected hit position
-        if self.check_individual_event:
-            self.show_rec_hits = False 
-
-            self.algo_type = "max_cell"
-            self.tree = tree_max_cell
-            self.settings = (20, 0.3, ROOT.kBlue)
-            h1 = self.draw_RZ_hitstogram()
-            h1.Draw("same")
-
-            self.algo_type = "energy_weighted"
-            self.tree = tree_energy_weighted
-            self.settings = (20, 0.3, ROOT.kGreen)
-            h2 = self.draw_RZ_hitstogram()
-            h2.Draw("same")
-
-            self.algo_type = "linear_track"
-            self.tree = tree_linear_track
-            self.settings = (20, 0.3, ROOT.kRed)
-            h3 = self.draw_RZ_hitstogram()
-            h3.Draw("same")
-
-            legend.AddEntry(h1, "Expected from max cell", "l")
-            legend.AddEntry(h2, "Expected from energy weight", "l")
-            legend.AddEntry(h3, "Expected from linear track", "l")
-            legend.Draw("same")
-
-        self.canvas.Update()
-
-        output_file = self.output_directory + "/hits_Rxy_Z_" + self.tag
-        if self.flag_make_pdf_file: self.canvas.Print(self.output_pdf_file + "(", "pdf")
-        if self.flag_make_png_file: self.canvas.SaveAs(output_file + ".png")
-
-        #------------------------------
-        # X-Y distributions
-        #------------------------------
-        for layer in range(1,27):
-            self.layer = layer
-            self.name = "h_2d_hits_layer%d" % layer
-            self.title = "Layer-0%d" % layer if layer < 10 else "Layer-%d" % layer
-            self.selection = "evtNo==%d && layerNo==%d" % (self.evtNo, layer) if self.check_individual_event else "layerNo==%d" % layer
+        if self.flag_make_plots:
+            legend = self.get_TLegend(0.15, 0.65, 0.45, 0.85)
 
             # Rec hits
             self.tree = tree
-            self.settings = (20, 0.5, ROOT.kGray+2)
             self.show_rec_hits = True
-            h = self.draw_XY_hitstogram()
-            h.Draw()
+            vh = self.draw_RZ_hitstogram()
+
+            vh[0].Draw()
+            vh[1].Draw("same")
+            vh[2].Draw("same")
+
+            if self.check_individual_event:
+                legend.AddEntry(vh[0], "Rec. hits", "l")
+            else:
+                legend.AddEntry(vh[0], self.wafer_types[0], "l")
+                legend.AddEntry(vh[1], self.wafer_types[1], "l")
+                legend.AddEntry(vh[2], self.wafer_types[2], "l")
+                legend.Draw("same")
 
             # expected hit position
             if self.check_individual_event:
@@ -287,28 +269,110 @@ class HitAnalyzer:
 
                 self.algo_type = "max_cell"
                 self.tree = tree_max_cell
-                self.settings = (29, 1, ROOT.kBlue)
+                self.settings = (20, 0.3, ROOT.kBlue)
+                h1 = self.draw_RZ_hitstogram()
+                h1.Draw("same")
+
+                self.algo_type = "energy_weighted"
+                self.tree = tree_energy_weighted
+                self.settings = (20, 0.3, ROOT.kGreen)
+                h2 = self.draw_RZ_hitstogram()
+                h2.Draw("same")
+
+                self.algo_type = "linear_track"
+                self.tree = tree_linear_track
+                self.settings = (20, 0.3, ROOT.kRed)
+                h3 = self.draw_RZ_hitstogram()
+                h3.Draw("same")
+
+                legend.AddEntry(h1, "Expected from max cell", "l")
+                legend.AddEntry(h2, "Expected from energy weight", "l")
+                legend.AddEntry(h3, "Expected from linear track", "l")
+                legend.Draw("same")
+
+            self.canvas.Update()
+
+            output_file = self.output_directory + "/hits_Rxy_Z_" + self.tag
+            if self.flag_make_pdf_file: self.canvas.Print(self.output_pdf_file + "(", "pdf")
+            if self.flag_make_png_file: self.canvas.SaveAs(output_file + ".png")
+
+        #------------------------------
+        # X-Y distributions
+        #------------------------------
+        for layer in range(1,27):
+            self.layer = layer
+            self.title = "Layer-0%d" % layer if layer < 10 else "Layer-%d" % layer
+            #self.selection = "evtNo==%d && layerNo==%d" % (self.evtNo, layer) if self.check_individual_event else "layerNo==%d" % layer
+            pass_signal_region = "(signal_region_linear_track==1 || signal_region_linear_track==2)"
+
+            # Rec hits
+            self.tree = tree
+            self.show_rec_hits = True
+
+            self.name = "h_2d_hits_layer%d_outside_signal_region" % layer
+            self.selection = "evtNo==%d && layerNo==%d && !%s"  % (self.evtNo, layer, pass_signal_region) if self.check_individual_event else "layerNo==%d" % layer
+            self.settings = (20, 0.3, ROOT.kGray+2)
+            hb = self.draw_XY_hitstogram()
+
+            self.name = "h_2d_hits_layer%d_in_signal_region" % layer
+            self.selection = "evtNo==%d && layerNo==%d && %s"  % (self.evtNo, layer, pass_signal_region) if self.check_individual_event else "layerNo==%d" % layer
+            self.settings = (20, 0.3, ROOT.kRed-7)
+            hs = self.draw_XY_hitstogram()
+
+            ns, nb = hs.GetEntries(), hb.GetEntries()
+            if ns+nb > 0.:
+                #print ns, nb, ns/(nb+ns)
+                efficiency = 100 * ns/(nb+ns)
+                content = "Efficiency = %.1f%%" % efficiency
+            else:
+                #print ns, nb, "N/A"
+                efficiency = -999
+                content = "Efficiency = N/A"
+
+            if not self.flag_make_plots: 
+                self.efficiency[layer-1].Fill(efficiency)
+                continue
+
+            hb.Draw()
+            hs.Draw("same")
+
+            latex = ROOT.TLatex()
+            latex.SetNDC()
+            latex.SetTextSize(0.04)
+            latex.SetTextAlign(22)
+            latex.SetTextFont(42)
+            latex.DrawLatex(0.5, 0.2, content)
+
+            # expected hit position
+            if self.check_individual_event:
+                self.show_rec_hits = False 
+                self.name = "h_2d_hits_layer%d" % layer
+
+                self.algo_type = "max_cell"
+                self.tree = tree_max_cell
+                self.settings = (29, 0.5, ROOT.kBlue)
                 h1 = self.draw_XY_hitstogram()
                 h1.Draw("same")
 
                 self.algo_type = "energy_weighted"
                 self.tree = tree_energy_weighted
-                self.settings = (29, 1, ROOT.kGreen)
+                self.settings = (29, 0.5, ROOT.kGreen)
                 h2 = self.draw_XY_hitstogram()
                 h2.Draw("same")
 
                 self.algo_type = "linear_track"
                 self.tree = tree_linear_track
-                self.settings = (29, 1, ROOT.kRed)
+                self.settings = (29, 0.5, ROOT.kRed)
                 h3 = self.draw_XY_hitstogram()
                 h3.Draw("same")
 
-                legend = ROOT.TLegend(0.20, 0.20, 0.65, 0.35)
-                legend.SetTextSize(0.03)
-                legend.AddEntry(h,  "Rec. hits", "p")
-                legend.AddEntry(h1, "Expected from max cell", "p")
-                legend.AddEntry(h2, "Expected from energy weight", "p")
-                legend.AddEntry(h3, "Expected from linear track", "p")
+                #legend = ROOT.TLegend(0.20, 0.20, 0.65, 0.35)
+                #legend.SetTextSize(0.03)
+                #legend.AddEntry(hs,  "Rec. hits in SR", "p")
+                #legend.AddEntry(hb,  "Rec. hits not in SR", "p")
+                #legend.AddEntry(h1, "Expected from max cell", "p")
+                #legend.AddEntry(h2, "Expected from energy weight", "p")
+                #legend.AddEntry(h3, "Expected from linear track", "p")
                 #legend.Draw("same")
 
             # ploting
@@ -333,6 +397,7 @@ class HitAnalyzer:
         if self.show_rec_hits:
             self.tree.Draw("y:x>>%s" % self.name, self.selection)
             h = ROOT.gPad.GetPrimitive(self.name)
+            #print fullname, h.GetEntries(), h.GetMean(1), h.GetRMS(1)
 
         else: # expected position
             for i, hit in enumerate(self.tree):

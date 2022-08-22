@@ -533,9 +533,9 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     total_SIM_set2 = fs->make<TH1D>("total_SIM_set2" , "total_SIM_set2" , 200 , 0. , 200.);
 
     // energy projected from MIP to SIM_set0
-    total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 400 , 0. , 400.);
-    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 200 , 0. , 400.);
-    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 200 , 0. , 400.);
+    total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 800 , 0. , 400.);
+    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 800 , 0. , 400.);
+    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 800 , 0. , 400.);
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
