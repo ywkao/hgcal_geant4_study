@@ -115,6 +115,9 @@ def make_plot(varName, dir_output="", bool_make_logitudinal_profile=False):
             #gr = pu.get_graph(varName, v_hists, is_number_of_hits)
             gr = pu.get_graph(varName, v_hists, False)
             gr.SetLineStyle(2)
+            if "efficiency" in varName:
+                gr.SetMaximum(1.)
+
             if not flag_add_reference:
                 gr.SetLineColor(colors[i])
                 gr.SetMarkerColor(colors[i])

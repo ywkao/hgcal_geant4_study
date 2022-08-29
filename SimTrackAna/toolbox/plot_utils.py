@@ -93,6 +93,7 @@ sub_directory = {
         "MIP_SimhitE_200mum_layer"    : "MIP_SimhitE",
         "MIP_SimhitE_300mum_layer"    : "MIP_SimhitE",
 
+        "efficiency_linear_track"     : "efficiency",
         "total_ADC_total"             : "total_ADC",
         "total_ADC_120mum"            : "total_ADC",
         "total_ADC_200mum"            : "total_ADC",

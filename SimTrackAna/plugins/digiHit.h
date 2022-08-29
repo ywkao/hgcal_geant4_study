@@ -203,6 +203,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         void reset_tree_variables();
         void reset_per_event_counters();
         void reset_expected_hit_containers(myVector &mv);
+        void calculate_efficiency();
         void fill_event_info();
         GlobalPoint projectHitPositionAt(float z,float eta,float phi);
         float get_distance_from_expected_hit(double x, double y, double z, double eta, double phi);
@@ -305,6 +306,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         TProfile *mip_sim_200mum_[26];
         TProfile *mip_sim_300mum_[26];
 
+        TH1D *efficiency_linear_track_[26];
+
         // total energy
         TH1D *total_ADC_total_[26];
         TH1D *total_ADC_120mum_[26];
@@ -371,6 +374,10 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         double total_corrected_energy_set0 = 0.;
         double total_corrected_energy_set1 = 0.;
         double total_corrected_energy_set2 = 0.;
+
+        std::vector<double> efficiency_numerators   ;
+        std::vector<double> efficiency_denominators ;
+        std::vector<double> efficiency_signal_region_linear_track ;
 
         std::vector<double> total_energy_adc_total  ;
         std::vector<double> total_energy_mip_total  ;
@@ -539,6 +546,9 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {
+        tb::set_string(hnamestr, "efficiency_linear_track_", i+1);
+        efficiency_linear_track_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 100, 0, 1.);
+
         // total energy & multiplicity
         tb::set_string(hnamestr, "total_ADC_total_", i+1);
         total_ADC_total_[i] = fs->make<TH1D>(hnamestr.str().c_str(),hnamestr.str().c_str(), 50, 0, 5000.);
@@ -717,6 +727,10 @@ void DigiSim::reset_per_event_counters()
     total_corrected_energy_set1 = 0.;
     total_corrected_energy_set2 = 0.;
 
+    efficiency_numerators   .clear();
+    efficiency_denominators .clear();
+    efficiency_signal_region_linear_track .clear();
+
     total_energy_adc_total  .clear();
     total_energy_mip_total  .clear();
     total_energy_mip_coarse .clear();
@@ -746,6 +760,10 @@ void DigiSim::reset_per_event_counters()
     num_simhits_300mum      .clear();
 
     for(int idx=0; idx<26; ++idx) {
+        efficiency_numerators  .push_back(0);
+        efficiency_denominators.push_back(0);
+        efficiency_signal_region_linear_track  .push_back(0);
+
         total_energy_adc_total .push_back(0);
         total_energy_mip_total .push_back(0);
         total_energy_mip_coarse.push_back(0);
@@ -905,6 +923,16 @@ int DigiSim::get_signal_region(float d)
     return signal_region;
 }
 
+void DigiSim::calculate_efficiency()
+{
+    for(int idx=0; idx<26; ++idx) {
+        if(efficiency_denominators[idx] > 0.)
+            efficiency_signal_region_linear_track[idx] = efficiency_numerators[idx] / efficiency_denominators[idx];
+        else
+            efficiency_signal_region_linear_track[idx] = -1.;
+    }
+}
+
 void DigiSim::fill_event_info()
 {
     // Fill information of an event
@@ -913,6 +941,8 @@ void DigiSim::fill_event_info()
         //tb::print_debug_info("num_digis_120mum" , num_digis_120mum [idx]        );
         //tb::print_debug_info("num_digis_200mum" , num_digis_200mum [idx]        );
         //tb::print_debug_info("num_digis_300mum" , num_digis_300mum [idx] , true );
+
+        efficiency_linear_track_ [idx] -> Fill( efficiency_signal_region_linear_track[idx] );
 
         total_ADC_total_             [idx] -> Fill( total_energy_adc_total  [idx] );
         total_MIP_total_             [idx] -> Fill( total_energy_mip_total  [idx] );

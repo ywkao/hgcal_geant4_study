@@ -430,8 +430,14 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                 tr_hits->Fill();
 
+
+                bool pass_signal_region = (tr_signal_region_linear_track==1 || tr_signal_region_linear_track==2);
+
+                efficiency_denominators[idx] += 1.;
+                if(pass_signal_region) efficiency_numerators[idx] += 1.;
+
                 // apply selection on signal region for histograms based on the lineaer track
-                if(!(tr_signal_region_linear_track==1 || tr_signal_region_linear_track==2)) continue;
+                if(!pass_signal_region) continue;
 
                 if(false) {
                     counter += 1;
@@ -559,6 +565,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         }
     } // end of simhits for loop
 
+    calculate_efficiency();
     fill_event_info();
 
     //}}}

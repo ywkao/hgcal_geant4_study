@@ -21,9 +21,11 @@ def run_logitudinal_profile():
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
     thickness = ["total"]
     for t in thickness:
-        pl.make_plot( "multiplicity_simhits_%s" % t , output_directory, True  )
-        pl.make_plot( "total_MIP_%s"            % t , output_directory, True  )
-        pl.make_plot( "total_SIM_%s"            % t , output_directory, True  )
+        #pl.make_plot( "multiplicity_simhits_%s" % t , output_directory, True  )
+        #pl.make_plot( "total_MIP_%s"            % t , output_directory, True  )
+        #pl.make_plot( "total_SIM_%s"            % t , output_directory, True  )
+
+        pl.make_plot( "efficiency_linear_track"     , output_directory, True  )
 
         continue
 
@@ -116,10 +118,10 @@ def run_manager(myfin, mydin):
     pu.create_directory( pl.specified_directory )
 
     # runners
-    #run_hit_analyzer()
+    run_hit_analyzer()
     #run_hit_distribution()
     #run_logitudinal_profile()
-    run_energy_resolution()
+    #run_energy_resolution()
 
 #----------------------------------------------------------------------------------------------------
 
@@ -132,7 +134,7 @@ if __name__ == "__main__":
     fit_constraints = m.fit_constraints_v2p1
     run_manager( m.input_files["R90To130_v2p1"], eos + "/" + target_directory )
 
-    #exit()
+    exit()
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2p2
