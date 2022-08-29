@@ -177,7 +177,7 @@ def record_fit_result(myTags, func):
     fitError_mean  = func.GetParError(1)
     fitError_sigma = func.GetParError(2)
 
-    energyType = myTags[0] # MIP / SIM
+    energyType = myTags[0] # MIP / SIM / ENE
     tag = myTags[1] # beam energy
     label = myTags[2] # odd / even / set0 / set1 / set2
 
@@ -221,9 +221,13 @@ def set_stat_pad(stat, positions, color):
 def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, stat_position):
     maxbin = h.GetMaximumBin()
     bincenter = h.GetBinCenter(maxbin)
-    binwidth = h.GetBinWidth(maxbin)
-    fit_range_lower = bincenter - 6*binwidth
-    fit_range_upper = bincenter + 6*binwidth
+    #binwidth = h.GetBinWidth(maxbin)
+    #fit_range_lower = bincenter - 6*binwidth
+    #fit_range_upper = bincenter + 6*binwidth
+
+    std_dev = h.GetStdDev()
+    fit_range_lower = bincenter - 2*std_dev
+    fit_range_upper = bincenter + 2*std_dev
 
     h.SetTitle("")
     h.SetMaximum(max_value*1.2)
@@ -232,7 +236,14 @@ def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, st
     h.GetXaxis().SetRangeUser(xRange[0], xRange[1])
     h.GetXaxis().SetTitleOffset(1.1)
     h.GetXaxis().SetTitle(xtitle)
-    h.GetYaxis().SetTitle("Entries")
+
+    energyType = myTags[0] # MIP / SIM / ENE
+
+    if energyType == "ENE":
+        h.GetYaxis().SetTitle("Entries / 0.1 MeV")
+    else:
+        h.GetYaxis().SetTitle("Entries")
+
     h.Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
 
     ## second fit
