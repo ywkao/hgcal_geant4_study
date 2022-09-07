@@ -437,7 +437,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 if(pass_signal_region) efficiency_numerators[idx] += 1.;
 
                 // apply selection on signal region for histograms based on the lineaer track
-                if(!pass_signal_region) continue;
+                //if(!pass_signal_region) continue;
 
                 if(false) {
                     counter += 1;

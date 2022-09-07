@@ -166,9 +166,8 @@ def reset_containers():
     global sigmaEoverE , error_sigmaEoverE
     sigmaEoverE, error_sigmaEoverE = [], []
 
-fit_result = {}
-def record_fit_result(myTags, func):
-    print ">>> in record_fit_result...."
+fit_result, fit_result_goodness = {}, {}
+def record_fit_result(myTags, func, result):
     global fit_result, sigmaEoverE, error_sigmaEoverE
 
     fit_const = func.GetParameter(0)
@@ -184,26 +183,32 @@ def record_fit_result(myTags, func):
 
     if not energyType in fit_result.keys():
         fit_result[energyType] = {}
+        fit_result_goodness[energyType] = {}
 
     if not label in fit_result[energyType].keys():
         fit_result[energyType][label] = {}
+        fit_result_goodness[energyType][label] = {}
 
+    # store gaussian mean and sigma
     fit_result[energyType][label][tag] = {}
     fit_result[energyType][label][tag]["mean"] = fit_mean
     fit_result[energyType][label][tag]["error_mean"] = fitError_mean
     fit_result[energyType][label][tag]["sigma"] = fit_sigma
     fit_result[energyType][label][tag]["error_sigma"] = fitError_sigma
 
+    # store chi2/ndf and p-value
+    fit_result_goodness[energyType][label][tag] = {}
+    fit_result_goodness[energyType][label][tag]["chi2"]   = result.Chi2()
+    fit_result_goodness[energyType][label][tag]["ndf"]    = result.Ndf()
+    fit_result_goodness[energyType][label][tag]["pvalue"] = result.Prob()
+
+    # energy resolution
     ratio = fit_sigma/fit_mean
     uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
     
     sigmaEoverE.append(ratio)
     error_sigmaEoverE.append(uncertainty)
 
-    #return fit_mean, fit_sigma
-    #print ">>> result:", fit_const, fit_mean, fit_sigma 
-    #print ">>> fit error:", fitError_const, fitError_mean, fitError_sigma 
-    
 def set_stat_pad(stat, positions, color):
     if stat:
         #print ">>>>> check:", stat.GetName()
@@ -220,15 +225,19 @@ def set_stat_pad(stat, positions, color):
         return
 
 def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, stat_position):
-    maxbin = h.GetMaximumBin()
-    bincenter = h.GetBinCenter(maxbin)
-    #binwidth = h.GetBinWidth(maxbin)
-    #fit_range_lower = bincenter - 6*binwidth
-    #fit_range_upper = bincenter + 6*binwidth
+    energyType = myTags[0] # MIP / SIM / ENE
+    use_bin_width = m.draw_options_for_run_summary[m.type_resolution]["use_bin_width"]
 
-    std_dev = h.GetStdDev()
-    fit_range_lower = bincenter - 2*std_dev
-    fit_range_upper = bincenter + 2*std_dev
+    # set up histogram
+    if energyType == "ENE":
+        width = h.GetBinWidth(1)
+        print ">>>>> check width:", width
+
+        h.GetYaxis().SetTitle("Entries / %3.1f MeV" % width)
+        range_factor = 2.0
+    else:
+        h.GetYaxis().SetTitle("Entries")
+        range_factor = 3.0
 
     h.SetTitle("")
     h.SetMaximum(max_value*1.2)
@@ -238,30 +247,34 @@ def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, st
     h.GetXaxis().SetTitleOffset(1.1)
     h.GetXaxis().SetTitle(xtitle)
 
-    energyType = myTags[0] # MIP / SIM / ENE
+    # determine fit range
+    maxbin = h.GetMaximumBin()
+    bincenter = h.GetBinCenter(maxbin)
 
-    if energyType == "ENE":
-        h.GetYaxis().SetTitle("Entries / 0.1 MeV")
-    else:
-        h.GetYaxis().SetTitle("Entries")
+    std_dev = h.GetStdDev()
+    fit_range_lower = bincenter - range_factor*std_dev
+    fit_range_upper = bincenter + range_factor*std_dev
 
-    h.Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
+    # for unclustered study (there will be a 2nd peak)
+    if use_bin_width and not energyType == "ENE":
+        binwidth = h.GetBinWidth(maxbin)
+        fit_range_lower = bincenter - 6*binwidth
+        fit_range_upper = bincenter + 6*binwidth
 
-    ## second fit
-    #h.Draw()
-    #func = h.GetListOfFunctions().FindObject("gaus")
-    #fit_mean  = func.GetParameter(1)
-    #fit_sigma = func.GetParameter(2)
-    #fit_range_lower = fit_mean - 2*fit_sigma
-    #fit_range_upper = fit_mean + 2*fit_sigma
-    #h.Fit("gaus", "0", "", fit_range_lower, fit_range_upper)
+    # reference: https://root.cern.ch/doc/master/classTH1.html#a7e7d34c91d5ebab4fc9bba3ca47dabdd
+    # option 'Q': Quiet mode (minimum printing)
+    # option 'S': The full result of the fit is returned in the TFitResultPtr
+    # option '0': Does not draw the histogram and the fitted function after fitting
+    returned_fit_result = h.Fit("gaus", "QS0", "", fit_range_lower, fit_range_upper)
 
     h.Draw()
+    h.GetFunction("gaus").SetLineStyle(2)
+    h.GetFunction("gaus").SetLineColorAlpha(ROOT.kRed, 0.40)
     h.GetFunction("gaus").Draw("same")
 
     c1.Update()
     lof = h.GetListOfFunctions()
-    record_fit_result( myTags, lof.FindObject("gaus") ) # record in pu.sigmaEoverE and pu.fit_result
+    record_fit_result( myTags, lof.FindObject("gaus"), returned_fit_result ) # record in pu.sigmaEoverE and pu.fit_result
     set_stat_pad( lof.FindObject("stats"), stat_position, color )
 
 def get_strings_for_simple_plot(energyType, selection):
@@ -320,4 +333,23 @@ def get_strings_for_simple_plot(energyType, selection):
     return xtitle, outputName, hname_odd, hname_even, labels
 
 #----------------------------------------------------------------------------------------------------
+
+def init_pads():
+    mainPad = ROOT.TPad("p_main", "p_main", 0.0, 0.3, 1.0, 1.0)
+    mainPad.SetTopMargin(0.11)
+    mainPad.SetBottomMargin(0.012)
+    mainPad.SetRightMargin(0.09)
+    mainPad.SetLeftMargin(0.12)
+    #mainPad.SetLogy()
+    mainPad.SetGrid()
+
+    ratPad = ROOT.TPad( "p_rat", "p_rat", 0.0, 0.0, 1.0, 0.3)
+    ratPad.SetTopMargin(0.10)
+    ratPad.SetBottomMargin(0.30)
+    ratPad.SetRightMargin(0.09)
+    ratPad.SetLeftMargin(0.12)
+    ratPad.SetGrid()
+    ratPad.SetTicks()
+
+    return mainPad, ratPad
 

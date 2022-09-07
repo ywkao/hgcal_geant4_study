@@ -876,14 +876,14 @@ double DigiSim::convert_amplitude_to_total_energy_pedro(int type, double amplitu
     //if(type==2) corrected_energy = 2.22060e+04 + 1.02199e+01*amplitude;
 
     // R90to130 (MIPs to MeV)
-    //if(type==0) corrected_energy = 2.17293e+01 + 4.96546e-03*amplitude;
-    //if(type==1) corrected_energy = 2.15038e+01 + 9.45215e-03*amplitude;
-    //if(type==2) corrected_energy = 2.22265e+01 + 1.03710e-02*amplitude;
+    if(type==0) corrected_energy = 2.17293e+01 + 4.96546e-03*amplitude;
+    if(type==1) corrected_energy = 2.15038e+01 + 9.45215e-03*amplitude;
+    if(type==2) corrected_energy = 2.22265e+01 + 1.03710e-02*amplitude;
 
     // R90to130 (Anne-Marie algo + linear track)
-    if(type==0) corrected_energy = 1.70404e+01 + 1.01105e-03*amplitude;
-    if(type==1) corrected_energy = 1.70133e+01 + 1.94038e-03*amplitude;
-    if(type==2) corrected_energy = 1.72140e+01 + 2.11144e-03*amplitude;
+    //if(type==0) corrected_energy = 1.70404e+01 + 1.01105e-03*amplitude;
+    //if(type==1) corrected_energy = 1.70133e+01 + 1.94038e-03*amplitude;
+    //if(type==2) corrected_energy = 1.72140e+01 + 2.11144e-03*amplitude;
 
     return corrected_energy;
 }

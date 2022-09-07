@@ -67,7 +67,7 @@ def make_plot(varName, dir_output="", bool_make_logitudinal_profile=False):
     vf = []
     v_v_hists = []
     for rootfile in myRootfiles:
-        print ">>> rootfile", rootfile
+        #print ">>> rootfile", rootfile
         fin = ROOT.TFile.Open(rootfile, "R")
         vf.append(fin)
 
@@ -224,7 +224,7 @@ def make_simple_plot(energyType, dir_output, selection):
     #++++++++++++++++++++++++++++++
     vf, v_v_hists = [], []
     for rootfile in myRootfiles:
-        print ">>> rootfile", rootfile
+        #print ">>> rootfile", rootfile
         fin = ROOT.TFile.Open(rootfile, "R")
         vf.append(fin)
 
@@ -235,7 +235,13 @@ def make_simple_plot(energyType, dir_output, selection):
 
     c1.cd()
     for i, v_hists in enumerate(v_v_hists):
-        print "\n----------------------------------------------------------------------------------------------------\n"
+        #print "\n----------------------------------------------------------------------------------------------------\n"
+
+        if energyType == "ENE" and m.type_resolution == "resolution_unclustered" and selection == "set1_set2":
+            rebin_factor = m.rebin_factor[tags[i]] # E300, E100, E20, etc.
+            v_hists[0].Rebin(rebin_factor)
+            v_hists[1].Rebin(rebin_factor)
+
         pu.reset_containers()
         max_values = []
         max_values.append(v_hists[0].GetMaximum())
@@ -254,27 +260,29 @@ def make_simple_plot(energyType, dir_output, selection):
             #--------------------------------------------------
             xRanges = fit_constraints["set1set2"][energyType]["xRanges"]
 
-            pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]], xtitle, max_value, xRanges[i], ROOT.kBlue   , [0.60, 0.66, 0.88, 0.86] )
-            pu.draw_and_fit_a_histogram( c1, v_hists[1], [energyType, tags[i], labels[1]], xtitle, max_value, xRanges[i], ROOT.kGreen+3, [0.60, 0.42, 0.88, 0.62] )
+            pu.draw_and_fit_a_histogram(c1, v_hists[0], [energyType, tags[i], labels[0]], xtitle, max_value, xRanges[i], ROOT.kBlue   , [0.60, 0.66, 0.88, 0.86] )
+            pu.draw_and_fit_a_histogram(c1, v_hists[1], [energyType, tags[i], labels[1]], xtitle, max_value, xRanges[i], ROOT.kGreen+3, [0.60, 0.42, 0.88, 0.62] )
 
             v_hists[0].Draw("same")
+            v_hists[0].GetFunction("gaus").SetLineStyle(1)
+            v_hists[0].GetFunction("gaus").SetLineColorAlpha(ROOT.kRed, 0.40)
             v_hists[0].GetFunction("gaus").Draw("same")
 
             #--------------------------------------------------
             # result
             #--------------------------------------------------
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.45, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
+            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
             latex.SetTextColor(ROOT.kGreen+3)
-            latex.DrawLatex( 0.45, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[1], labels[1], pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
+            latex.DrawLatex( 0.47, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[1], labels[1], pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
 
         else:
             xRanges = fit_constraints["set0"][energyType]["xRanges"]
 
-            pu.draw_and_fit_a_histogram( c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
+            pu.draw_and_fit_a_histogram(c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
 
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.45, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
+            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
 
         c1.Update()
         pu.annotate()
@@ -286,6 +294,9 @@ def make_simple_plot(energyType, dir_output, selection):
 
 def run_linear_fit(dir_output, label, dx, dy):
     #global specified_directory
+    x_range = m.linear_fit_parameter[label]["linear_fit_xrange"]
+    y_range = m.draw_options_for_run_summary[m.type_resolution]["linear_fit_yrange"]
+
 
     Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
     lx  = [ dx[ene]["mean"]  for ene in Energy ]
@@ -298,12 +309,11 @@ def run_linear_fit(dir_output, label, dx, dy):
     c1.cd()
     c1.Clear()
     gr.Draw("ap")
-    gr.GetXaxis().SetLimits(0, 30000) # alogn X
-    gr.GetYaxis().SetRangeUser(0, 300) # v1p1, v1p2
-    gr.GetYaxis().SetRangeUser(0, 100) # v2p1, v2p2
+    gr.GetXaxis().SetLimits(x_range[0], x_range[1]) # along X
+    gr.GetYaxis().SetRangeUser(y_range[0], y_range[1])
 
-    f1 = ROOT.TF1('f1', "[0] + [1]*x", 0, 30000)
-    gr.Fit(f1, "", "", 0, 30000)
+    f1 = ROOT.TF1('f1', "[0] + [1]*x", x_range[0], x_range[1])
+    gr.Fit(f1, "", "", x_range[0], x_range[1])
 
     my_stat_pos = [0.42, 0.87, 0.15, 0.15]
     ROOT.gStyle.SetStatX(my_stat_pos[0])
@@ -318,71 +328,193 @@ def run_linear_fit(dir_output, label, dx, dy):
 
 #----------------------------------------------------------------------------------------------------
 
-def run_resolution_summary(dir_output, labels, dy1, dy2):
-    #global specified_directory
+def run_summary(title, dir_output, labels, dy1, dy2):
+    options = m.draw_options_for_run_summary[title]
 
+    c3.cd()
+    c3.Clear()
+
+    # title and range
+    ytitle         = options["ytitle"]
+    yrange         = options["yrange"]
+    leg_pos        = options["leg_pos"]
+    draw_goodness  = options["draw_goodness"]
+    draw_lower_pad = options["draw_lower_pad"]
+    reference_line = options["reference_line"]
+    leg_option     = options["leg_option"]
+    c3.SetLogy(options["useLog"])
+
+    #if title == "pvalue" :
+    #    ytitle = "p-value of gaussian fit"
+    #    yrange = [1.e-2, 1.0]
+    #    leg_pos = [0.62, 0.25, 0.85, 0.45]
+    #    draw_goodness = True
+    #    draw_lower_pad = False
+    #    reference_line = 0.5
+    #    c3.SetLogy(1)
+
+    #if title == "chi2ndf":
+    #    ytitle = "chi2/ndf of gaussian fit"
+    #    yrange = [0., 3.0]
+    #    leg_pos = [0.62, 0.65, 0.85, 0.85]
+    #    draw_goodness = True
+    #    draw_lower_pad = False
+    #    reference_line = 1.0 
+    #    c3.SetLogy(0)
+
+    #if title == "resolution":
+    #    ytitle = "#sigma#left(E#right) / #bar{E}"
+    #    yrange = [0.000, 0.040] # v2p1, v2p2
+    #    yrange = [0.018, 0.043] # v1p1, v1p2
+    #    leg_pos = [0.62, 0.65, 0.85, 0.85]
+    #    draw_goodness = False
+    #    draw_lower_pad = True
+    #    c3.SetLogy(0)
+
+    # list of x and y
     Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
     lx  = [ float(ene.split('E')[1]) for ene in Energy ]
     lex = [0.]*6
 
     ly1, ly2, ley1, ley2 = [], [], [], []
     for ene in Energy:
-        fit_mean = dy1[ene]["mean"]
-        fit_sigma = dy1[ene]["sigma"]
-        fitError_mean  = dy1[ene]["error_mean"]
-        fitError_sigma = dy1[ene]["error_sigma"]
+        if title == "pvalue" :
+            ly1.append( dy1[ene]["pvalue"] )
+            ly2.append( dy2[ene]["pvalue"] )
+            ley1.append(0.)
+            ley2.append(0.)
 
-        ratio = fit_sigma/fit_mean
-        uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+        if title == "chi2ndf":
+            ly1.append( dy1[ene]["chi2"]/dy1[ene]["ndf"] )
+            ly2.append( dy2[ene]["chi2"]/dy2[ene]["ndf"] )
+            ley1.append(0.)
+            ley2.append(0.)
 
-        ly1.append(ratio)
-        ley1.append(uncertainty)
+        if "resolution" in title:
+            fit_mean = dy1[ene]["mean"]
+            fit_sigma = dy1[ene]["sigma"]
+            fitError_mean  = dy1[ene]["error_mean"]
+            fitError_sigma = dy1[ene]["error_sigma"]
 
+            ratio = fit_sigma/fit_mean
+            uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
 
-        fit_mean = dy2[ene]["mean"]
-        fit_sigma = dy2[ene]["sigma"]
-        fitError_mean  = dy2[ene]["error_mean"]
-        fitError_sigma = dy2[ene]["error_sigma"]
+            ly1.append(ratio)
+            ley1.append(uncertainty)
 
-        ratio = fit_sigma/fit_mean
-        uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+            fit_mean = dy2[ene]["mean"]
+            fit_sigma = dy2[ene]["sigma"]
+            fitError_mean  = dy2[ene]["error_mean"]
+            fitError_sigma = dy2[ene]["error_sigma"]
 
-        ly2.append(ratio)
-        ley2.append(uncertainty)
+            ratio = fit_sigma/fit_mean
+            uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
 
+            print ">>> check: resolution = %.3f, mean = %6.2f, sqrt(mean) = %5.2f, ratio = %.4f" % ( ratio, fit_mean, math.sqrt(fit_mean), ratio / math.sqrt(fit_mean) ) 
 
-    gr1 = pu.get_graph_from_list("Positron energy (GeV)", "#sigma#left(E#right) / #bar{E}", lx, ly1, lex, ley1,  ROOT.kBlue)
-    gr2 = pu.get_graph_from_list("Positron energy (GeV)", "#sigma#left(E#right) / #bar{E}", lx, ly2, lex, ley2,  ROOT.kGreen+3)
+            ly2.append(ratio)
+            ley2.append(uncertainty)
 
-
-    #legend = ROOT.TLegend(0.52, 0.65, 0.88, 0.85)
-    #legend.SetLineColor(0)
-    legend = ROOT.TLegend(0.62, 0.65, 0.89, 0.85)
-    legend.SetTextSize(0.04)
-    legend.AddEntry(gr1, labels[0], "ep")
-    legend.AddEntry(gr2, labels[1], "ep")
-
-    c3.cd()
-    c3.Clear()
+    # graphs
+    gr1 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
+    gr2 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly2, lex, ley2,  ROOT.kGreen+3)
 
     gr1.SetLineWidth(2)
     gr1.SetMarkerStyle(20)
     gr1.SetMarkerSize(1.25)
-    gr1.GetXaxis().SetTitleSize(0.04)
-    gr1.GetYaxis().SetTitleSize(0.04)
-    gr1.Draw("ap")
-    gr1.GetXaxis().SetLimits(0, 350) # alogn X
-    gr1.GetYaxis().SetRangeUser(0.018, 0.043) # v1p1, v1p2
-    gr1.GetYaxis().SetRangeUser(0.0, 0.040) # v2p1, v2p2
+    gr1.GetYaxis().SetTitleSize(0.05)
+    gr1.GetYaxis().SetTitleOffset(0.80)
+    gr1.GetXaxis().SetLimits(0, 350) # along X
+    gr1.GetYaxis().SetRangeUser(yrange[0], yrange[1]) # along Y
 
     gr2.SetLineWidth(2)
     gr2.SetMarkerStyle(20)
     gr2.SetMarkerSize(1.25)
-    gr2.Draw("p;same")
-    legend.Draw("same")
 
-    pu.annotate(0.12)
-    output = dir_output + "/summary_resolution"
+    legend = ROOT.TLegend(leg_pos[0], leg_pos[1], leg_pos[2], leg_pos[3])
+    legend.SetTextSize(0.04)
+    legend.AddEntry(gr1, labels[0], leg_option)
+    legend.AddEntry(gr2, labels[1], leg_option)
+
+    # quantify difference
+    if draw_lower_pad:
+        gr1.GetXaxis().SetLabelSize(0.00)
+        gr1.GetXaxis().SetTitleSize(0.00)
+
+        ly, ley = [], []
+        for i, resolution_E_set1 in enumerate(ly1):
+            err1 = ley1[i]
+            err2 = ley2[i]
+            resolution_E_set2 = ly2[i]
+
+            difference = (resolution_E_set1 - resolution_E_set2) / resolution_E_set2  
+            ratio = resolution_E_set1 / resolution_E_set2
+            uncertainty = ratio * math.sqrt(pow(err1/resolution_E_set1, 2) + pow(err2/resolution_E_set2, 2))
+            
+            #print "check:", i, difference, uncertainty
+
+            ly.append(difference)
+            ley.append(uncertainty)
+
+        ytitle = "#frac{#color[%d]{Blue} #minus #color[%d]{Green}}{#color[%d]{Green}}" % (ROOT.kBlue, ROOT.kGreen+3, ROOT.kGreen+3)
+        gr_ratio = pu.get_graph_from_list("Positron energy (GeV)", ytitle , lx, ly, lex, ley,  ROOT.kBlack)
+        gr_ratio.SetLineWidth(2)
+        gr_ratio.SetMarkerStyle(20)
+        gr_ratio.SetMarkerSize(1.25)
+
+        gr_ratio.GetXaxis().SetLimits(0, 350) # along X
+        gr_ratio.GetXaxis().SetTitleFont(42)
+        gr_ratio.GetXaxis().SetTitleSize(0.12)
+        gr_ratio.GetXaxis().SetLabelFont(42)
+        gr_ratio.GetXaxis().SetLabelSize(0.10)
+        gr_ratio.GetXaxis().SetLabelOffset(0.06)
+
+        gr_ratio.GetYaxis().SetNdivisions(505)
+        gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.) # along Y
+        gr_ratio.GetYaxis().SetTitleFont(42)
+        gr_ratio.GetYaxis().SetTitleSize(0.10)
+        gr_ratio.GetYaxis().SetTitleOffset(0.35)
+        gr_ratio.GetYaxis().SetLabelFont(42)
+        gr_ratio.GetYaxis().SetLabelSize(0.08)
+        #gr_ratio.GetYaxis().SetLabelOffset(0.06)
+
+        mainPad, ratPad = pu.init_pads()
+
+        # main pad
+        c3.cd()
+        mainPad.Draw()
+        mainPad.cd()
+        ROOT.gPad.SetTicks()
+
+        gr1.Draw("ap")
+        gr2.Draw("p;same")
+        legend.Draw("same")
+        pu.annotate(0.12)
+
+        # ratio pad
+        c3.cd()
+        ratPad.Draw()
+        ratPad.cd()
+        gr_ratio.Draw("ap")
+
+
+    if draw_goodness:
+        gr1.GetXaxis().SetTitleSize(0.04)
+
+        gr1.Draw("ap")
+        gr2.Draw("p;same")
+        legend.Draw("same")
+        pu.annotate(0.12)
+
+        print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
+        line = ROOT.TLine( c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line )
+        line.SetLineColor(ROOT.kRed)
+        line.SetLineStyle(2)
+        line.SetLineWidth(2)
+        line.Draw()
+
+    token = title if not "resolution" in title else "resolution"
+    output = dir_output + "/summary_" + token
     c3.SaveAs(output + ".png")
     c3.SaveAs(output + ".pdf")
 

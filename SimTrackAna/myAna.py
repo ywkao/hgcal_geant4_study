@@ -78,35 +78,36 @@ def run_fitters_and_summary():
     pu.create_directory(output_directory)
 
     fit_result = pu.fit_result
+    fit_result_goodness = pu.fit_result_goodness
 
     # report
-    for energyType in ["MIP", "SIM"]:
-        for tag in ["E20", "E60", "E100", "E175", "E225", "E300"]:
-            print energyType, tag
-            #print fit_result[energyType]["odd" ][tag]
-            #print fit_result[energyType]["even"][tag]
-            print fit_result[energyType]["set0"][tag]
-            print fit_result[energyType]["set1"][tag]
-            print fit_result[energyType]["set2"][tag]
-            print ""
+    if False:
+        for energyType in ["MIP", "SIM"]:
+            for tag in ["E20", "E60", "E100", "E175", "E225", "E300"]:
+                print energyType, tag
+                print fit_result[energyType]["set0"][tag]
+                print fit_result[energyType]["set1"][tag]
+                print fit_result[energyType]["set2"][tag]
+                print ""
 
     # linear fit
-    #pl.run_linear_fit(output_directory, "even", fit_result["MIP"]["odd" ], fit_result["SIM"]["odd" ])
-    #pl.run_linear_fit(output_directory, "odd" , fit_result["MIP"]["even"], fit_result["SIM"]["even"])
     pl.run_linear_fit(output_directory, "set0", fit_result["MIP"]["set0"], fit_result["SIM"]["set0"])
     pl.run_linear_fit(output_directory, "set0_set1", fit_result["MIP"]["set1"], fit_result["SIM"]["set0"])
     pl.run_linear_fit(output_directory, "set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])
 
     # summary
-    labels = ["#sigma#left(E_{set1}#right) / #bar{E}_{set1}", "#sigma#left(E_{set2}#right) / #bar{E}_{set2}"]
+    labels = ["E_set1", "E_set2"]
+    pl.run_summary("pvalue", pl.specified_directory, labels, fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
+    pl.run_summary("chi2ndf", pl.specified_directory, labels, fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
+
     labels = ["Resolution of E_set1", "Resolution of E_set2"]
-    pl.run_resolution_summary(pl.specified_directory, labels, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
+    pl.run_summary(m.type_resolution, pl.specified_directory, labels, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
 
 #----------------------------------------------------------------------------------------------------
 
 #}}}
 
-def run_manager(myfin, mydin):
+def run_manager(myfin, mydin, tags, fit_constraints):
     # set parameters
     pl.tags = tags
     pl.myRootfiles = myfin
@@ -118,27 +119,46 @@ def run_manager(myfin, mydin):
     pu.create_directory( pl.specified_directory )
 
     # runners
-    run_hit_analyzer()
+    #run_hit_analyzer()
     #run_hit_distribution()
     #run_logitudinal_profile()
-    #run_energy_resolution()
+    run_energy_resolution()
+
+#----------------------------------------------------------------------------------------------------
+
+def perform_unclustered_study():
+    m.type_resolution = "resolution_unclustered"
+    target_directory = "R90To130_v1p4"
+    output_directory = eos + "/" + target_directory
+
+    tags = ["E300", "E100", "E20"]
+    fit_constraints = m.fit_constraints_v1p1
+    run_manager( m.input_files["R90To130_v1p1"], output_directory, tags, fit_constraints )
+
+    tags = ["E225", "E175", "E60"]
+    fit_constraints = m.fit_constraints_v1p2
+    run_manager( m.input_files["R90To130_v1p2"], output_directory, tags, fit_constraints )
+
+    run_fitters_and_summary()
+
+def perform_clustered_study():
+    m.type_resolution = "resolution_clustered"
+    target_directory = "R90To130_v2p5"
+    output_directory = eos + "/" + target_directory
+
+    tags = ["E300", "E100", "E20"]
+    fit_constraints = m.fit_constraints_v2p1
+    run_manager( m.input_files["R90To130_v2p1"], output_directory, tags, fit_constraints )
+
+    tags = ["E225", "E175", "E60"]
+    fit_constraints = m.fit_constraints_v2p2
+    run_manager( m.input_files["R90To130_v2p2"], output_directory, tags, fit_constraints )
+
+    run_fitters_and_summary()
 
 #----------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-
-    target_directory = "R90To130_v1p1"
-    target_directory = "R90To130_v2p3"
-
-    tags = ["E300", "E100", "E20"]
-    fit_constraints = m.fit_constraints_v2p1
-    run_manager( m.input_files["R90To130_v2p1"], eos + "/" + target_directory )
-
-    exit()
-
-    tags = ["E225", "E175", "E60"]
-    fit_constraints = m.fit_constraints_v2p2
-    run_manager( m.input_files["R90To130_v2p2"], eos + "/" + target_directory )
-
-    run_fitters_and_summary()
+    perform_unclustered_study()
+    perform_clustered_study()
 

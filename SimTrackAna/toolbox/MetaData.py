@@ -1,5 +1,95 @@
 #!/usr/bin/env python2
 
+#====================================================================================================
+# containers for parameters to be set
+#====================================================================================================
+type_resolution = ""
+
+#====================================================================================================
+# toolbox/plotter.py: run_summary
+#====================================================================================================
+# title and range
+draw_options_for_run_summary = {
+    "pvalue": {
+        "ytitle"         : "p-value of gaussian fit",
+        "yrange"         : [1e-3, 1.0],
+        "leg_pos"        : [0.62, 0.25, 0.85, 0.45],
+        "leg_option"     : "p",
+        "draw_goodness"  : True,
+        "draw_lower_pad" : False,
+        "reference_line" : 0.05,
+        "useLog"         : 1,
+    },
+
+    "chi2ndf": {
+        "ytitle"         : "chi2/ndf of gaussian fit",
+        "yrange"         : [0., 4.0],
+        "leg_pos"        : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"     : "p",
+        "draw_goodness"  : True,
+        "draw_lower_pad" : False,
+        "reference_line" : 1.0,
+        "useLog"         : 0,
+    },
+
+    "resolution_unclustered": {
+        "ytitle"            : "#sigma#left(E#right) / #bar{E}",
+        #"yrange"            : [0.018, 0.043],
+        "yrange"            : [0.010, 0.050],
+        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : False,
+        "draw_lower_pad"    : True,
+        "reference_line"    : 1.0, # dummy
+        "useLog"            : 0,
+
+        "linear_fit_yrange" : [0, 300],
+        "use_bin_width"     : True,
+    },
+
+    "resolution_clustered": {
+        "ytitle"            : "#sigma#left(E#right) / #bar{E}",
+        "yrange"            : [0.000, 0.040],
+        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : False,
+        "draw_lower_pad"    : True,
+        "reference_line"    : 1.0, # dummy
+        "useLog"            : 0,
+
+        "linear_fit_yrange" : [0, 100],
+        "use_bin_width"     : False,
+    },
+}
+
+
+#====================================================================================================
+# fit parameters
+#====================================================================================================
+
+linear_fit_parameter = {
+    "set0" : {
+        "linear_fit_xrange" : [0, 30000],
+    },
+
+    "set0_set1" : {
+        "linear_fit_xrange" : [0, 20000],
+    },
+
+    "set0_set2" : {
+        "liner_fit_xrange" : [0, 20000],
+    },
+}
+
+rebin_factor = {
+    "E300" : 10,
+    "E225" : 10,
+    "E175" : 10,
+    "E100" : 10,
+    "E60"  : 4,
+    "E20"  : 4,
+}
+
 # E = 300, 100, 20
 fit_constraints_v0 = {
     "set0" : {
@@ -32,7 +122,8 @@ fit_constraints_v1p1 = {
     "set1set2" : {
         "MIP" : { "xRanges" : [[11500, 20500], [3000, 12000], [0, 9000]], },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[100, 300], [20, 220], [0, 200]] },
+        "ENE" : { "xRanges" : [[140, 200], [58, 98], [25, 65]] },
+        #"ENE" : { "xRanges" : [[100, 300], [20, 220], [0, 200]] },
     },
 }
 
@@ -47,7 +138,8 @@ fit_constraints_v1p2 = {
     "set1set2" : {
         "MIP" : { "xRanges" : [[8000, 17000], [6000, 15000], [0, 9000]], },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[70, 270], [50, 250], [0, 200]] },
+        "ENE" : { "xRanges" : [[110, 160], [90, 130], [40, 80]] },
+        #"ENE" : { "xRanges" : [[70, 270], [50, 250], [0, 200]] },
     },
 }
 
@@ -62,7 +154,7 @@ fit_constraints_v2p1 = {
     "set1set2" : {
         "MIP" : { "xRanges" : [[5000, 25000], [0, 20000], [0, 20000], [0, 20000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[30, 80], [15, 65], [10, 60]] },
+        "ENE" : { "xRanges" : [[37, 52], [22, 37], [16, 31]] },
     },
 }
 
@@ -77,11 +169,14 @@ fit_constraints_v2p2 = {
     "set1set2" : {
         "MIP" : { "xRanges" : [[5000, 25000], [0, 20000], [0, 20000], [0, 20000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[30, 80], [20, 70], [10, 60]] },
+        "ENE" : { "xRanges" : [[31, 46], [27, 42], [18, 33]] },
     },
 }
 
 
+#====================================================================================================
+# input files
+#====================================================================================================
 input_files = {
     "R35To60" : [
         "rootfiles/geantoutput_D86_R35To60_E300.root",
@@ -101,29 +196,41 @@ input_files = {
         "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To100_E20.root",
     ],
 
+    #"R90To130_v1p1" : [
+    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E300.root",
+    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E100.root",
+    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E20.root",
+    #],
+
+    #"R90To130_v1p2" : [
+    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E225.root",
+    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E175.root",
+    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E60.root",
+    #],
+
     "R90To130_v1p1" : [
-        "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v1p2" : [
-        "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E60.root",
     ],
 
     # v2: SR = linear track
     "R90To130_v2p1" : [
-        "rootfiles_hit_position/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v2p2" : [
-        "rootfiles_hit_position/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
     ],
 
     "R80To130" : [
@@ -240,6 +347,9 @@ input_files = {
     ],
 }
 
+#====================================================================================================
+# test beam result
+#====================================================================================================
 test_beam_result = {
     # layer depth is approximated from eyes
     "layer_depth" : [0.98  , 1.97  , 2.80  , 3.80  , 4.80  , 5.75  , 6.75    ,
