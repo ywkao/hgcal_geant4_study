@@ -35,7 +35,8 @@ draw_options_for_run_summary = {
     "resolution_unclustered": {
         "ytitle"            : "#sigma#left(E#right) / #bar{E}",
         #"yrange"            : [0.018, 0.043],
-        "yrange"            : [0.010, 0.050],
+        #"yrange"            : [0.010, 0.050],
+        "yrange"            : [0.000, 0.160],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : False,
@@ -49,7 +50,8 @@ draw_options_for_run_summary = {
 
     "resolution_clustered": {
         "ytitle"            : "#sigma#left(E#right) / #bar{E}",
-        "yrange"            : [0.000, 0.040],
+        #"yrange"            : [0.000, 0.040],
+        "yrange"            : [0.000, 0.160],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : False,
@@ -77,7 +79,7 @@ linear_fit_parameter = {
     },
 
     "set0_set2" : {
-        "liner_fit_xrange" : [0, 20000],
+        "linear_fit_xrange" : [0, 20000],
     },
 }
 

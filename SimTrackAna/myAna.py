@@ -47,8 +47,8 @@ def run_energy_resolution():
     output_directory = pl.specified_directory + "/energy_resolution"
     pu.create_directory(output_directory)
 
-    #pl.make_simple_plot("MIP", output_directory, "odd_even")
-    #pl.make_simple_plot("SIM", output_directory, "odd_even")
+    pl.make_simple_plot("MIP", output_directory, "odd_even")
+    pl.make_simple_plot("SIM", output_directory, "odd_even")
 
     pl.make_simple_plot("MIP", output_directory, "set1_set2")
     pl.make_simple_plot("MIP", output_directory, "set0")
@@ -96,12 +96,19 @@ def run_fitters_and_summary():
     pl.run_linear_fit(output_directory, "set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])
 
     # summary
-    labels = ["E_set1", "E_set2"]
-    pl.run_summary("pvalue", pl.specified_directory, labels, fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
-    pl.run_summary("chi2ndf", pl.specified_directory, labels, fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
+    labels = ["E_odd", "E_even"]
+    pl.run_summary("pvalue", pl.specified_directory, labels, fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
+    pl.run_summary("chi2ndf", pl.specified_directory, labels, fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
+    labels = ["Resolution of E_odd", "Resolution of E_even"]
+    pl.run_summary(m.type_resolution, pl.specified_directory, labels, fit_result["MIP"]["odd"], fit_result["MIP"]["even"])
 
+    return
+
+    labels = ["E_set1", "E_set2"]
+    pl.run_summary("pvalue", pl.specified_directory, labels, fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
+    pl.run_summary("chi2ndf", pl.specified_directory, labels, fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
     labels = ["Resolution of E_set1", "Resolution of E_set2"]
-    pl.run_summary(m.type_resolution, pl.specified_directory, labels, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
+    pl.run_summary(m.type_resolution, pl.specified_directory, labels, fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
 
 #----------------------------------------------------------------------------------------------------
 
@@ -128,7 +135,7 @@ def run_manager(myfin, mydin, tags, fit_constraints):
 
 def perform_unclustered_study():
     m.type_resolution = "resolution_unclustered"
-    target_directory = "R90To130_v1p4"
+    target_directory = "R90To130_v1p6"
     output_directory = eos + "/" + target_directory
 
     tags = ["E300", "E100", "E20"]
@@ -143,7 +150,7 @@ def perform_unclustered_study():
 
 def perform_clustered_study():
     m.type_resolution = "resolution_clustered"
-    target_directory = "R90To130_v2p5"
+    target_directory = "R90To130_v2p6"
     output_directory = eos + "/" + target_directory
 
     tags = ["E300", "E100", "E20"]
@@ -160,5 +167,5 @@ def perform_clustered_study():
 
 if __name__ == "__main__":
     perform_unclustered_study()
-    perform_clustered_study()
+    #perform_clustered_study()
 

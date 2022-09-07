@@ -344,33 +344,6 @@ def run_summary(title, dir_output, labels, dy1, dy2):
     leg_option     = options["leg_option"]
     c3.SetLogy(options["useLog"])
 
-    #if title == "pvalue" :
-    #    ytitle = "p-value of gaussian fit"
-    #    yrange = [1.e-2, 1.0]
-    #    leg_pos = [0.62, 0.25, 0.85, 0.45]
-    #    draw_goodness = True
-    #    draw_lower_pad = False
-    #    reference_line = 0.5
-    #    c3.SetLogy(1)
-
-    #if title == "chi2ndf":
-    #    ytitle = "chi2/ndf of gaussian fit"
-    #    yrange = [0., 3.0]
-    #    leg_pos = [0.62, 0.65, 0.85, 0.85]
-    #    draw_goodness = True
-    #    draw_lower_pad = False
-    #    reference_line = 1.0 
-    #    c3.SetLogy(0)
-
-    #if title == "resolution":
-    #    ytitle = "#sigma#left(E#right) / #bar{E}"
-    #    yrange = [0.000, 0.040] # v2p1, v2p2
-    #    yrange = [0.018, 0.043] # v1p1, v1p2
-    #    leg_pos = [0.62, 0.65, 0.85, 0.85]
-    #    draw_goodness = False
-    #    draw_lower_pad = True
-    #    c3.SetLogy(0)
-
     # list of x and y
     Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
     lx  = [ float(ene.split('E')[1]) for ene in Energy ]
@@ -470,7 +443,7 @@ def run_summary(title, dir_output, labels, dy1, dy2):
         gr_ratio.GetXaxis().SetLabelOffset(0.06)
 
         gr_ratio.GetYaxis().SetNdivisions(505)
-        gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.) # along Y
+        gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.2) # along Y
         gr_ratio.GetYaxis().SetTitleFont(42)
         gr_ratio.GetYaxis().SetTitleSize(0.10)
         gr_ratio.GetYaxis().SetTitleOffset(0.35)
