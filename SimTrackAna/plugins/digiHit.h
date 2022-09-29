@@ -196,6 +196,7 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         //}}}
         explicit DigiSim(const edm::ParameterSet&);
         ~DigiSim();
+        double get_corrected_energy_from_dEdx_method(int layer, double amplitude, TString tag);
         double get_additional_correction(int layer);
         bool is_this_in_set1(int layer);
         bool is_this_in_set2(int layer);
@@ -336,6 +337,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         TH1D *total_SIM_set1;
         TH1D *total_SIM_set2;
 
+        //TH1D *total_ENE_odd;
+        //TH1D *total_ENE_even;
         TH1D *total_ENE_set0;
         TH1D *total_ENE_set1;
         TH1D *total_ENE_set2;
@@ -355,6 +358,9 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         // dE/dx weights from https://github.com/cms-sw/cmssw/blob/master/RecoLocalCalo/HGCalRecProducers/python/HGCalRecHit_cfi.py#L12-L60
         std::vector<double> weightsPerLayer_V16 = { 0., 5.55, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 9.4, 12.86, 13.54, 12.86, 13.54, 12.86, 13.54, 12.86, 13.54, 12.86,
                                                     58.63, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 60.7, 83.08, 83.08, 83.43, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61, 83.61 };
+        std::vector<double> calibration_weights_set0 = {0.00,  9.21, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 11.13, 13.20, 13.20, 13.20, 13.20, 13.20, 13.20, 13.20, 13.20, 35.75};
+        std::vector<double> calibration_weights_set1 = {0.00,  9.21,  0.00, 22.26,  0.00, 22.26,  0.00, 22.26,  0.00, 22.26,  0.00, 22.26,  0.00, 22.26,  0.00, 22.26,  0.00, 24.33,  0.00, 26.40,  0.00, 26.40,  0.00, 26.40,  0.00, 48.95,  0.00};
+        std::vector<double> calibration_weights_set2 = {0.00,  9.21,  0.00, 22.26,  0.00, 28.69,  0.00,  0.00, 28.69,  0.00, 22.26,  0.00, 22.26,  0.00, 15.83, 15.83,  0.00, 24.33,  0.00, 26.40,  0.00, 26.40,  0.00, 26.40,  0.00, 48.95,  0.00};
 
         std::vector<double> x_D86 = { 0., 0.564,1.567,2.547,3.549,4.528,5.531,6.509,7.512,8.49,9.493,10.472,11.474,12.453,13.455,14.434,15.437,16.415,17.418,18.975,19.978,21.536,22.538,24.096,25.099,26.656,27.659 };
         //double Z_[47] = {322.155,323.149,325.212,326.206,328.269,329.263,331.326,332.32,334.383,335.377,337.44,338.434,340.497,341.491,343.554,344.548,346.611,347.605,349.993,350.987,353.375,354.369,356.757,357.751,360.139,361.133,367.976,374.281,380.586,386.891,393.196,399.501,405.806,412.111,418.416,424.721,431.026,439.251,447.476,455.701,463.926,472.151,480.376,488.601,496.826,505.051,513.276};
@@ -371,6 +377,8 @@ class DigiSim : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         double total_energy_sim_set0 = 0.;
         double total_energy_sim_set1 = 0.;
         double total_energy_sim_set2 = 0.;
+        double total_corrected_energy_odd  = 0.;
+        double total_corrected_energy_even = 0.;
         double total_corrected_energy_set0 = 0.;
         double total_corrected_energy_set1 = 0.;
         double total_corrected_energy_set2 = 0.;
@@ -527,11 +535,11 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     //E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
     //E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
     
-    total_MIP_odd  = fs->make<TH1D>("total_MIP_odd"  , "total_MIP_odd"  , 200 , 0. ,  30000.);
-    total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 200 , 0. ,  30000.);
-    total_MIP_set0 = fs->make<TH1D>("total_MIP_set0" , "total_MIP_set0" , 400 , 0. ,  60000.);
-    total_MIP_set1 = fs->make<TH1D>("total_MIP_set1" , "total_MIP_set1" , 200 , 0. ,  30000.);
-    total_MIP_set2 = fs->make<TH1D>("total_MIP_set2" , "total_MIP_set2" , 200 , 0. ,  30000.);
+    total_MIP_odd  = fs->make<TH1D>("total_MIP_odd"  , "total_MIP_odd"  , 600  , 0. ,  30000.);
+    total_MIP_even = fs->make<TH1D>("total_MIP_even" , "total_MIP_even" , 600  , 0. ,  30000.);
+    total_MIP_set0 = fs->make<TH1D>("total_MIP_set0" , "total_MIP_set0" , 1200 , 0. ,  60000.);
+    total_MIP_set1 = fs->make<TH1D>("total_MIP_set1" , "total_MIP_set1" , 600  , 0. ,  30000.);
+    total_MIP_set2 = fs->make<TH1D>("total_MIP_set2" , "total_MIP_set2" , 600  , 0. ,  30000.);
 
     total_SIM_odd  = fs->make<TH1D>("total_SIM_odd"  , "total_SIM_odd"  , 200 , 0. , 200.);
     total_SIM_even = fs->make<TH1D>("total_SIM_even" , "total_SIM_even" , 200 , 0. , 200.);
@@ -540,6 +548,8 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     total_SIM_set2 = fs->make<TH1D>("total_SIM_set2" , "total_SIM_set2" , 200 , 0. , 200.);
 
     // energy projected from MIP to SIM_set0
+    //total_ENE_odd  = fs->make<TH1D>("total_ENE_odd"  , "total_ENE_odd" , 4000 , 0. , 400.);
+    //total_ENE_even = fs->make<TH1D>("total_ENE_even" , "total_ENE_even" , 4000 , 0. , 400.);
     total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 4000 , 0. , 400.);
     total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 4000 , 0. , 400.);
     total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 4000 , 0. , 400.);
@@ -723,6 +733,8 @@ void DigiSim::reset_per_event_counters()
     total_energy_sim_set0 = 0.;
     total_energy_sim_set1 = 0.;
     total_energy_sim_set2 = 0.;
+    total_corrected_energy_odd  = 0.;
+    total_corrected_energy_even = 0.;
     total_corrected_energy_set0 = 0.;
     total_corrected_energy_set1 = 0.;
     total_corrected_energy_set2 = 0.;
@@ -792,6 +804,26 @@ void DigiSim::reset_per_event_counters()
         num_digis_300mum        .push_back(0);
         num_simhits_300mum      .push_back(0);
     }
+}
+
+double DigiSim::get_corrected_energy_from_dEdx_method(int layer, double amplitude, TString tag)
+{
+    if(layer>26) printf("[WARNING] get_corrected_energy_from_dEdx_method::layer = %d is outside CEE\n", layer);
+
+    double output = 0.;
+    if(tag=="set0")
+        output = calibration_weights_set0[layer] * amplitude;
+        
+    else if(tag=="set1")
+        output = calibration_weights_set1[layer] * amplitude;
+
+    else if(tag=="set2")
+        output = calibration_weights_set2[layer] * amplitude;
+
+    else
+        printf("[WARNING] get_corrected_energy_from_dEdx_method::tag = %s\n is not defined\n", tag.Data());
+
+    return output;
 }
 
 double DigiSim::get_additional_correction(int layer)
@@ -985,13 +1017,17 @@ void DigiSim::fill_event_info()
     total_SIM_set1 -> Fill(total_energy_sim_set1);
     total_SIM_set2 -> Fill(total_energy_sim_set2);
 
-    total_corrected_energy_set0 = convert_amplitude_to_total_energy_pedro(0, total_energy_mip_set0);
-    total_corrected_energy_set1 = convert_amplitude_to_total_energy_pedro(1, total_energy_mip_set1);
-    total_corrected_energy_set2 = convert_amplitude_to_total_energy_pedro(2, total_energy_mip_set2);
+    // linear fit (not preferred because deposited energy in passive layers is not considered)
+    //total_corrected_energy_set0 = convert_amplitude_to_total_energy_pedro(0, total_energy_mip_set0);
+    //total_corrected_energy_set1 = convert_amplitude_to_total_energy_pedro(1, total_energy_mip_set1);
+    //total_corrected_energy_set2 = convert_amplitude_to_total_energy_pedro(2, total_energy_mip_set2);
 
-    total_ENE_set0 -> Fill(total_corrected_energy_set0);
-    total_ENE_set1 -> Fill(total_corrected_energy_set1);
-    total_ENE_set2 -> Fill(total_corrected_energy_set2);
+    // store energy in unit of GeV instead of MeV
+    //total_ENE_odd  -> Fill(total_corrected_energy_odd);
+    //total_ENE_even -> Fill(total_corrected_energy_even);
+    total_ENE_set0 -> Fill(total_corrected_energy_set0 / 1000.);
+    total_ENE_set1 -> Fill(total_corrected_energy_set1 / 1000.);
+    total_ENE_set2 -> Fill(total_corrected_energy_set2 / 1000.);
 
     //tb::print_debug_info("total_energy_sim_set0", total_energy_sim_set0);
     //tb::print_debug_info("total_energy_mip_set1", total_energy_mip_set1);

@@ -231,13 +231,12 @@ def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, st
     # set up histogram
     if energyType == "ENE":
         width = h.GetBinWidth(1)
-        print ">>>>> check width:", width
-
-        h.GetYaxis().SetTitle("Entries / %3.1f MeV" % width)
-        range_factor = 2.0
+        h.GetYaxis().SetTitle("Entries / %3.1f GeV" % width)
+        range_factor = 2.0 
     else:
-        h.GetYaxis().SetTitle("Entries")
-        range_factor = 3.0
+        width = h.GetBinWidth(1)
+        h.GetYaxis().SetTitle("Entrie / %.0f MIPs" % width) 
+        range_factor = 2.0
 
     h.SetTitle("")
     h.SetMaximum(max_value*1.2)
@@ -279,7 +278,7 @@ def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, st
 
 def get_strings_for_simple_plot(energyType, selection):
     if energyType == "ENE":
-        xtitle = "Corrected energy [MeV]"
+        xtitle = "Corrected energy [GeV]"
         outputName = "h_Edep_corrected_energy_%s_" % selection
 
         if selection == "set1_set2":

@@ -4,6 +4,8 @@
 # containers for parameters to be set
 #====================================================================================================
 type_resolution = ""
+energy_type = "" # for run_summary
+labels = [] # for run_summary
 
 #====================================================================================================
 # toolbox/plotter.py: run_summary
@@ -45,7 +47,8 @@ draw_options_for_run_summary = {
         "useLog"            : 0,
 
         "linear_fit_yrange" : [0, 300],
-        "use_bin_width"     : True,
+        #"use_bin_width"     : True,
+        "use_bin_width"     : False,
     },
 
     "resolution_clustered": {
@@ -84,12 +87,42 @@ linear_fit_parameter = {
 }
 
 rebin_factor = {
-    "E300" : 10,
-    "E225" : 10,
-    "E175" : 10,
-    "E100" : 10,
-    "E60"  : 4,
-    "E20"  : 4,
+    "resolution_unclustered":{
+        "set0":{
+            "E300" : 5,
+            "E225" : 5,
+            "E175" : 5,
+            "E100" : 5,
+            "E60"  : 2,
+            "E20"  : 2,
+        },
+        "set1_set2":{
+            "E300" : 10,
+            "E225" : 10,
+            "E175" : 10,
+            "E100" : 10,
+            "E60"  : 4,
+            "E20"  : 4,
+        },
+    },
+    "resolution_clustered":{
+        "set0":{
+            "E300" : 5,
+            "E225" : 5,
+            "E175" : 5,
+            "E100" : 5,
+            "E60"  : 2,
+            "E20"  : 2,
+        },
+        "set1_set2":{
+            "E300" : 10,
+            "E225" : 10,
+            "E175" : 10,
+            "E100" : 10,
+            "E60"  : 4,
+            "E20"  : 4,
+        },
+    },
 }
 
 # E = 300, 100, 20
@@ -116,62 +149,75 @@ fit_constraints_set0 = {
 # E = 300, 100, 20
 fit_constraints_v1p1 = {
     "set0" : {
-        "MIP" : { "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]] },
+        "MIP" : { "xRanges" : [[24000, 40000], [7000, 15000], [1000, 5000]] },
         "SIM" : { "xRanges" : [[100, 300], [40, 240], [0, 200]] },
-        "ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
+        "ENE" : { "xRanges" : [[270, 400], [80, 180], [10, 60]] },
+        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
         "MIP" : { "xRanges" : [[11500, 20500], [3000, 12000], [0, 9000]], },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[140, 200], [58, 98], [25, 65]] },
-        #"ENE" : { "xRanges" : [[100, 300], [20, 220], [0, 200]] },
+        "ENE" : { "xRanges" : [[270, 400], [80, 180], [10, 60]] },
+        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
+        #"ENE" : { "xRanges" : [[140, 200], [58, 98], [25, 65]] },
     },
 }
 
 # E = 225, 175, 60
 fit_constraints_v1p2 = {
     "set0" : {
-        "MIP" : { "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]] },
+        "MIP" : { "xRanges" : [[17000, 30000], [12000, 25000], [3500, 10000]] },
         "SIM" : { "xRanges" : [[80, 280], [60, 260], [0, 300]] },
-        "ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
+        "ENE" : { "xRanges" : [[200, 350], [150, 300], [45, 120]] },
+        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
         "MIP" : { "xRanges" : [[8000, 17000], [6000, 15000], [0, 9000]], },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[110, 160], [90, 130], [40, 80]] },
-        #"ENE" : { "xRanges" : [[70, 270], [50, 250], [0, 200]] },
+        "ENE" : { "xRanges" : [[200, 350], [150, 300], [45, 120]] },
+        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
+        #"ENE" : { "xRanges" : [[110, 160], [90, 130], [40, 80]] },
     },
 }
 
 # E = 300, 100, 20
 fit_constraints_v2p1 = {
     "set0" : {
-        "MIP" : { "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]] },
+        "MIP" : { "xRanges" : [[20000, 30000], [6500, 11500], [1000, 5000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
+        "ENE" : { "xRanges" : [[220, 400], [70, 170], [10, 60]] },
+        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
+        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
-        "MIP" : { "xRanges" : [[5000, 25000], [0, 20000], [0, 20000], [0, 20000]] },
+        "MIP" : { "xRanges" : [[9000, 20000], [2500, 13000], [400, 2400]] },
+        #"MIP" : { "xRanges" : [[9000, 15000], [3000, 6000], [0, 2000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[37, 52], [22, 37], [16, 31]] },
+        "ENE" : { "xRanges" : [[220, 400], [70, 170], [10, 60]] },
+        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
+        #"ENE" : { "xRanges" : [[37, 52], [22, 37], [16, 31]] },
     },
 }
 
 # E = 225, 175, 60
 fit_constraints_v2p2 = {
     "set0" : {
-        "MIP" : { "xRanges" : [[0, 30000], [0, 30000], [0, 30000], [0, 30000]] },
+        "MIP" : { "xRanges" : [[15000, 30000], [11000, 21000], [3000, 8000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
+        "ENE" : { "xRanges" : [[170, 320], [130, 230], [30, 130]] },
+        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
+        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
-        "MIP" : { "xRanges" : [[5000, 25000], [0, 20000], [0, 20000], [0, 20000]] },
+        "MIP" : { "xRanges" : [[6500, 14500], [5000, 13000], [1500, 6000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[31, 46], [27, 42], [18, 33]] },
+        "ENE" : { "xRanges" : [[170, 320], [130, 230], [30, 130]] },
+        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
+        #"ENE" : { "xRanges" : [[31, 46], [27, 42], [18, 33]] },
     },
 }
 
@@ -198,41 +244,29 @@ input_files = {
         "rootfiles_eta_cutFree_v4/geantoutput_D86_R80To100_E20.root",
     ],
 
-    #"R90To130_v1p1" : [
-    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E300.root",
-    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E100.root",
-    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E20.root",
-    #],
-
-    #"R90To130_v1p2" : [
-    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E225.root",
-    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E175.root",
-    #    "rootfiles_hit_position/20220729/geantoutput_D86_R90To130_E60.root",
-    #],
-
     "R90To130_v1p1" : [
-        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v1p2" : [
-        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220906_R90To130/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E60.root",
     ],
 
     # v2: SR = linear track
     "R90To130_v2p1" : [
-        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v2p2" : [
-        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220829_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
     ],
 
     "R80To130" : [

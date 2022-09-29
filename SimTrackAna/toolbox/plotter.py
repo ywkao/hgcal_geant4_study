@@ -237,8 +237,11 @@ def make_simple_plot(energyType, dir_output, selection):
     for i, v_hists in enumerate(v_v_hists):
         #print "\n----------------------------------------------------------------------------------------------------\n"
 
-        if energyType == "ENE" and m.type_resolution == "resolution_unclustered" and selection == "set1_set2":
-            rebin_factor = m.rebin_factor[tags[i]] # E300, E100, E20, etc.
+        if energyType == "ENE" and "set" in selection: # and m.type_resolution == "resolution_unclustered":
+            # type_resolution: resolution_clustered, resolution_unclustered
+            # selection: set0, set1_set2, odd_even, etc.
+            # tags = E300, E100, E20, etc.
+            rebin_factor = m.rebin_factor[m.type_resolution][selection][tags[i]]
             v_hists[0].Rebin(rebin_factor)
             v_hists[1].Rebin(rebin_factor)
 
@@ -328,7 +331,15 @@ def run_linear_fit(dir_output, label, dx, dy):
 
 #----------------------------------------------------------------------------------------------------
 
-def run_summary(title, dir_output, labels, dy1, dy2):
+def perform_consistency_check(title, e1, e2, r1, r2):
+    ratio = e2/e1
+    res_ratio = r2/r1
+    #test = ratio * math.pow(res_ratio, 2)
+    test = math.sqrt(ratio) * res_ratio
+    print ">>> consitency check %5s: test = %.2f (e2/e1 = %.2f)" % (title, test, ratio)
+
+def run_summary(title, dy1, dy2):
+    dir_output = specified_directory
     options = m.draw_options_for_run_summary[title]
 
     c3.cd()
@@ -358,8 +369,14 @@ def run_summary(title, dir_output, labels, dy1, dy2):
             ley2.append(0.)
 
         if title == "chi2ndf":
-            ly1.append( dy1[ene]["chi2"]/dy1[ene]["ndf"] )
-            ly2.append( dy2[ene]["chi2"]/dy2[ene]["ndf"] )
+            if not dy1[ene]["ndf"]>0 or not dy2[ene]["ndf"]>0:
+                ly1.append( dy1[ene]["chi2"] )
+                ly2.append( dy2[ene]["chi2"] )
+                print ">>>>>>>>>> [WARNING] NDF is zero."
+            else:
+                ly1.append( dy1[ene]["chi2"]/dy1[ene]["ndf"] )
+                ly2.append( dy2[ene]["chi2"]/dy2[ene]["ndf"] )
+
             ley1.append(0.)
             ley2.append(0.)
 
@@ -368,25 +385,23 @@ def run_summary(title, dir_output, labels, dy1, dy2):
             fit_sigma = dy1[ene]["sigma"]
             fitError_mean  = dy1[ene]["error_mean"]
             fitError_sigma = dy1[ene]["error_sigma"]
-
-            ratio = fit_sigma/fit_mean
-            uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
-
-            ly1.append(ratio)
+            resolution = fit_sigma/fit_mean
+            uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+            ly1.append(resolution)
             ley1.append(uncertainty)
 
             fit_mean = dy2[ene]["mean"]
             fit_sigma = dy2[ene]["sigma"]
             fitError_mean  = dy2[ene]["error_mean"]
             fitError_sigma = dy2[ene]["error_sigma"]
-
-            ratio = fit_sigma/fit_mean
-            uncertainty = ratio * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
-
-            print ">>> check: resolution = %.3f, mean = %6.2f, sqrt(mean) = %5.2f, ratio = %.4f" % ( ratio, fit_mean, math.sqrt(fit_mean), ratio / math.sqrt(fit_mean) ) 
-
-            ly2.append(ratio)
+            resolution = fit_sigma/fit_mean
+            uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+            ly2.append(resolution)
             ley2.append(uncertainty)
+
+            # consistency check
+            #if "MIP" in m.energy_type:
+            perform_consistency_check(ene, dy1[ene]["mean"], dy2[ene]["mean"], ly1[-1], ly2[-1])
 
     # graphs
     gr1 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
@@ -406,8 +421,8 @@ def run_summary(title, dir_output, labels, dy1, dy2):
 
     legend = ROOT.TLegend(leg_pos[0], leg_pos[1], leg_pos[2], leg_pos[3])
     legend.SetTextSize(0.04)
-    legend.AddEntry(gr1, labels[0], leg_option)
-    legend.AddEntry(gr2, labels[1], leg_option)
+    legend.AddEntry(gr1, m.labels[0], leg_option)
+    legend.AddEntry(gr2, m.labels[1], leg_option)
 
     # quantify difference
     if draw_lower_pad:
@@ -443,7 +458,13 @@ def run_summary(title, dir_output, labels, dy1, dy2):
         gr_ratio.GetXaxis().SetLabelOffset(0.06)
 
         gr_ratio.GetYaxis().SetNdivisions(505)
-        gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.2) # along Y
+        if m.type_resolution == "resolution_clustered":
+            gr_ratio.GetYaxis().SetRangeUser(-0.25, 0.2) # along Y
+        if m.type_resolution == "resolution_unclustered":
+            if "MIP" in m.energy_type:
+                gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.2) # along Y
+            else:
+                gr_ratio.GetYaxis().SetRangeUser(-0.2, 0.2) # along Y
         gr_ratio.GetYaxis().SetTitleFont(42)
         gr_ratio.GetYaxis().SetTitleSize(0.10)
         gr_ratio.GetYaxis().SetTitleOffset(0.35)
@@ -479,7 +500,7 @@ def run_summary(title, dir_output, labels, dy1, dy2):
         legend.Draw("same")
         pu.annotate(0.12)
 
-        print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
+        #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
         line = ROOT.TLine( c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line )
         line.SetLineColor(ROOT.kRed)
         line.SetLineStyle(2)
@@ -487,7 +508,7 @@ def run_summary(title, dir_output, labels, dy1, dy2):
         line.Draw()
 
     token = title if not "resolution" in title else "resolution"
-    output = dir_output + "/summary_" + token
+    output = dir_output + "/summary_" + token + "_" + m.energy_type
     c3.SaveAs(output + ".png")
     c3.SaveAs(output + ".pdf")
 

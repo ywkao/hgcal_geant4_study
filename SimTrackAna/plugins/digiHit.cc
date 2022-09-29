@@ -398,6 +398,7 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                 double dEdx_weights = get_additional_correction(idx+1); // layer = idx+1
                 amplitude = amplitude * dEdx_weights;
+                double corrected_energy = 0.;
 
                 //reset_tree_variables();
                 //tr_evtNo = 0;
@@ -472,8 +473,10 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 //--------------------------------------------------
                 // info for a set of layers
                 //--------------------------------------------------
+                corrected_energy = get_corrected_energy_from_dEdx_method(idx+1, amplitude, "set0");
                 total_energy_mip_set0 += amplitude;
                 total_energy_sim_set0 += energy;
+                total_corrected_energy_set0 += corrected_energy;
 
                 //E_set1 = E1+E3+E5+E7+E9+E11+E13+E15+E17+...E25
                 //E_set2 = E1+E3+E5+E8+E10+E12+E14+E15+E17+...E25
@@ -481,21 +484,27 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 bool is_in_set2 = is_this_in_set2(idx+1); // layer = idx+1
     
                 if(is_in_set1) {
+                    corrected_energy = get_corrected_energy_from_dEdx_method(idx+1, amplitude, "set1");
                     total_energy_mip_set1 += amplitude;
                     total_energy_sim_set1 += energy;
+                    total_corrected_energy_set1 += corrected_energy;
                 }
 
                 if(is_in_set2) {
+                    corrected_energy = get_corrected_energy_from_dEdx_method(idx+1, amplitude, "set2");
                     total_energy_mip_set2 += amplitude;
                     total_energy_sim_set2 += energy;
+                    total_corrected_energy_set2 += corrected_energy;
                 }
 
                 if(idx%2==0) {
                     total_energy_mip_odd += amplitude;
                     total_energy_sim_odd += energy;
+                    //total_corrected_energy_odd += corrected_energy;
                 } else {
                     total_energy_mip_even += amplitude;
                     total_energy_sim_even += energy;
+                    //total_corrected_energy_even += corrected_energy;
                 }
 
                 //--------------------------------------------------

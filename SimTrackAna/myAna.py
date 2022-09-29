@@ -21,8 +21,8 @@ def run_logitudinal_profile():
     thickness = ["total", "coarse", "fine"] # consider 120, 200, 300 altogether
     thickness = ["total"]
     for t in thickness:
-        #pl.make_plot( "multiplicity_simhits_%s" % t , output_directory, True  )
-        #pl.make_plot( "total_MIP_%s"            % t , output_directory, True  )
+        pl.make_plot( "multiplicity_simhits_%s" % t , output_directory, True  )
+        pl.make_plot( "total_MIP_%s"            % t , output_directory, True  )
         #pl.make_plot( "total_SIM_%s"            % t , output_directory, True  )
 
         pl.make_plot( "efficiency_linear_track"     , output_directory, True  )
@@ -47,8 +47,9 @@ def run_energy_resolution():
     output_directory = pl.specified_directory + "/energy_resolution"
     pu.create_directory(output_directory)
 
-    pl.make_simple_plot("MIP", output_directory, "odd_even")
-    pl.make_simple_plot("SIM", output_directory, "odd_even")
+    if enable_check_odd_even:
+        pl.make_simple_plot("MIP", output_directory, "odd_even")
+        pl.make_simple_plot("SIM", output_directory, "odd_even")
 
     pl.make_simple_plot("MIP", output_directory, "set1_set2")
     pl.make_simple_plot("MIP", output_directory, "set0")
@@ -96,19 +97,24 @@ def run_fitters_and_summary():
     pl.run_linear_fit(output_directory, "set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])
 
     # summary
-    labels = ["E_odd", "E_even"]
-    pl.run_summary("pvalue", pl.specified_directory, labels, fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
-    pl.run_summary("chi2ndf", pl.specified_directory, labels, fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
-    labels = ["Resolution of E_odd", "Resolution of E_even"]
-    pl.run_summary(m.type_resolution, pl.specified_directory, labels, fit_result["MIP"]["odd"], fit_result["MIP"]["even"])
+    if enable_check_odd_even:
+        m.energy_type = "odd_even_MIPs"
+        m.labels = ["E_odd_MIP", "E_even_MIP"]
+        pl.run_summary("pvalue", fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
+        pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
+        pl.run_summary(m.type_resolution, fit_result["MIP"]["odd"], fit_result["MIP"]["even"])
 
-    return
+    m.energy_type = "set1_set2_MeV"
+    m.labels = ["E_set1_MeV", "E_set2_MeV"]
+    pl.run_summary("pvalue", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
+    pl.run_summary("chi2ndf", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
+    pl.run_summary(m.type_resolution, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
 
-    labels = ["E_set1", "E_set2"]
-    pl.run_summary("pvalue", pl.specified_directory, labels, fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
-    pl.run_summary("chi2ndf", pl.specified_directory, labels, fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
-    labels = ["Resolution of E_set1", "Resolution of E_set2"]
-    pl.run_summary(m.type_resolution, pl.specified_directory, labels, fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
+    m.energy_type = "set1_set2_MIPs"
+    m.labels = ["E_set1_MIP", "E_set2_MIP"]
+    pl.run_summary("pvalue", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
+    pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
+    pl.run_summary(m.type_resolution, fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
 
 #----------------------------------------------------------------------------------------------------
 
@@ -136,6 +142,7 @@ def run_manager(myfin, mydin, tags, fit_constraints):
 def perform_unclustered_study():
     m.type_resolution = "resolution_unclustered"
     target_directory = "R90To130_v1p6"
+    target_directory = "R90To130_unclustered"
     output_directory = eos + "/" + target_directory
 
     tags = ["E300", "E100", "E20"]
@@ -151,6 +158,7 @@ def perform_unclustered_study():
 def perform_clustered_study():
     m.type_resolution = "resolution_clustered"
     target_directory = "R90To130_v2p6"
+    target_directory = "R90To130_clustered"
     output_directory = eos + "/" + target_directory
 
     tags = ["E300", "E100", "E20"]
@@ -166,6 +174,7 @@ def perform_clustered_study():
 #----------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    enable_check_odd_even = False
     perform_unclustered_study()
     #perform_clustered_study()
 
