@@ -7,6 +7,9 @@ type_resolution = ""
 energy_type = "" # for run_summary
 labels = [] # for run_summary
 
+resolution = {}
+resolution = {"set1":{}, "set2":{}}
+
 #====================================================================================================
 # toolbox/plotter.py: run_summary
 #====================================================================================================
@@ -60,6 +63,20 @@ draw_options_for_run_summary = {
         "draw_goodness"     : False,
         "draw_lower_pad"    : True,
         "reference_line"    : 1.0, # dummy
+        "useLog"            : 0,
+
+        "linear_fit_yrange" : [0, 100],
+        "use_bin_width"     : False,
+    },
+
+    "changes_in_resolution": {
+        "ytitle"            : "#frac{Res.(after) #minus Res.(before)}{Res.(before)}",
+        "yrange"            : [-0.5, 0.5],
+        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : True,
+        "draw_lower_pad"    : False,
+        "reference_line"    : 0.0,
         "useLog"            : 0,
 
         "linear_fit_yrange" : [0, 100],

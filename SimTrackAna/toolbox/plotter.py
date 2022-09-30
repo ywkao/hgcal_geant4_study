@@ -380,7 +380,7 @@ def run_summary(title, dy1, dy2):
             ley1.append(0.)
             ley2.append(0.)
 
-        if "resolution" in title:
+        if title == "resolution_clustered" or title == "resolution_unclustered":
             fit_mean = dy1[ene]["mean"]
             fit_sigma = dy1[ene]["sigma"]
             fitError_mean  = dy1[ene]["error_mean"]
@@ -389,6 +389,9 @@ def run_summary(title, dy1, dy2):
             uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
             ly1.append(resolution)
             ley1.append(uncertainty)
+            m.resolution["set1"][m.energy_type][ene] = {}
+            m.resolution["set1"][m.energy_type][ene]["mean"] = resolution
+            m.resolution["set1"][m.energy_type][ene]["error"] = uncertainty
 
             fit_mean = dy2[ene]["mean"]
             fit_sigma = dy2[ene]["sigma"]
@@ -398,14 +401,44 @@ def run_summary(title, dy1, dy2):
             uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
             ly2.append(resolution)
             ley2.append(uncertainty)
+            m.resolution["set2"][m.energy_type][ene] = {}
+            m.resolution["set2"][m.energy_type][ene]["mean"] = resolution
+            m.resolution["set2"][m.energy_type][ene]["error"] = uncertainty
 
             # consistency check
             #if "MIP" in m.energy_type:
             perform_consistency_check(ene, dy1[ene]["mean"], dy2[ene]["mean"], ly1[-1], ly2[-1])
 
+        if title == "changes_in_resolution":
+            res_mev = dy1["set1_set2_MeV"][ene]["mean"]
+            res_mip = dy1["set1_set2_MIPs"][ene]["mean"]
+            err_mev = dy1["set1_set2_MeV"][ene]["error"]
+            err_mip = dy1["set1_set2_MIPs"][ene]["error"]
+            difference = (res_mev - res_mip) / res_mip
+            ratio = res_mev / res_mip
+            uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
+            ly1.append(difference)
+            ley1.append(uncertainty)
+            print ">>>>> diff in set1 resolution: %.2f +/- %.2f (res_mev = %.5f, res_mip = %.5f)" % (difference, uncertainty, res_mev, res_mip)
+
+            res_mev = dy2["set1_set2_MeV"][ene]["mean"]
+            res_mip = dy2["set1_set2_MIPs"][ene]["mean"]
+            err_mev = dy2["set1_set2_MeV"][ene]["error"]
+            err_mip = dy2["set1_set2_MIPs"][ene]["error"]
+            difference = (res_mev - res_mip) / res_mip
+            ratio = res_mev / res_mip
+            uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
+            ly2.append(difference)
+            ley2.append(uncertainty)
+            print ">>>>> diff in set2 resolution: %.2f +/- %.2f" % (difference, uncertainty)
+
     # graphs
     gr1 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
     gr2 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly2, lex, ley2,  ROOT.kGreen+3)
+
+    print gr1, gr2
+    print ly1, ly2
+    print ley1, ley2
 
     gr1.SetLineWidth(2)
     gr1.SetMarkerStyle(20)
@@ -492,7 +525,7 @@ def run_summary(title, dy1, dy2):
         gr_ratio.Draw("ap")
 
 
-    if draw_goodness:
+    else:
         gr1.GetXaxis().SetTitleSize(0.04)
 
         gr1.Draw("ap")
@@ -500,12 +533,14 @@ def run_summary(title, dy1, dy2):
         legend.Draw("same")
         pu.annotate(0.12)
 
-        #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
-        line = ROOT.TLine( c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line )
-        line.SetLineColor(ROOT.kRed)
-        line.SetLineStyle(2)
-        line.SetLineWidth(2)
-        line.Draw()
+        if draw_goodness:
+            #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
+            line = ROOT.TLine( c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line )
+            line.SetLineColor(ROOT.kRed)
+            line.SetLineStyle(2)
+            line.SetLineWidth(2)
+            line.Draw()
+
 
     token = title if not "resolution" in title else "resolution"
     output = dir_output + "/summary_" + token + "_" + m.energy_type

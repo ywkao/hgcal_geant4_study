@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os, subprocess
+import json
 import ROOT
 
 import toolbox.plot_utils as pu
@@ -78,8 +79,12 @@ def run_fitters_and_summary():
     output_directory = pl.specified_directory + "/linear_fit"
     pu.create_directory(output_directory)
 
-    fit_result = pu.fit_result
-    fit_result_goodness = pu.fit_result_goodness
+    #fit_result = pu.fit_result
+    #fit_result_goodness = pu.fit_result_goodness
+
+    fit_result, fit_result_goodness = {}, {}
+    with open("./toolbox/fit_parameters.json", 'r') as f: fit_result = json.load(f)
+    with open("./toolbox/fit_parameters_goodness.json", 'r') as f: fit_result_goodness = json.load(f)
 
     # report
     if False:
@@ -104,27 +109,46 @@ def run_fitters_and_summary():
         pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
         pl.run_summary(m.type_resolution, fit_result["MIP"]["odd"], fit_result["MIP"]["even"])
 
-    m.energy_type = "set1_set2_MeV"
-    m.labels = ["E_set1_MeV", "E_set2_MeV"]
-    pl.run_summary("pvalue", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
-    pl.run_summary("chi2ndf", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
-    pl.run_summary(m.type_resolution, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
-
     m.energy_type = "set1_set2_MIPs"
     m.labels = ["E_set1_MIP", "E_set2_MIP"]
+    #m.resolution[m.energy_type] = {"set1":{}, "set2":{}}
+    m.resolution["set1"][m.energy_type] = {}
+    m.resolution["set2"][m.energy_type] = {}
     pl.run_summary("pvalue", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
     pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
     pl.run_summary(m.type_resolution, fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
 
+    m.energy_type = "set1_set2_MeV"
+    m.labels = ["E_set1_MeV", "E_set2_MeV"]
+    #m.resolution[m.energy_type] = {"set1":{}, "set2":{}}
+    m.resolution["set1"][m.energy_type] = {}
+    m.resolution["set2"][m.energy_type] = {}
+    pl.run_summary("pvalue", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
+    pl.run_summary("chi2ndf", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
+    pl.run_summary(m.type_resolution, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
+
+    m.energy_type = "changes_in_resolution"
+    m.labels = ["E_set1", "E_set2"]
+    pl.run_summary("changes_in_resolution", m.resolution["set1"], m.resolution["set2"])
+
 #----------------------------------------------------------------------------------------------------
+
+def run_register_fit_parameters():
+
+    with open("./toolbox/fit_parameters.json", 'w') as f:
+        json.dump(pu.fit_result, f, sort_keys=True, indent=4)
+        f.write("\n")
+
+    with open("./toolbox/fit_parameters_goodness.json", 'w') as f:
+        json.dump(pu.fit_result_goodness, f, sort_keys=True, indent=4)
+        f.write("\n")
 
 #}}}
 
-def run_manager(myfin, mydin, tags, fit_constraints):
+def run_manager(myfin, tags, fit_constraints):
     # set parameters
     pl.tags = tags
     pl.myRootfiles = myfin
-    pl.specified_directory = mydin
     pl.fit_constraints = fit_constraints
     for tag in tags: pl.label[tag] = tag.split("E")[1] + " GeV"
 
@@ -142,16 +166,22 @@ def run_manager(myfin, mydin, tags, fit_constraints):
 def perform_unclustered_study():
     m.type_resolution = "resolution_unclustered"
     target_directory = "R90To130_v1p6"
+    target_directory = "tmp_test"
     target_directory = "R90To130_unclustered"
     output_directory = eos + "/" + target_directory
+    pl.specified_directory = output_directory
+    pu.create_directory( pl.specified_directory )
 
-    tags = ["E300", "E100", "E20"]
-    fit_constraints = m.fit_constraints_v1p1
-    run_manager( m.input_files["R90To130_v1p1"], output_directory, tags, fit_constraints )
+    if run_full_commands:
+        tags = ["E300", "E100", "E20"]
+        fit_constraints = m.fit_constraints_v1p1
+        run_manager( m.input_files["R90To130_v1p1"], tags, fit_constraints )
 
-    tags = ["E225", "E175", "E60"]
-    fit_constraints = m.fit_constraints_v1p2
-    run_manager( m.input_files["R90To130_v1p2"], output_directory, tags, fit_constraints )
+        tags = ["E225", "E175", "E60"]
+        fit_constraints = m.fit_constraints_v1p2
+        run_manager( m.input_files["R90To130_v1p2"], tags, fit_constraints )
+
+        run_register_fit_parameters()
 
     run_fitters_and_summary()
 
@@ -163,18 +193,20 @@ def perform_clustered_study():
 
     tags = ["E300", "E100", "E20"]
     fit_constraints = m.fit_constraints_v2p1
-    run_manager( m.input_files["R90To130_v2p1"], output_directory, tags, fit_constraints )
+    run_manager( m.input_files["R90To130_v2p1"], tags, fit_constraints )
 
     tags = ["E225", "E175", "E60"]
     fit_constraints = m.fit_constraints_v2p2
-    run_manager( m.input_files["R90To130_v2p2"], output_directory, tags, fit_constraints )
+    run_manager( m.input_files["R90To130_v2p2"], tags, fit_constraints )
 
+    run_register_fit_parameters()
     run_fitters_and_summary()
 
 #----------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     enable_check_odd_even = False
+    run_full_commands = False
     perform_unclustered_study()
     #perform_clustered_study()
 
