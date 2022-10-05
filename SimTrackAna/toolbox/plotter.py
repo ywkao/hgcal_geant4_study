@@ -419,7 +419,7 @@ def run_summary(title, dy1, dy2):
             uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
             ly1.append(difference)
             ley1.append(uncertainty)
-            print ">>>>> diff in set1 resolution: %.2f +/- %.2f (res_mev = %.5f, res_mip = %.5f)" % (difference, uncertainty, res_mev, res_mip)
+            #print ">>>>> diff in set1 resolution: %.2f +/- %.2f (res_mev = %.5f, res_mip = %.5f)" % (difference, uncertainty, res_mev, res_mip)
 
             res_mev = dy2["set1_set2_MeV"][ene]["mean"]
             res_mip = dy2["set1_set2_MIPs"][ene]["mean"]
@@ -430,15 +430,15 @@ def run_summary(title, dy1, dy2):
             uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
             ly2.append(difference)
             ley2.append(uncertainty)
-            print ">>>>> diff in set2 resolution: %.2f +/- %.2f" % (difference, uncertainty)
+            #print ">>>>> diff in set2 resolution: %.2f +/- %.2f (res_mev = %.5f, res_mip = %.5f)" % (difference, uncertainty, res_mev, res_mip)
 
     # graphs
     gr1 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
     gr2 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly2, lex, ley2,  ROOT.kGreen+3)
 
-    print gr1, gr2
-    print ly1, ly2
-    print ley1, ley2
+    #print gr1, gr2
+    #print ly1, ly2
+    #print ley1, ley2
 
     gr1.SetLineWidth(2)
     gr1.SetMarkerStyle(20)

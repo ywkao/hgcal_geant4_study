@@ -54,7 +54,7 @@ def create_weight(tag):
             if i==0:
                 output.append(dummy_weight)
             elif i==1:
-                weight = (w[0] + w[1] + w[2]) / 2.
+                weight = (w[1] + w[2] + w[3]) / 2.
                 output.append(weight)
             elif i%2==0:
                 output.append(0.)
@@ -71,7 +71,7 @@ def create_weight(tag):
             if i==0:
                 output.append(dummy_weight)
             elif i==1:
-                weight = (w[0] + w[1] + w[2]) / 2.
+                weight = (w[1] + w[2] + w[3]) / 2.
                 output.append(weight)
             elif i==5:
                 weight = (w[i-1] + w[i] + w[i+1] + w[i+2] + w[i+3]) / 2.

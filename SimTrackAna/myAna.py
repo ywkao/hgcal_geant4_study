@@ -166,8 +166,8 @@ def run_manager(myfin, tags, fit_constraints):
 def perform_unclustered_study():
     m.type_resolution = "resolution_unclustered"
     target_directory = "R90To130_v1p6"
-    target_directory = "tmp_test"
     target_directory = "R90To130_unclustered"
+    target_directory = "20220930"
     output_directory = eos + "/" + target_directory
     pl.specified_directory = output_directory
     pu.create_directory( pl.specified_directory )
@@ -206,7 +206,8 @@ def perform_clustered_study():
 
 if __name__ == "__main__":
     enable_check_odd_even = False
-    run_full_commands = False
+    run_full_commands = True
+    run_full_commands = False 
     perform_unclustered_study()
     #perform_clustered_study()
 

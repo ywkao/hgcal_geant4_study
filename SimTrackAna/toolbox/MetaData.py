@@ -262,15 +262,15 @@ input_files = {
     ],
 
     "R90To130_v1p1" : [
-        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v1p2" : [
-        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220929_R90To130/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E60.root",
     ],
 
     # v2: SR = linear track
