@@ -256,9 +256,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
                 int idx = dinfo.layer-1;
                 if(dinfo.layer <= 26) num_digis_total[idx] += 1;
-                if(dinfo.layer <= 26 && dinfo.type==0) num_digis_120mum[idx] += 1;
-                if(dinfo.layer <= 26 && dinfo.type==1) num_digis_200mum[idx] += 1;
-                if(dinfo.layer <= 26 && dinfo.type==2) num_digis_300mum[idx] += 1;
 
                 bool debug = false;
                 if(debug) {
@@ -297,7 +294,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     std::map<uint32_t, std::pair<digisinfo, adcinfo>>::iterator itr_digi;
     std::map<uint32_t, std::pair<hitsinfo, energysum> >::iterator itr_sim;
 
-    // determine hit with maximum energy for each CEE layer
     reset_expected_hit_containers(mv_max_cell);
     reset_expected_hit_containers(mv_energy_weighted);
     for (itr_sim = map_Simhits.begin(); itr_sim != map_Simhits.end(); ++itr_sim) {
@@ -527,48 +523,6 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                     num_simhits_total      [idx] += 1;
                     if(is_coarse) num_simhits_coarse     [idx] += 1;
                     if(is_fine)   num_simhits_fine       [idx] += 1;
-                }
-                if(dinfo.layer <= 26 && dinfo.type==0) {
-                    ADC_120mum_     [idx] -> Fill(adc);
-                    MIP_120mum_     [idx] -> Fill(amplitude);
-                    SIM_120mum_     [idx] -> Fill(energy);
-                    adc_sim_120mum_ [idx] -> Fill(adc,energy);
-                    adc_mip_120mum_ [idx] -> Fill(adc,amplitude);
-                    mip_sim_120mum_ [idx] -> Fill(amplitude,energy);
-                    nt_120mum_      [idx] -> Fill(adc,amplitude,energy);
-
-                    total_energy_adc_120mum [idx] += adc;
-                    total_energy_mip_120mum [idx] += amplitude;
-                    total_energy_sim_120mum [idx] += energy;
-                    num_simhits_120mum      [idx] += 1;
-                }
-                if(dinfo.layer <= 26 && dinfo.type==1) {
-                    ADC_200mum_     [idx] -> Fill(adc);
-                    MIP_200mum_     [idx] -> Fill(amplitude);
-                    SIM_200mum_     [idx] -> Fill(energy);
-                    adc_sim_200mum_ [idx] -> Fill(adc,energy);
-                    adc_mip_200mum_ [idx] -> Fill(adc,amplitude);
-                    mip_sim_200mum_ [idx] -> Fill(amplitude,energy);
-                    nt_200mum_      [idx] -> Fill(adc,amplitude,energy);
-
-                    total_energy_adc_200mum [idx] += adc;
-                    total_energy_mip_200mum [idx] += amplitude;
-                    total_energy_sim_200mum [idx] += energy;
-                    num_simhits_200mum      [idx] += 1;
-                }
-                if(dinfo.layer <= 26 && dinfo.type==2) {
-                    ADC_300mum_     [idx] -> Fill(adc);
-                    MIP_300mum_     [idx] -> Fill(amplitude);
-                    SIM_300mum_     [idx] -> Fill(energy);
-                    adc_sim_300mum_ [idx] -> Fill(adc,energy);
-                    adc_mip_300mum_ [idx] -> Fill(adc,amplitude);
-                    mip_sim_300mum_ [idx] -> Fill(amplitude,energy);
-                    nt_300mum_      [idx] -> Fill(adc,amplitude,energy);
-
-                    total_energy_adc_300mum [idx] += adc;
-                    total_energy_mip_300mum [idx] += amplitude;
-                    total_energy_sim_300mum [idx] += energy;
-                    num_simhits_300mum      [idx] += 1;
                 }
             } // end of digihits for loop
         }
