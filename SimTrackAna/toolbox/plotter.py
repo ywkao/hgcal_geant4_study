@@ -39,7 +39,6 @@ import toolbox.MetaData as m
 tags = []
 label = {}
 myRootfiles = []
-specified_directory = ""
 flag_add_reference = False
 fit_constraints = {}
 colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.kMagenta, ROOT.kRed-7]
@@ -48,7 +47,7 @@ colors = [ROOT.kBlack, ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kBlue-7, ROOT.
 # plotting functions
 #--------------------------------------------------
 def make_plot(varName, dir_output="", bool_make_logitudinal_profile=False):
-    global myRootfiles, specified_directory, flag_add_reference
+    global myRootfiles, flag_add_reference
     is_number_of_hits = "multiplicity" in varName
     
     #++++++++++++++++++++++++++++++
@@ -59,7 +58,7 @@ def make_plot(varName, dir_output="", bool_make_logitudinal_profile=False):
     bool_single_figures = bool_ntuple or bool_this_is_eta_phi
     processes = [str(i) for i in range(1,27)]
     if len(dir_output) == 0:
-        dir_output = specified_directory + "/" + pu.sub_directory[varName]
+        dir_output = m.specified_directory + "/" + pu.sub_directory[varName]
 
     #++++++++++++++++++++++++++++++
     # Load histograms
@@ -215,7 +214,7 @@ def make_plot(varName, dir_output="", bool_make_logitudinal_profile=False):
 #----------------------------------------------------------------------------------------------------
 
 def make_simple_plot(energyType, dir_output, selection):
-    global myRootfiles, specified_directory, fit_constraints
+    global myRootfiles, fit_constraints
     
     xtitle, outputName, hname_odd, hname_even, labels = pu.get_strings_for_simple_plot(energyType, selection)
 
@@ -296,7 +295,6 @@ def make_simple_plot(energyType, dir_output, selection):
 #----------------------------------------------------------------------------------------------------
 
 def run_linear_fit(dir_output, label, dx, dy):
-    #global specified_directory
     x_range = m.linear_fit_parameter[label]["linear_fit_xrange"]
     y_range = m.draw_options_for_run_summary[m.type_resolution]["linear_fit_yrange"]
 
@@ -339,7 +337,7 @@ def perform_consistency_check(title, e1, e2, r1, r2):
     print ">>> consitency check %5s: test = %.2f (e2/e1 = %.2f)" % (title, test, ratio)
 
 def run_summary(title, dy1, dy2):
-    dir_output = specified_directory
+    dir_output = m.specified_directory
     options = m.draw_options_for_run_summary[title]
 
     c3.cd()
