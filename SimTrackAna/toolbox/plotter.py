@@ -490,12 +490,12 @@ def run_summary(title, dy1, dy2):
 
         gr_ratio.GetYaxis().SetNdivisions(505)
         if m.type_resolution == "resolution_clustered":
-            gr_ratio.GetYaxis().SetRangeUser(-0.25, 0.2) # along Y
+            gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.2) # along Y
         if m.type_resolution == "resolution_unclustered":
             if "MIP" in m.energy_type:
                 gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.2) # along Y
             else:
-                gr_ratio.GetYaxis().SetRangeUser(-0.2, 0.2) # along Y
+                gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.2) # along Y
         gr_ratio.GetYaxis().SetTitleFont(42)
         gr_ratio.GetYaxis().SetTitleSize(0.10)
         gr_ratio.GetYaxis().SetTitleOffset(0.35)

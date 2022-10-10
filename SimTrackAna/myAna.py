@@ -15,6 +15,7 @@ def perform_unclustered_study():
 
     target_directory = "R90To130_v1p6"
     target_directory = "R90To130_unclustered"
+    target_directory = "usual_dEdx_R90To130_unclustered"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -37,8 +38,9 @@ def perform_clustered_study():
     m.json_fit_parameters_goodness = "./toolbox/clustered_fit_parameters_goodness.json"
 
     target_directory = "R90To130_v2p6"
-    target_directory = "R90To130_clustered"
     target_directory = "20221005"
+    target_directory = "R90To130_clustered"
+    target_directory = "usual_dEdx_R90To130_clustered"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -59,8 +61,8 @@ def perform_clustered_study():
 
 if __name__ == "__main__":
     m.enable_check_odd_even = False
-    run_full_commands = False 
     run_full_commands = True
-    #perform_unclustered_study()
-    perform_clustered_study()
+    run_full_commands = False 
+    perform_unclustered_study()
+    #perform_clustered_study()
 

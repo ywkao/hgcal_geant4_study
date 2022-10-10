@@ -169,15 +169,14 @@ fit_constraints_v1p1 = {
         "MIP" : { "xRanges" : [[24000, 40000], [7000, 15000], [1000, 5000]] },
         "SIM" : { "xRanges" : [[100, 300], [40, 240], [0, 200]] },
         "ENE" : { "xRanges" : [[270, 400], [80, 180], [10, 60]] },
-        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
         "MIP" : { "xRanges" : [[11500, 20500], [3000, 12000], [0, 9000]], },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[270, 400], [80, 180], [10, 60]] },
-        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
-        #"ENE" : { "xRanges" : [[140, 200], [58, 98], [25, 65]] },
+        #"ENE" : { "xRanges" : [[270, 400], [80, 180], [10, 60]] },
+        #"ENE" : { "xRanges" : [[0, 400], [0, 400], [0, 400]] },
+        "ENE" : { "xRanges" : [[120, 270], [35, 115], [5, 45]] },
     },
 }
 
@@ -187,15 +186,14 @@ fit_constraints_v1p2 = {
         "MIP" : { "xRanges" : [[17000, 30000], [12000, 25000], [3500, 10000]] },
         "SIM" : { "xRanges" : [[80, 280], [60, 260], [0, 300]] },
         "ENE" : { "xRanges" : [[200, 350], [150, 300], [45, 120]] },
-        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
         "MIP" : { "xRanges" : [[8000, 17000], [6000, 15000], [0, 9000]], },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[200, 350], [150, 300], [45, 120]] },
-        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
-        #"ENE" : { "xRanges" : [[110, 160], [90, 130], [40, 80]] },
+        #"ENE" : { "xRanges" : [[200, 350], [150, 300], [45, 120]] },
+        #"ENE" : { "xRanges" : [[0, 400], [0, 400], [0, 400]] },
+        "ENE" : { "xRanges" : [[90, 190], [70, 150], [20, 70]] },
     },
 }
 
@@ -205,17 +203,14 @@ fit_constraints_v2p1 = {
         "MIP" : { "xRanges" : [[20000, 30000], [6500, 11500], [1000, 5000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
         "ENE" : { "xRanges" : [[220, 400], [70, 170], [10, 60]] },
-        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
-        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
         "MIP" : { "xRanges" : [[9000, 20000], [2500, 13000], [400, 2400]] },
-        #"MIP" : { "xRanges" : [[9000, 15000], [3000, 6000], [0, 2000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[220, 400], [70, 170], [10, 60]] },
-        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
-        #"ENE" : { "xRanges" : [[37, 52], [22, 37], [16, 31]] },
+        #"ENE" : { "xRanges" : [[220, 400], [70, 170], [10, 60]] },
+        #"ENE" : { "xRanges" : [[0, 400], [0, 400], [0, 400]] },
+        "ENE" : { "xRanges" : [[100, 250], [30, 110], [0, 40]] },
     },
 }
 
@@ -225,16 +220,14 @@ fit_constraints_v2p2 = {
         "MIP" : { "xRanges" : [[15000, 30000], [11000, 21000], [3000, 8000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
         "ENE" : { "xRanges" : [[170, 320], [130, 230], [30, 130]] },
-        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
-        #"ENE" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
     },
 
     "set1set2" : {
         "MIP" : { "xRanges" : [[6500, 14500], [5000, 13000], [1500, 6000]] },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[170, 320], [130, 230], [30, 130]] },
-        #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
-        #"ENE" : { "xRanges" : [[31, 46], [27, 42], [18, 33]] },
+        #"ENE" : { "xRanges" : [[170, 320], [130, 230], [30, 130]] },
+        #"ENE" : { "xRanges" : [[0, 400], [0, 400], [0, 400]] },
+        "ENE" : { "xRanges" : [[75, 175], [55, 135], [15, 65]] },
     },
 }
 
@@ -262,28 +255,28 @@ input_files = {
     ],
 
     "R90To130_v1p1" : [
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v1p2" : [
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130/geantoutput_D86_R90To130_E60.root",
     ],
 
     # v2: SR = linear track
     "R90To130_v2p1" : [
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v2p2" : [
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/usual_dEdx_weights/20221005_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
     ],
 
     "R80To130" : [

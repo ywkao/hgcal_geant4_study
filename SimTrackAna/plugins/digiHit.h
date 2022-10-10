@@ -644,19 +644,23 @@ double DigiSim::get_corrected_energy_from_dEdx_method(int layer, double amplitud
     if(layer>26) printf("[WARNING] get_corrected_energy_from_dEdx_method::layer = %d is outside CEE\n", layer);
 
     double output = 0.;
-    if(tag=="set0")
-        output = calibration_weights_set0[layer] * amplitude;
-        
-    else if(tag=="set1")
-        output = calibration_weights_set1[layer] * amplitude;
 
-    else if(tag=="set2")
-        output = calibration_weights_set2[layer] * amplitude;
-
-    else
-        printf("[WARNING] get_corrected_energy_from_dEdx_method::tag = %s\n is not defined\n", tag.Data());
-
+    output = calibration_weights_set0[layer] * amplitude;
     return output;
+
+    //if(tag=="set0")
+    //    output = calibration_weights_set0[layer] * amplitude;
+    //    
+    //else if(tag=="set1")
+    //    output = calibration_weights_set1[layer] * amplitude;
+
+    //else if(tag=="set2")
+    //    output = calibration_weights_set2[layer] * amplitude;
+
+    //else
+    //    printf("[WARNING] get_corrected_energy_from_dEdx_method::tag = %s\n is not defined\n", tag.Data());
+
+    //return output;
 }
 
 double DigiSim::get_additional_correction(int layer)

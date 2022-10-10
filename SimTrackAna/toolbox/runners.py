@@ -150,6 +150,6 @@ def run_manager(myfin, tags, fit_constraints):
     # runners
     #run_hit_analyzer()
     #run_hit_distribution()
-    run_logitudinal_profile()
+    #run_logitudinal_profile()
     run_energy_resolution()
 
