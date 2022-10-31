@@ -495,11 +495,11 @@ DigiSim::DigiSim(const edm::ParameterSet& iconfig) : //{{{
     total_SIM_set2 = fs->make<TH1D>("total_SIM_set2" , "total_SIM_set2" , 200 , 0. , 200.);
 
     // energy projected from MIP to SIM_set0
-    //total_ENE_odd  = fs->make<TH1D>("total_ENE_odd"  , "total_ENE_odd" , 4000 , 0. , 400.);
-    //total_ENE_even = fs->make<TH1D>("total_ENE_even" , "total_ENE_even" , 4000 , 0. , 400.);
-    total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 4000 , 0. , 400.);
-    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 4000 , 0. , 400.);
-    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 4000 , 0. , 400.);
+    //total_ENE_odd  = fs->make<TH1D>("total_ENE_odd"  , "total_ENE_odd" , 5000 , 0. , 500.);
+    //total_ENE_even = fs->make<TH1D>("total_ENE_even" , "total_ENE_even" , 5000 , 0. , 500.);
+    total_ENE_set0 = fs->make<TH1D>("total_ENE_set0" , "total_ENE_set0" , 5000 , 0. , 500.);
+    total_ENE_set1 = fs->make<TH1D>("total_ENE_set1" , "total_ENE_set1" , 5000 , 0. , 500.);
+    total_ENE_set2 = fs->make<TH1D>("total_ENE_set2" , "total_ENE_set2" , 5000 , 0. , 500.);
 
     std::ostringstream hnamestr (std::ostringstream::ate);
     for(int i=0;i<26;i++) {

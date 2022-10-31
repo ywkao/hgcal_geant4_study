@@ -274,9 +274,9 @@ def make_simple_plot(energyType, dir_output, selection):
             # result
             #--------------------------------------------------
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
+            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("def.", "def.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
             latex.SetTextColor(ROOT.kGreen+3)
-            latex.DrawLatex( 0.47, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[1], labels[1], pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
+            latex.DrawLatex( 0.47, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("alt.", "alt.", pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
 
         else:
             xRanges = fit_constraints["set0"][energyType]["xRanges"]
@@ -284,7 +284,7 @@ def make_simple_plot(energyType, dir_output, selection):
             pu.draw_and_fit_a_histogram(c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
 
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % (labels[0], labels[0], pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
+            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("tot.", "tot.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
 
         c1.Update()
         pu.annotate()
@@ -294,7 +294,7 @@ def make_simple_plot(energyType, dir_output, selection):
 
 #----------------------------------------------------------------------------------------------------
 
-def run_linear_fit(dir_output, label, dx, dy):
+def run_linear_fit(dir_output, fit_result, label, dx, dy):
     x_range = m.linear_fit_parameter[label]["linear_fit_xrange"]
     y_range = m.draw_options_for_run_summary[m.type_resolution]["linear_fit_yrange"]
 
@@ -305,7 +305,7 @@ def run_linear_fit(dir_output, label, dx, dy):
     lex = [ dx[ene]["sigma"] for ene in Energy ]
     ley = [ dy[ene]["sigma"] for ene in Energy ]
 
-    gr = pu.get_graph_from_list("Energy (MIPs)", "Generated shower energy (MeV)", lx, ly, lex, ley, ROOT.kBlack)
+    gr = pu.get_graph_from_list("Energy (MIPs)", "Calibrated energy (GeV)", lx, ly, lex, ley, ROOT.kBlack)
 
     c1.cd()
     c1.Clear()
@@ -315,6 +315,24 @@ def run_linear_fit(dir_output, label, dx, dy):
 
     f1 = ROOT.TF1('f1', "[0] + [1]*x", x_range[0], x_range[1])
     gr.Fit(f1, "", "", x_range[0], x_range[1])
+
+    func = gr.GetListOfFunctions().FindObject("f1")
+    fit_intercept       = func.GetParameter(0)
+    fit_slope           = func.GetParameter(1)
+    fit_error_intercept = func.GetParError(0)
+    fit_error_slope     = func.GetParError(1)
+
+    if not "linear_fit" in fit_result.keys(): fit_result["linear_fit"] = {}
+    fit_result["linear_fit"][label] = {}
+    fit_result["linear_fit"][label]["slope"] = fit_slope
+    fit_result["linear_fit"][label]["intercept"] = fit_intercept
+    fit_result["linear_fit"][label]["error_slope"] = fit_error_slope
+    fit_result["linear_fit"][label]["error_intercept"] = fit_error_intercept
+
+    print ">>> fit_intercept =", fit_intercept
+    print ">>> fit_slope =", fit_slope
+    print ">>> fit_error_intercept =", fit_error_intercept
+    print ">>> fit_error_slope =", fit_error_slope
 
     my_stat_pos = [0.42, 0.87, 0.15, 0.15]
     ROOT.gStyle.SetStatX(my_stat_pos[0])
@@ -329,12 +347,41 @@ def run_linear_fit(dir_output, label, dx, dy):
 
 #----------------------------------------------------------------------------------------------------
 
-def perform_consistency_check(title, e1, e2, r1, r2):
+def perform_consistency_check_v2(title, energy, unc_enegy, sigma, unc_sigma):
+    e1 = energy[0]
+    e2 = energy[1]
+    s1 = sigma[0]
+    s2 = sigma[1]
+
+    errE1 = unc_enegy[0]
+    errE2 = unc_enegy[1]
+    errS1 = unc_sigma[0]
+    errS2 = unc_sigma[1]
+
+    ratio = e2/e1
+    res_ratio = s2/s1
+    test = math.sqrt(1./ratio) * res_ratio
+    uncertainty = test * math.sqrt( 0.25*math.pow(errE1/e1,2) + 0.25*math.pow(errE2/e2,2) + math.pow(errS1/s1,2) + math.pow(errS2/s2,2) )
+
+    print ">>> consitency check %5s: test = %.2f #pm %.2f (e2/e1 = %.2f)" % (title, test, uncertainty, ratio)
+
+def perform_consistency_check_v1(title, energy, unc_enegy, resolution, unc_resolution):
+    e1 = energy[0]
+    e2 = energy[1]
+    r1 = resolution[0]
+    r2 = resolution[1]
+
+    errE1 = unc_enegy[0]
+    errE2 = unc_enegy[1]
+    errR1 = unc_resolution[0]
+    errR2 = unc_resolution[1]
+
     ratio = e2/e1
     res_ratio = r2/r1
-    #test = ratio * math.pow(res_ratio, 2)
     test = math.sqrt(ratio) * res_ratio
-    print ">>> consitency check %5s: test = %.2f (e2/e1 = %.2f)" % (title, test, ratio)
+    uncertainty = test * math.sqrt( 0.25*math.pow(errE1/e1,2) + 0.25*math.pow(errE2/e2,2) + math.pow(errR1/r1,2) + math.pow(errR2/r2,2) )
+
+    print ">>> consitency check %5s: test = %.2f #pm %.2f (e2/e1 = %.2f)" % (title, test, uncertainty, ratio)
 
 def run_summary(title, dy1, dy2):
     dir_output = m.specified_directory
@@ -352,6 +399,8 @@ def run_summary(title, dy1, dy2):
     reference_line = options["reference_line"]
     leg_option     = options["leg_option"]
     c3.SetLogy(options["useLog"])
+
+    print title, "yrange = ", yrange
 
     # list of x and y
     Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
@@ -405,7 +454,51 @@ def run_summary(title, dy1, dy2):
 
             # consistency check
             #if "MIP" in m.energy_type:
-            perform_consistency_check(ene, dy1[ene]["mean"], dy2[ene]["mean"], ly1[-1], ly2[-1])
+
+            my_energy = [dy1[ene]["mean"], dy2[ene]["mean"]]
+            my_energy_unc = [dy1[ene]["error_mean"], dy2[ene]["error_mean"]]
+            my_res = [ly1[-1], ly2[-1]]
+            my_res_unc = [ley1[-1], ley2[-1]]
+            my_sigma = [dy1[ene]["sigma"], dy2[ene]["sigma"]]
+            my_sigma_unc = [dy1[ene]["error_sigma"], dy2[ene]["error_sigma"]]
+
+            #perform_consistency_check_v1( ene, my_energy, my_energy_unc, my_res, my_res_unc )
+            perform_consistency_check_v2( ene, my_energy, my_energy_unc, my_sigma, my_sigma_unc )
+
+        if "bias" in title:
+            if m.energy_type == "set1_set2_MIPs":
+                ref = ( dy1[ene]["mean"] + dy2[ene]["mean"] ) / 2.
+                rel_e1 = dy1[ene]["mean"] / ref
+                rel_e2 = dy2[ene]["mean"] / ref
+                unc_rel_e1 = dy1[ene]["error_mean"] / ref
+                unc_rel_e2 = dy2[ene]["error_mean"] / ref
+
+                bias_e1 = rel_e1 - 1.
+                bias_e2 = rel_e2 - 1.
+
+                ly1.append(bias_e1)
+                ley1.append(unc_rel_e1)
+
+                ly2.append(bias_e2)
+                ley2.append(unc_rel_e2)
+
+            if m.energy_type == "set1_set2_MeV":
+                rel_e1 = dy1[ene]["mean"] / float(ene.split("E")[1])
+                rel_e2 = dy2[ene]["mean"] / float(ene.split("E")[1])
+                unc_rel_e1 = dy1[ene]["error_mean"] / float(ene.split("E")[1])
+                unc_rel_e2 = dy2[ene]["error_mean"] / float(ene.split("E")[1])
+
+                bias_e1 = rel_e1 - 1.
+                bias_e2 = rel_e2 - 1.
+
+                ly1.append(bias_e1)
+                ley1.append(unc_rel_e1)
+
+                ly2.append(bias_e2)
+                ley2.append(unc_rel_e2)
+
+        #if title == "linearity":
+        #    mip = dy1[ene]["mean"] / fit_result["linear_fit"]["slope"]
 
         if title == "changes_in_resolution":
             res_mev = dy1["set1_set2_MeV"][ene]["mean"]
@@ -466,16 +559,18 @@ def run_summary(title, dy1, dy2):
             err2 = ley2[i]
             resolution_E_set2 = ly2[i]
 
-            difference = (resolution_E_set1 - resolution_E_set2) / resolution_E_set2  
-            ratio = resolution_E_set1 / resolution_E_set2
+            #difference = (resolution_E_set1 - resolution_E_set2) / resolution_E_set2  
+            ratio = resolution_E_set2 / resolution_E_set1
             uncertainty = ratio * math.sqrt(pow(err1/resolution_E_set1, 2) + pow(err2/resolution_E_set2, 2))
             
-            #print "check:", i, difference, uncertainty
+            print ">>> check resolution:", i, ratio, uncertainty
 
-            ly.append(difference)
+            ly.append(ratio)
             ley.append(uncertainty)
 
-        ytitle = "#frac{#color[%d]{Blue} #minus #color[%d]{Green}}{#color[%d]{Green}}" % (ROOT.kBlue, ROOT.kGreen+3, ROOT.kGreen+3)
+        #ytitle = "#frac{#color[%d]{Blue} #minus #color[%d]{Green}}{#color[%d]{Green}}" % (ROOT.kBlue, ROOT.kGreen+3, ROOT.kGreen+3)
+        #ytitle = "#frac{#color[%d]{Green}}{#color[%d]{Blue}}" % (ROOT.kGreen+3, ROOT.kBlue)
+        ytitle = "#frac{#color[%d]{E (alternative)}}{#color[%d]{E (default)}}" % (ROOT.kGreen+3, ROOT.kBlue)
         gr_ratio = pu.get_graph_from_list("Positron energy (GeV)", ytitle , lx, ly, lex, ley,  ROOT.kBlack)
         gr_ratio.SetLineWidth(2)
         gr_ratio.SetMarkerStyle(20)
@@ -489,13 +584,10 @@ def run_summary(title, dy1, dy2):
         gr_ratio.GetXaxis().SetLabelOffset(0.06)
 
         gr_ratio.GetYaxis().SetNdivisions(505)
-        if m.type_resolution == "resolution_clustered":
-            gr_ratio.GetYaxis().SetRangeUser(-0.25, 0.2) # along Y
-        if m.type_resolution == "resolution_unclustered":
-            if "MIP" in m.energy_type:
-                gr_ratio.GetYaxis().SetRangeUser(-0.5, 0.2) # along Y
-            else:
-                gr_ratio.GetYaxis().SetRangeUser(-0.2, 0.2) # along Y
+        if m.energy_type == "set1_set2_MIPs":
+            gr_ratio.GetYaxis().SetRangeUser(0.90, 1.70) # along Y
+        if m.energy_type == "set1_set2_MeV":
+            gr_ratio.GetYaxis().SetRangeUser(0.70, 1.30) # along Y
         gr_ratio.GetYaxis().SetTitleFont(42)
         gr_ratio.GetYaxis().SetTitleSize(0.10)
         gr_ratio.GetYaxis().SetTitleOffset(0.35)
@@ -522,6 +614,19 @@ def run_summary(title, dy1, dy2):
         ratPad.cd()
         gr_ratio.Draw("ap")
 
+        #if title == "resolution_clustered" or title == "resolution_unclustered":
+        #    print ">>>>> perform fit"
+        #    f1 = ROOT.TF1('f1', "[0]", 0, 320)
+        #    gr_ratio.Fit(f1, "", "", 0, 320)
+
+        if draw_goodness:
+            #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
+            line = ROOT.TLine( c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line )
+            line.SetLineColor(ROOT.kRed)
+            line.SetLineStyle(2)
+            line.SetLineWidth(2)
+            line.Draw()
+
 
     else:
         gr1.GetXaxis().SetTitleSize(0.04)
@@ -538,7 +643,6 @@ def run_summary(title, dy1, dy2):
             line.SetLineStyle(2)
             line.SetLineWidth(2)
             line.Draw()
-
 
     token = title if not "resolution" in title else "resolution"
     output = dir_output + "/summary_" + token + "_" + m.energy_type

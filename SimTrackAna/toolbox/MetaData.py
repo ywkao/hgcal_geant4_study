@@ -44,12 +44,12 @@ draw_options_for_run_summary = {
         "yrange"            : [0.000, 0.160],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
-        "draw_goodness"     : False,
+        "draw_goodness"     : True,
         "draw_lower_pad"    : True,
-        "reference_line"    : 1.0, # dummy
+        "reference_line"    : 1.0,
         "useLog"            : 0,
 
-        "linear_fit_yrange" : [0, 300],
+        "linear_fit_yrange" : [0, 400],
         #"use_bin_width"     : True,
         "use_bin_width"     : False,
     },
@@ -60,13 +60,57 @@ draw_options_for_run_summary = {
         "yrange"            : [0.000, 0.160],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
-        "draw_goodness"     : False,
+        "draw_goodness"     : True,
         "draw_lower_pad"    : True,
-        "reference_line"    : 1.0, # dummy
+        "reference_line"    : 1.0,
         "useLog"            : 0,
 
-        "linear_fit_yrange" : [0, 100],
+        "linear_fit_yrange" : [0, 400],
         "use_bin_width"     : False,
+    },
+
+    "bias_unclustered_MIP": {
+        "ytitle"            : "Bias",
+        "yrange"            : [-0.10, 0.15],
+        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : True,
+        "draw_lower_pad"    : False,
+        "reference_line"    : 0.0,
+        "useLog"            : 0,
+    },
+
+    "bias_unclustered_MeV": {
+        "ytitle"            : "Bias",
+        "yrange"            : [-0.04, 0.12],
+        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : True,
+        "draw_lower_pad"    : False,
+        "reference_line"    : 0.0,
+        "useLog"            : 0,
+    },
+
+    "bias_clustered_MIP": {
+        "ytitle"            : "Bias",
+        "yrange"            : [-0.3, 0.3],
+        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : True,
+        "draw_lower_pad"    : False,
+        "reference_line"    : 0.0,
+        "useLog"            : 0,
+    },
+
+    "bias_clustered_MeV": {
+        "ytitle"            : "Bias",
+        "yrange"            : [-0.3, 0.3],
+        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : True,
+        "draw_lower_pad"    : False,
+        "reference_line"    : 0.0,
+        "useLog"            : 0,
     },
 
     "changes_in_resolution": {
@@ -79,7 +123,7 @@ draw_options_for_run_summary = {
         "reference_line"    : 0.0,
         "useLog"            : 0,
 
-        "linear_fit_yrange" : [0, 100],
+        "linear_fit_yrange" : [0, 400],
         "use_bin_width"     : False,
     },
 }
@@ -175,7 +219,7 @@ fit_constraints_v1p1 = {
     "set1set2" : {
         "MIP" : { "xRanges" : [[11500, 20500], [3000, 12000], [0, 9000]], },
         "SIM" : { "xRanges" : [[0, 300], [0, 300], [0, 300]] },
-        "ENE" : { "xRanges" : [[270, 400], [80, 180], [10, 60]] },
+        "ENE" : { "xRanges" : [[270, 440], [80, 180], [10, 60]] },
         #"ENE" : { "xRanges" : [[0, 400000], [0, 400000], [0, 400000]] },
         #"ENE" : { "xRanges" : [[140, 200], [58, 98], [25, 65]] },
     },
@@ -262,15 +306,15 @@ input_files = {
     ],
 
     "R90To130_v1p1" : [
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v1p2" : [
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220930_R90To130/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E60.root",
     ],
 
     # v2: SR = linear track

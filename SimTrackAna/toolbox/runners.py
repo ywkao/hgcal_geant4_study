@@ -67,7 +67,7 @@ def run_hit_analyzer():
     output_directory = m.specified_directory + "/hit_distributions"
     pu.create_directory(output_directory)
 
-    analyzer = an.HitAnalyzer(pl.myRootfiles, output_directory, tags)
+    analyzer = an.HitAnalyzer(pl.myRootfiles, output_directory, m.tags)
     analyzer.loop()
 
 def run_fitters_and_summary():
@@ -92,9 +92,9 @@ def run_fitters_and_summary():
                 print ""
 
     # linear fit
-    pl.run_linear_fit(output_directory, "set0", fit_result["MIP"]["set0"], fit_result["SIM"]["set0"])
-    pl.run_linear_fit(output_directory, "set0_set1", fit_result["MIP"]["set1"], fit_result["SIM"]["set0"])
-    pl.run_linear_fit(output_directory, "set0_set2", fit_result["MIP"]["set2"], fit_result["SIM"]["set0"])
+    pl.run_linear_fit(output_directory, fit_result, "set0"     , fit_result["ENE"]["set0"], fit_result["MIP"]["set0"])
+    pl.run_linear_fit(output_directory, fit_result, "set0_set1", fit_result["ENE"]["set1"], fit_result["MIP"]["set1"])
+    pl.run_linear_fit(output_directory, fit_result, "set0_set2", fit_result["ENE"]["set2"], fit_result["MIP"]["set2"])
 
     # summary
     if m.enable_check_odd_even:
@@ -104,27 +104,30 @@ def run_fitters_and_summary():
         pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
         pl.run_summary(m.type_resolution, fit_result["MIP"]["odd"], fit_result["MIP"]["even"])
 
+    
     m.energy_type = "set1_set2_MIPs"
-    m.labels = ["E_set1_MIP", "E_set2_MIP"]
-    #m.resolution[m.energy_type] = {"set1":{}, "set2":{}}
+    m.labels = ["E_default_MIP", "E_alternative_MIP"]
     m.resolution["set1"][m.energy_type] = {}
     m.resolution["set2"][m.energy_type] = {}
     pl.run_summary("pvalue", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
     pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
     pl.run_summary(m.type_resolution, fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
+    pl.run_summary(m.bias+"_MIP", fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
 
     m.energy_type = "set1_set2_MeV"
-    m.labels = ["E_set1_MeV", "E_set2_MeV"]
-    #m.resolution[m.energy_type] = {"set1":{}, "set2":{}}
+    m.labels = ["E_default_MeV", "E_alternative_MeV"]
     m.resolution["set1"][m.energy_type] = {}
     m.resolution["set2"][m.energy_type] = {}
     pl.run_summary("pvalue", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
     pl.run_summary("chi2ndf", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
     pl.run_summary(m.type_resolution, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
+    pl.run_summary(m.bias+"_MeV", fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
 
     m.energy_type = "changes_in_resolution"
-    m.labels = ["E_set1", "E_set2"]
+    m.labels = ["E_default", "E_alternative"]
     pl.run_summary("changes_in_resolution", m.resolution["set1"], m.resolution["set2"])
+
+    #pl.run_summary("linearity", m.resolution["set1"], m.resolution["set2"])
 
 #----------------------------------------------------------------------------------------------------
 
@@ -150,6 +153,6 @@ def run_manager(myfin, tags, fit_constraints):
     # runners
     #run_hit_analyzer()
     #run_hit_distribution()
-    run_logitudinal_profile()
+    #run_logitudinal_profile()
     run_energy_resolution()
 

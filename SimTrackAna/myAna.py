@@ -10,14 +10,21 @@ eos = "./eos"
 
 def perform_unclustered_study():
     m.type_resolution = "resolution_unclustered"
+    m.bias = "bias_unclustered"
     m.json_fit_parameters = "./toolbox/unclustered_fit_parameters.json"
     m.json_fit_parameters_goodness = "./toolbox/unclustered_fit_parameters_goodness.json"
 
     target_directory = "R90To130_v1p6"
     target_directory = "R90To130_unclustered"
+    target_directory = "20221026"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
+
+    #m.tags = ["E300", "E100", "E20"]
+    #fit_constraints = m.fit_constraints_v1p1
+    #ru.run_manager( m.input_files["R90To130_v1p1"], m.tags, fit_constraints )
+    #return
 
     if run_full_commands:
         tags = ["E300", "E100", "E20"]
@@ -33,12 +40,13 @@ def perform_unclustered_study():
 
 def perform_clustered_study():
     m.type_resolution = "resolution_clustered"
+    m.bias = "bias_clustered"
     m.json_fit_parameters = "./toolbox/clustered_fit_parameters.json"
     m.json_fit_parameters_goodness = "./toolbox/clustered_fit_parameters_goodness.json"
 
     target_directory = "R90To130_v2p6"
-    target_directory = "R90To130_clustered"
     target_directory = "20221005"
+    target_directory = "R90To130_clustered"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -61,6 +69,6 @@ if __name__ == "__main__":
     m.enable_check_odd_even = False
     run_full_commands = False 
     run_full_commands = True
-    #perform_unclustered_study()
-    perform_clustered_study()
+    perform_unclustered_study()
+    #perform_clustered_study()
 

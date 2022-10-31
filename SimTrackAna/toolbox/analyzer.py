@@ -41,9 +41,12 @@ class HitAnalyzer:
             #--------------------------------------------------
             # total event
             #--------------------------------------------------
-            #self.check_individual_event = False 
-            #self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
-            #self.__retrieve_hit_plots(tree)
+            self.flag_make_plots = True
+            self.check_individual_event = False 
+            self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
+            self.__retrieve_hit_plots(tree)
+
+            break
 
             #--------------------------------------------------
             # specific event
