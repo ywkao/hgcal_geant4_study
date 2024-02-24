@@ -8,12 +8,6 @@ process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.Geometry.GeometryExtended2026D86Reco_cff')
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
 
-#import argparse
-#parser = argparse.ArgumentParser()
-#parser.add_argument("-t", help = "specify a tag to run", type=str)
-#args = parser.parse_args()
-#tag = args.t
-
 path = "file:/eos/user/y/ykao/www/HGCAL_Geant4_project"
 tag = "D86_R90To130_E100"
 
@@ -21,17 +15,15 @@ process.source = cms.Source("PoolSource",
         #fileNames = cms.untracked.vstring('file:/home/mikumar/t3store3/workarea/CMSSW_9_4_9/src/tmp/step2_1.root')
         #fileNames = cms.untracked.vstring('file:/eos/user/y/ykao/www/HGCAL_Geant4_project/testbeam_positron_D86_R80To100_E100/step2.root')
         fileNames = cms.untracked.vstring( path + '/testbeam_positron_' + tag + '/step2.root')
+        #fileNames = cms.untracked.vstring('file:/eos/cms/store/group/dpg_hgcal/tb_hgcal/2022/sps_oct2022/pion_beam_150_320fC/beam_run/run_20221011_130925/beam_run0.root')
         )
 
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1))
 
-
 process.prodEE_DigiSim = cms.EDAnalyzer('Calibration',
-        #simtrack = cms.untracked.InputTag("g4SimHits"),
-        #digihits = cms.untracked.InputTag("hgcalDigis","EE"),# "HLT"),
         simhits = cms.untracked.InputTag("g4SimHits","HGCHitsEE", "SIM"),
-        digihits = cms.untracked.InputTag("simHGCalUnsuppressedDigis","EE"),# "HLT"),
+        digihits = cms.untracked.InputTag("simHGCalUnsuppressedDigis","EE"),
         generatorSmeared = cms.untracked.InputTag("generatorSmeared"),
         genParticles = cms.untracked.InputTag("genParticles"),
         Detector   = cms.string("HGCalEESensitive"),
@@ -39,15 +31,6 @@ process.prodEE_DigiSim = cms.EDAnalyzer('Calibration',
         Verbosity = cms.untracked.int32(0),
         SampleIndx = cms.untracked.int32(2),
         mightGet = cms.optional.untracked.vstring,
-
-        #HGCEEdigiCollection = cms.InputTag('hgcalDigis:EE'),
-        #HGCHEFdigiCollection = cms.InputTag('hgcalDigis:HEfront'),
-        #HGCHEBdigiCollection = cms.InputTag('hgcalDigis:HEback'),
-        #HGCHFNosedigiCollection = cms.InputTag('hfnoseDigis:HFNose'),
-
-        #HGCEEdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis:EE'),
-        #HGCHEFdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis:HEfront'),
-        #HGCHEBdigiCollection = cms.InputTag('simHGCalUnsuppressedDigis:HEback'),
 
         HGCEEConfig = cms.PSet(
             isSiFE = cms.bool(True),
@@ -105,22 +88,8 @@ process.prodEE_DigiSim = cms.EDAnalyzer('Calibration',
         algo = cms.string("HGCalUncalibRecHitWorkerWeights")
         )
 
-process.prodHEF_DigiSim = process.prodEE_DigiSim.clone(
-        simhits = cms.untracked.InputTag("g4SimHits","HGCHitsHEfront", "SIM"),
-        digihits = cms.untracked.InputTag("simHGCalUnsuppressedDigis","HEfront"),
-        Detector = cms.string("HGCalHESiliconSensitive"),
-        )
-
-process.prodHEB_DigiSim = process.prodEE_DigiSim.clone(
-        simhits = cms.untracked.InputTag("g4SimHits","HGCHitsHEback", "SIM"),
-        digihits = cms.untracked.InputTag("simHGCalUnsuppressedDigis","HEback"),
-        Detector = cms.string("HGCalHEScintillatorSensitive"),
-        )
-
-
 process.TFileService = cms.Service("TFileService",
         fileName = cms.string('rootfiles/geantoutput_' + tag + '.root')
         )
 
 process.p = cms.Path(process.prodEE_DigiSim)
-#process.p = cms.Path(process.prodEE_DigiSim*process.prodHEF_DigiSim*process.prodHEB_DigiSim)

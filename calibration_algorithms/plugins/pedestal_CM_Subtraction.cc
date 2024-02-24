@@ -31,7 +31,11 @@ void Calibration::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     
     printf("Hello World!\n");
 
-    // loop
+    //*** how to read root file from cmssw python config? ***//
+    // >>> Fatal: WrongFileFormat, not edm ROOT file (no TTree named Events)
+
+
+    //*** loop over loaded file from constructor ***//
     Long64_t nentries = fChain->GetEntriesFast();
     Long64_t nbytes = 0, nb = 0;
     printf(">>> check nentries = %lld\n", nentries);
@@ -40,6 +44,8 @@ void Calibration::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
        Long64_t ientry = LoadTree(jentry);
        if (ientry < 0) break;
        nb = fChain->GetEntry(jentry);   nbytes += nb;
+       print_information();
+       if (jentry>=10) break;
        // if (Cut(ientry) < 0) continue;
     }
 

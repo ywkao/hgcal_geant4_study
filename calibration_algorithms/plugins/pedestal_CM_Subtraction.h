@@ -151,6 +151,7 @@ class Calibration : public edm::one::EDAnalyzer<edm::one::SharedResources> {
         virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
         virtual void endJob() override;
 
+        virtual void print_information();
 
         // load test beam data
         int event;
@@ -399,3 +400,16 @@ void Calibration::reset_tree_variables()
     tr_is_Scintillator = false;
 }
 
+void Calibration::print_information()
+{
+    printf("event = %d \n", event);
+    printf("corruption = %d \n", corruption);
+    printf("chip = %d \n", chip);
+    printf("half = %d \n", half);
+    printf("channel = %d \n", channel);
+    printf("adc = %d \n", adc);
+    printf("toa = %d \n", toa);
+    printf("tot = %d \n", tot);
+    printf("trigtime = %d \n", trigtime);
+    printf("\n----------------------------------------------------------------------\n");
+}
