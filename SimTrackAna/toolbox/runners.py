@@ -148,11 +148,11 @@ def run_manager(myfin, tags, fit_constraints):
     pl.tags = tags
     pl.myRootfiles = myfin
     pl.fit_constraints = fit_constraints
-    for tag in tags: pl.label[tag] = tag.split("E")[1] + " GeV"
+    for tag in tags: pl.label[tag] = tag.split("E")[1] + " GeV" if "E" in tag else tag
 
     # runners
-    #run_hit_analyzer()
-    #run_hit_distribution()
-    #run_logitudinal_profile()
-    run_energy_resolution()
+    # run_hit_analyzer()
+    # run_hit_distribution()
+    run_logitudinal_profile()
+    # run_energy_resolution()
 
