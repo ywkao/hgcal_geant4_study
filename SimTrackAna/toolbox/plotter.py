@@ -277,6 +277,9 @@ def make_simple_plot(energyType, dir_output, selection):
             latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("def.", "def.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
             latex.SetTextColor(ROOT.kGreen+3)
             latex.DrawLatex( 0.47, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("alt.", "alt.", pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
+            latex.SetTextColor(ROOT.kBlack)
+            latex.SetTextSize(30)
+            latex.DrawLatex( 0.30, 0.82, tags[i].replace('E','E = ')+" GeV")
 
         else:
             xRanges = fit_constraints["set0"][energyType]["xRanges"]
@@ -285,6 +288,9 @@ def make_simple_plot(energyType, dir_output, selection):
 
             latex.SetTextColor(ROOT.kBlue)
             latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("tot.", "tot.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
+            latex.SetTextColor(ROOT.kBlack)
+            latex.SetTextSize(30)
+            latex.DrawLatex( 0.30, 0.82, tags[i].replace('E','E = ')+" GeV")
 
         c1.Update()
         pu.annotate()
@@ -389,6 +395,11 @@ def run_summary(title, dy1, dy2):
 
     c3.cd()
     c3.Clear()
+
+    if title=="pvalue" or title=="chi2ndf":
+        c3.SetRightMargin(0.0)
+    else:
+        c3.SetRightMargin(0.10)
 
     # title and range
     ytitle         = options["ytitle"]

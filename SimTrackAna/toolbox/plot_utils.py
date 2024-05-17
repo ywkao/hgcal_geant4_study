@@ -268,7 +268,7 @@ def draw_and_fit_a_histogram(c1, h, myTags, xtitle, max_value, xRange, color, st
 
     h.Draw()
     h.GetFunction("gaus").SetLineStyle(2)
-    h.GetFunction("gaus").SetLineColorAlpha(ROOT.kRed, 0.40)
+    h.GetFunction("gaus").SetLineColorAlpha(ROOT.kRed, 0.60)
     h.GetFunction("gaus").Draw("same")
 
     c1.Update()

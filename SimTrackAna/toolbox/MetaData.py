@@ -82,7 +82,7 @@ draw_options_for_run_summary = {
 
     "bias_unclustered_MeV": {
         "ytitle"            : "Bias",
-        "yrange"            : [-0.04, 0.12],
+        "yrange"            : [-0.06, 0.14],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,

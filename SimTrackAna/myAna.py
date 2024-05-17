@@ -86,7 +86,7 @@ def perform_unclustered_study():
 
     target_directory = "R90To130_v1p6"
     target_directory = "R90To130_unclustered"
-    target_directory = "20240224"
+    target_directory = "R90To130_unclustered_20240516"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     m.enable_check_odd_even = False
     run_full_commands = False 
     run_full_commands = True
-    perform_lognitudinal_only()
-    #perform_unclustered_study()
+    #perform_lognitudinal_only()
+    perform_unclustered_study()
     #perform_clustered_study()
 

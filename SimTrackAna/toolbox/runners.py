@@ -82,8 +82,9 @@ def run_fitters_and_summary():
     with open(m.json_fit_parameters_goodness, 'r') as f: fit_result_goodness = json.load(f)
 
     # report
-    if False:
-        for energyType in ["MIP", "SIM"]:
+    if True:
+        print "[INFO] report fit result:"
+        for energyType in ["MIP", "SIM", "ENE"]:
             for tag in ["E20", "E60", "E100", "E175", "E225", "E300"]:
                 print energyType, tag
                 print fit_result[energyType]["set0"][tag]
@@ -92,9 +93,9 @@ def run_fitters_and_summary():
                 print ""
 
     # linear fit
-    pl.run_linear_fit(output_directory, fit_result, "set0"     , fit_result["ENE"]["set0"], fit_result["MIP"]["set0"])
-    pl.run_linear_fit(output_directory, fit_result, "set0_set1", fit_result["ENE"]["set1"], fit_result["MIP"]["set1"])
-    pl.run_linear_fit(output_directory, fit_result, "set0_set2", fit_result["ENE"]["set2"], fit_result["MIP"]["set2"])
+    pl.run_linear_fit(output_directory, fit_result, "set0"     , fit_result["MIP"]["set0"], fit_result["ENE"]["set0"])
+    pl.run_linear_fit(output_directory, fit_result, "set0_set1", fit_result["MIP"]["set1"], fit_result["ENE"]["set1"])
+    pl.run_linear_fit(output_directory, fit_result, "set0_set2", fit_result["MIP"]["set2"], fit_result["ENE"]["set2"])
 
     # summary
     if m.enable_check_odd_even:
@@ -152,7 +153,7 @@ def run_manager(myfin, tags, fit_constraints):
 
     # runners
     # run_hit_analyzer()
-    # run_hit_distribution()
-    run_logitudinal_profile()
-    # run_energy_resolution()
+    run_hit_distribution()
+    # run_logitudinal_profile()
+    run_energy_resolution()
 
