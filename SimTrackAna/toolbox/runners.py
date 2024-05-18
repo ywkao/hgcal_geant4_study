@@ -67,7 +67,7 @@ def run_hit_analyzer():
     output_directory = m.specified_directory + "/hit_distributions"
     pu.create_directory(output_directory)
 
-    analyzer = an.HitAnalyzer(pl.myRootfiles, output_directory, m.tags)
+    analyzer = an.HitAnalyzer(pl.myRootfiles, output_directory, pl.tags)
     analyzer.loop()
 
 def run_fitters_and_summary():
@@ -152,8 +152,8 @@ def run_manager(myfin, tags, fit_constraints):
     for tag in tags: pl.label[tag] = tag.split("E")[1] + " GeV" if "E" in tag else tag
 
     # runners
-    # run_hit_analyzer()
+    run_hit_analyzer()
     run_hit_distribution()
-    # run_logitudinal_profile()
+    run_logitudinal_profile()
     run_energy_resolution()
 

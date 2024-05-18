@@ -46,8 +46,6 @@ class HitAnalyzer:
             self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + ".pdf"
             self.__retrieve_hit_plots(tree)
 
-            break
-
             #--------------------------------------------------
             # specific event
             #--------------------------------------------------
@@ -405,7 +403,8 @@ class HitAnalyzer:
             idx = layer-1
             print v_eff[idx], v_eff_unc[idx]
 
-        output_file = self.output_directory + "/efficiency_profile" + self.tag + "_evtNo%d" % self.evtNo
+        trailing =  "_evtNo%d" % self.evtNo if self.check_individual_event else "_total"
+        output_file = self.output_directory + "/efficiency_profile" + self.tag + trailing
         gr = pu.get_graph_from_list("Layer depth [ X_{0} ]", "Efficiency", pu.x_D86, v_eff, [0.]*26, v_eff_unc, ROOT.kBlack)
         gr.Draw("alp")
         self.canvas.SaveAs(output_file + ".png")
