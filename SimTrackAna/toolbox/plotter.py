@@ -302,16 +302,25 @@ def make_simple_plot(energyType, dir_output, selection):
 
 def run_linear_fit(dir_output, fit_result, label, dx, dy):
     x_range = m.linear_fit_parameter[label]["linear_fit_xrange"]
-    y_range = m.draw_options_for_run_summary[m.type_resolution]["linear_fit_yrange"]
-
+    y_range = m.linear_fit_parameter[label]["linear_fit_yrange"]
 
     Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
-    lx  = [ dx[ene]["mean"]  for ene in Energy ]
-    ly  = [ dy[ene]["mean"]  for ene in Energy ]
-    lex = [ dx[ene]["sigma"] for ene in Energy ]
-    ley = [ dy[ene]["sigma"] for ene in Energy ]
 
-    gr = pu.get_graph_from_list("Energy (MIPs)", "Calibrated energy (GeV)", lx, ly, lex, ley, ROOT.kBlack)
+    # E[MIP] vs E_beam (will extract slope for E_reco)
+    if "beam" in label:
+        lx  = [ float(ele[1:]) for ele in Energy ]
+        lex = [ 0.01*float(ele[1:]) for ele in Energy ] # unc. = 1% E_beam
+        ly  = [ dy[ene]["mean"]  for ene in Energy ]
+        ley = [ dy[ene]["sigma"] for ene in Energy ]
+        gr = pu.get_graph_from_list("E_{beam} [GeV]", "#LTE#GT [MIP]", lx, ly, lex, ley, ROOT.kBlack)
+
+    # previous study with x = E[MIP] and y = E[GeV] from the dE/dx method
+    else:
+        lx  = [ dx[ene]["mean"]  for ene in Energy ]
+        ly  = [ dy[ene]["mean"]  for ene in Energy ]
+        lex = [ dx[ene]["sigma"] for ene in Energy ]
+        ley = [ dy[ene]["sigma"] for ene in Energy ]
+        gr = pu.get_graph_from_list("Energy (MIPs)", "Calibrated energy (GeV)", lx, ly, lex, ley, ROOT.kBlack)
 
     c1.cd()
     c1.Clear()
@@ -347,7 +356,10 @@ def run_linear_fit(dir_output, fit_result, label, dx, dy):
     ROOT.gStyle.SetStatH(my_stat_pos[3])
 
     pu.annotate()
-    output = dir_output + "/correction_generatedShowerEnergy_MIPs_" + label
+    if "beam" in label:
+        output = dir_output + "/E_MIPs_" + label
+    else:
+        output = dir_output + "/correction_generatedShowerEnergy_MIPs_" + label
     c1.SaveAs(output + ".png")
     c1.SaveAs(output + ".pdf")
 
@@ -389,19 +401,19 @@ def perform_consistency_check_v1(title, energy, unc_enegy, resolution, unc_resol
 
     print ">>> consitency check %5s: test = %.2f #pm %.2f (e2/e1 = %.2f)" % (title, test, uncertainty, ratio)
 
-def run_summary(title, dy1, dy2):
+def run_summary(topic, dy1, dy2):
     dir_output = m.specified_directory
-    options = m.draw_options_for_run_summary[title]
+    options = m.draw_options_for_run_summary[topic]
 
     c3.cd()
     c3.Clear()
 
-    if title=="pvalue" or title=="chi2ndf":
+    if topic=="pvalue" or topic=="chi2ndf":
         c3.SetRightMargin(0.0)
     else:
         c3.SetRightMargin(0.10)
 
-    # title and range
+    # topic and range
     ytitle         = options["ytitle"]
     yrange         = options["yrange"]
     leg_pos        = options["leg_pos"]
@@ -411,7 +423,7 @@ def run_summary(title, dy1, dy2):
     leg_option     = options["leg_option"]
     c3.SetLogy(options["useLog"])
 
-    print title, "yrange = ", yrange
+    print topic, "yrange = ", yrange
 
     # list of x and y
     Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
@@ -420,13 +432,13 @@ def run_summary(title, dy1, dy2):
 
     ly1, ly2, ley1, ley2 = [], [], [], []
     for ene in Energy:
-        if title == "pvalue" :
+        if topic == "pvalue" :
             ly1.append( dy1[ene]["pvalue"] )
             ly2.append( dy2[ene]["pvalue"] )
             ley1.append(0.)
             ley2.append(0.)
 
-        if title == "chi2ndf":
+        elif topic == "chi2ndf":
             if not dy1[ene]["ndf"]>0 or not dy2[ene]["ndf"]>0:
                 ly1.append( dy1[ene]["chi2"] )
                 ly2.append( dy2[ene]["chi2"] )
@@ -438,7 +450,7 @@ def run_summary(title, dy1, dy2):
             ley1.append(0.)
             ley2.append(0.)
 
-        if title == "resolution_clustered" or title == "resolution_unclustered":
+        elif topic == "resolution_clustered" or topic == "resolution_unclustered":
             fit_mean = dy1[ene]["mean"]
             fit_sigma = dy1[ene]["sigma"]
             fitError_mean  = dy1[ene]["error_mean"]
@@ -476,7 +488,8 @@ def run_summary(title, dy1, dy2):
             #perform_consistency_check_v1( ene, my_energy, my_energy_unc, my_res, my_res_unc )
             perform_consistency_check_v2( ene, my_energy, my_energy_unc, my_sigma, my_sigma_unc )
 
-        if "bias" in title:
+        elif "bias" in topic:
+            # for E[MIP], use the average value of Eset1 and Eset2 as a reference value
             if m.energy_type == "set1_set2_MIPs":
                 ref = ( dy1[ene]["mean"] + dy2[ene]["mean"] ) / 2.
                 rel_e1 = dy1[ene]["mean"] / ref
@@ -493,6 +506,7 @@ def run_summary(title, dy1, dy2):
                 ly2.append(bias_e2)
                 ley2.append(unc_rel_e2)
 
+            # for E[GeV], use E_beam as a reference value
             if m.energy_type == "set1_set2_MeV":
                 rel_e1 = dy1[ene]["mean"] / float(ene.split("E")[1])
                 rel_e2 = dy2[ene]["mean"] / float(ene.split("E")[1])
@@ -508,10 +522,10 @@ def run_summary(title, dy1, dy2):
                 ly2.append(bias_e2)
                 ley2.append(unc_rel_e2)
 
-        #if title == "linearity":
+        #if topic == "linearity":
         #    mip = dy1[ene]["mean"] / fit_result["linear_fit"]["slope"]
 
-        if title == "changes_in_resolution":
+        elif topic == "changes_in_resolution":
             res_mev = dy1["set1_set2_MeV"][ene]["mean"]
             res_mip = dy1["set1_set2_MIPs"][ene]["mean"]
             err_mev = dy1["set1_set2_MeV"][ene]["error"]
@@ -546,7 +560,7 @@ def run_summary(title, dy1, dy2):
     gr1.SetMarkerStyle(20)
     gr1.SetMarkerSize(1.25)
     gr1.GetYaxis().SetTitleSize(0.05)
-    gr1.GetYaxis().SetTitleOffset(0.80)
+    gr1.GetYaxis().SetTitleOffset(1.0)
     gr1.GetXaxis().SetLimits(0, 350) # along X
     gr1.GetYaxis().SetRangeUser(yrange[0], yrange[1]) # along Y
 
@@ -625,7 +639,7 @@ def run_summary(title, dy1, dy2):
         ratPad.cd()
         gr_ratio.Draw("ap")
 
-        #if title == "resolution_clustered" or title == "resolution_unclustered":
+        #if topic == "resolution_clustered" or topic == "resolution_unclustered":
         #    print ">>>>> perform fit"
         #    f1 = ROOT.TF1('f1', "[0]", 0, 320)
         #    gr_ratio.Fit(f1, "", "", 0, 320)
@@ -655,7 +669,7 @@ def run_summary(title, dy1, dy2):
             line.SetLineWidth(2)
             line.Draw()
 
-    token = title if not "resolution" in title else "resolution"
+    token = topic if not "resolution" in topic else "resolution"
     output = dir_output + "/summary_" + token + "_" + m.energy_type
     c3.SaveAs(output + ".png")
     c3.SaveAs(output + ".pdf")

@@ -93,9 +93,15 @@ def run_fitters_and_summary():
                 print ""
 
     # linear fit
-    pl.run_linear_fit(output_directory, fit_result, "set0"     , fit_result["MIP"]["set0"], fit_result["ENE"]["set0"])
-    pl.run_linear_fit(output_directory, fit_result, "set0_set1", fit_result["MIP"]["set1"], fit_result["ENE"]["set1"])
-    pl.run_linear_fit(output_directory, fit_result, "set0_set2", fit_result["MIP"]["set2"], fit_result["ENE"]["set2"])
+    # x = E[MIP], y = E[GeV]
+    #pl.run_linear_fit(output_directory, fit_result, "set0"     , fit_result["MIP"]["set0"], fit_result["ENE"]["set0"])
+    #pl.run_linear_fit(output_directory, fit_result, "set0_set1", fit_result["MIP"]["set1"], fit_result["ENE"]["set1"])
+    #pl.run_linear_fit(output_directory, fit_result, "set0_set2", fit_result["MIP"]["set2"], fit_result["ENE"]["set2"])
+
+    # x = E_beam, y = E[MIP]
+    pl.run_linear_fit(output_directory, fit_result, "set0_beam", 0, fit_result["MIP"]["set0"])
+    pl.run_linear_fit(output_directory, fit_result, "set1_beam", 0, fit_result["MIP"]["set1"])
+    pl.run_linear_fit(output_directory, fit_result, "set2_beam", 0, fit_result["MIP"]["set2"])
 
     # summary
     if m.enable_check_odd_even:

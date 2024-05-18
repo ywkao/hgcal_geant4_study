@@ -138,9 +138,9 @@ def perform_clustered_study():
 
 if __name__ == "__main__":
     m.enable_check_odd_even = False
-    run_full_commands = False 
     run_full_commands = True
+    run_full_commands = False 
     #perform_lognitudinal_only()
-    #perform_unclustered_study()
-    perform_clustered_study()
+    perform_unclustered_study()
+    #perform_clustered_study()
 

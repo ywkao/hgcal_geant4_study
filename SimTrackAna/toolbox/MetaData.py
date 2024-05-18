@@ -70,7 +70,7 @@ draw_options_for_run_summary = {
     },
 
     "bias_unclustered_MIP": {
-        "ytitle"            : "Bias",
+        "ytitle"            : "Relative difference of E[MIP]",
         "yrange"            : [-0.10, 0.15],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
@@ -81,7 +81,7 @@ draw_options_for_run_summary = {
     },
 
     "bias_unclustered_MeV": {
-        "ytitle"            : "Bias",
+        "ytitle"            : "#frac{E_{reco.}#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.06, 0.14],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
@@ -136,14 +136,32 @@ draw_options_for_run_summary = {
 linear_fit_parameter = {
     "set0" : {
         "linear_fit_xrange" : [0, 30000],
+        "linear_fit_yrange" : [0, 400],
     },
 
     "set0_set1" : {
         "linear_fit_xrange" : [0, 20000],
+        "linear_fit_yrange" : [0, 400],
     },
 
     "set0_set2" : {
         "linear_fit_xrange" : [0, 20000],
+        "linear_fit_yrange" : [0, 400],
+    },
+
+    "set0_beam" : {
+        "linear_fit_xrange" : [0, 350], # GeV
+        "linear_fit_yrange" : [0, 30000], # MIPs
+    },
+
+    "set1_beam" : {
+        "linear_fit_xrange" : [0, 350], # GeV
+        "linear_fit_yrange" : [0, 30000], # MIPs
+    },
+
+    "set2_beam" : {
+        "linear_fit_xrange" : [0, 350], # GeV
+        "linear_fit_yrange" : [0, 30000], # MIPs
     },
 }
 
