@@ -196,6 +196,12 @@ def record_fit_result(myTags, func, result):
     fit_result[energyType][label][tag]["sigma"] = fit_sigma
     fit_result[energyType][label][tag]["error_sigma"] = fitError_sigma
 
+    # evaluate resolution & store it
+    resolution = fit_sigma/fit_mean
+    uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+    fit_result[energyType][label][tag]["resolution"] = resolution
+    fit_result[energyType][label][tag]["uncertainty_resolution"] = uncertainty
+
     # store chi2/ndf and p-value
     fit_result_goodness[energyType][label][tag] = {}
     fit_result_goodness[energyType][label][tag]["chi2"]   = result.Chi2()

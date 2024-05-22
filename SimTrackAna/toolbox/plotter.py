@@ -360,10 +360,17 @@ def run_linear_fit(dir_output, fit_result, label, dx, dy):
         for ene in Energy:
             data = dy[ene]
             result = {}
-            result["mean"] = data["mean"] / fit_slope
+            result["mean"] = (data["mean"] - fit_intercept) / fit_slope
             result["sigma"] = data["sigma"] / fit_slope
-            result["error_mean"] = result["mean"] * math.sqrt(pow(data["error_mean"]/data["mean"],2) + pow(fit_error_slope/fit_slope,2))
+            relative_error_mean = math.sqrt((pow(data["error_mean"],2)+pow(fit_error_intercept,2)) / pow((data["mean"]-fit_intercept),2))
+            result["error_mean"] = result["mean"] * math.sqrt(pow(relative_error_mean,2) + pow(fit_error_slope/fit_slope,2))
             result["error_sigma"] = result["sigma"] * math.sqrt(pow(data["error_sigma"]/data["sigma"],2) + pow(fit_error_slope/fit_slope,2))
+
+            resolution = result["sigma"]/result["mean"]
+            uncertainty = resolution * math.sqrt( math.pow(result["error_mean"]/result["mean"], 2) + math.pow(result["error_sigma"]/result["sigma"], 2) )
+            result["resolution"] = resolution
+            result["uncertainty_resolution"] = uncertainty
+
             fit_result["E_slope_method"][tag_set][ene] = result 
 
     # plotting
@@ -421,16 +428,21 @@ def perform_consistency_check_v1(title, energy, unc_enegy, resolution, unc_resol
 
 def register_resolution(data, ly, ley, recorder):
     """ update ly, ley, and recorder based on input data """
-    fit_mean = data["mean"]
-    fit_sigma = data["sigma"]
-    fitError_mean  = data["error_mean"]
-    fitError_sigma = data["error_sigma"]
-    resolution = fit_sigma/fit_mean
-    uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
-    ly.append(resolution)
-    ley.append(uncertainty)
-    recorder["mean"] = resolution
-    recorder["error"] = uncertainty
+    ly.append(data["resolution"])
+    ley.append(data["uncertainty_resolution"])
+    recorder["mean"] = data["resolution"]
+    recorder["error"] = data["uncertainty_resolution"]
+
+#     fit_mean = data["mean"]
+#     fit_sigma = data["sigma"]
+#     fitError_mean  = data["error_mean"]
+#     fitError_sigma = data["error_sigma"]
+#     resolution = fit_sigma/fit_mean
+#     uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+#     ly.append(resolution)
+#     ley.append(uncertainty)
+#     recorder["mean"] = resolution
+#     recorder["error"] = uncertainty
 
 def run_summary(topic, dy1, dy2):
     dir_output = m.specified_directory
@@ -489,33 +501,6 @@ def run_summary(topic, dy1, dy2):
 
             m.resolution["set2"][m.energy_type][ene] = {}
             register_resolution(dy2[ene], ly2, ley2, m.resolution["set2"][m.energy_type][ene])
-
-            # fit_mean = dy1[ene]["mean"]
-            # fit_sigma = dy1[ene]["sigma"]
-            # fitError_mean  = dy1[ene]["error_mean"]
-            # fitError_sigma = dy1[ene]["error_sigma"]
-            # resolution = fit_sigma/fit_mean
-            # uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
-            # ly1.append(resolution)
-            # ley1.append(uncertainty)
-            # m.resolution["set1"][m.energy_type][ene] = {}
-            # m.resolution["set1"][m.energy_type][ene]["mean"] = resolution
-            # m.resolution["set1"][m.energy_type][ene]["error"] = uncertainty
-
-            # fit_mean = dy2[ene]["mean"]
-            # fit_sigma = dy2[ene]["sigma"]
-            # fitError_mean  = dy2[ene]["error_mean"]
-            # fitError_sigma = dy2[ene]["error_sigma"]
-            # resolution = fit_sigma/fit_mean
-            # uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
-            # ly2.append(resolution)
-            # ley2.append(uncertainty)
-            # m.resolution["set2"][m.energy_type][ene] = {}
-            # m.resolution["set2"][m.energy_type][ene]["mean"] = resolution
-            # m.resolution["set2"][m.energy_type][ene]["error"] = uncertainty
-
-            # consistency check
-            #if "MIP" in m.energy_type:
 
             my_energy = [dy1[ene]["mean"], dy2[ene]["mean"]]
             my_energy_unc = [dy1[ene]["error_mean"], dy2[ene]["error_mean"]]
@@ -613,6 +598,10 @@ def run_summary(topic, dy1, dy2):
     legend.SetTextSize(0.04)
     legend.AddEntry(gr1, m.labels[0], leg_option)
     legend.AddEntry(gr2, m.labels[1], leg_option)
+
+    #--------------------------------------------------
+    # Linear fit for resolution: S/sqrt(E) + C
+    #--------------------------------------------------
 
     #--------------------------------------------------
     # quantify difference

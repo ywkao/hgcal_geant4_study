@@ -104,6 +104,7 @@ def perform_unclustered_study():
         tags = ["E225", "E175", "E60"]
         fit_constraints = m.fit_constraints_v1p2
         ru.run_manager( m.input_files["R90To130_v1p2"], tags, fit_constraints )
+
         ru.run_register_fit_parameters(pu.fit_result, pu.fit_result_goodness)
 
     ru.run_fitters_and_summary()

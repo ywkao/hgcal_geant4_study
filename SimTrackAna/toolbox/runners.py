@@ -40,6 +40,7 @@ def run_logitudinal_profile():
         pl.make_plot( "SIM_%s"                  % t , output_directory, True  )
 
 def run_energy_resolution():
+    """ extract histograms, perform gaussian fit, and store fit result """
     output_directory = m.specified_directory + "/energy_resolution"
     pu.create_directory(output_directory)
 
