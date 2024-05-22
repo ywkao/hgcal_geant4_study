@@ -301,6 +301,8 @@ def make_simple_plot(energyType, dir_output, selection):
 #----------------------------------------------------------------------------------------------------
 
 def run_linear_fit(dir_output, fit_result, label, dx, dy):
+    """ perform linear fit of E[MIP] w.r.t. E_beam & register E_reco from the fit method """
+
     x_range = m.linear_fit_parameter[label]["linear_fit_xrange"]
     y_range = m.linear_fit_parameter[label]["linear_fit_yrange"]
 
@@ -337,6 +339,7 @@ def run_linear_fit(dir_output, fit_result, label, dx, dy):
     fit_error_intercept = func.GetParError(0)
     fit_error_slope     = func.GetParError(1)
 
+    # register linear fit
     if not "linear_fit" in fit_result.keys(): fit_result["linear_fit"] = {}
     fit_result["linear_fit"][label] = {}
     fit_result["linear_fit"][label]["slope"] = fit_slope
@@ -349,6 +352,21 @@ def run_linear_fit(dir_output, fit_result, label, dx, dy):
     print ">>> fit_error_intercept =", fit_error_intercept
     print ">>> fit_error_slope =", fit_error_slope
 
+    # register E_reco derived from linear fit
+    if "beam" in label:
+        if not "E_slope_method" in fit_result.keys(): fit_result["E_slope_method"] = {}
+        tag_set = label.split('_')[0] # retrieve set0/set1/set2 from label with "beam" trailing
+        fit_result["E_slope_method"][tag_set] = {}
+        for ene in Energy:
+            data = dy[ene]
+            result = {}
+            result["mean"] = data["mean"] / fit_slope
+            result["sigma"] = data["sigma"] / fit_slope
+            result["error_mean"] = result["mean"] * math.sqrt(pow(data["error_mean"]/data["mean"],2) + pow(fit_error_slope/fit_slope,2))
+            result["error_sigma"] = result["sigma"] * math.sqrt(pow(data["error_sigma"]/data["sigma"],2) + pow(fit_error_slope/fit_slope,2))
+            fit_result["E_slope_method"][tag_set][ene] = result 
+
+    # plotting
     my_stat_pos = [0.42, 0.87, 0.15, 0.15]
     ROOT.gStyle.SetStatX(my_stat_pos[0])
     ROOT.gStyle.SetStatY(my_stat_pos[1])
@@ -401,6 +419,19 @@ def perform_consistency_check_v1(title, energy, unc_enegy, resolution, unc_resol
 
     print ">>> consitency check %5s: test = %.2f #pm %.2f (e2/e1 = %.2f)" % (title, test, uncertainty, ratio)
 
+def register_resolution(data, ly, ley, recorder):
+    """ update ly, ley, and recorder based on input data """
+    fit_mean = data["mean"]
+    fit_sigma = data["sigma"]
+    fitError_mean  = data["error_mean"]
+    fitError_sigma = data["error_sigma"]
+    resolution = fit_sigma/fit_mean
+    uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+    ly.append(resolution)
+    ley.append(uncertainty)
+    recorder["mean"] = resolution
+    recorder["error"] = uncertainty
+
 def run_summary(topic, dy1, dy2):
     dir_output = m.specified_directory
     options = m.draw_options_for_run_summary[topic]
@@ -412,8 +443,9 @@ def run_summary(topic, dy1, dy2):
         c3.SetRightMargin(0.0)
     else:
         c3.SetRightMargin(0.10)
-
-    # topic and range
+    #--------------------------------------------------
+    # options and range
+    #--------------------------------------------------
     ytitle         = options["ytitle"]
     yrange         = options["yrange"]
     leg_pos        = options["leg_pos"]
@@ -422,10 +454,11 @@ def run_summary(topic, dy1, dy2):
     reference_line = options["reference_line"]
     leg_option     = options["leg_option"]
     c3.SetLogy(options["useLog"])
-
     print topic, "yrange = ", yrange
 
-    # list of x and y
+    #--------------------------------------------------
+    # create data points in terms of x and y lists
+    #--------------------------------------------------
     Energy = ["E20", "E60", "E100", "E175", "E225", "E300"]
     lx  = [ float(ene.split('E')[1]) for ene in Energy ]
     lex = [0.]*6
@@ -451,29 +484,35 @@ def run_summary(topic, dy1, dy2):
             ley2.append(0.)
 
         elif topic == "resolution_clustered" or topic == "resolution_unclustered":
-            fit_mean = dy1[ene]["mean"]
-            fit_sigma = dy1[ene]["sigma"]
-            fitError_mean  = dy1[ene]["error_mean"]
-            fitError_sigma = dy1[ene]["error_sigma"]
-            resolution = fit_sigma/fit_mean
-            uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
-            ly1.append(resolution)
-            ley1.append(uncertainty)
             m.resolution["set1"][m.energy_type][ene] = {}
-            m.resolution["set1"][m.energy_type][ene]["mean"] = resolution
-            m.resolution["set1"][m.energy_type][ene]["error"] = uncertainty
+            register_resolution(dy1[ene], ly1, ley1, m.resolution["set1"][m.energy_type][ene])
 
-            fit_mean = dy2[ene]["mean"]
-            fit_sigma = dy2[ene]["sigma"]
-            fitError_mean  = dy2[ene]["error_mean"]
-            fitError_sigma = dy2[ene]["error_sigma"]
-            resolution = fit_sigma/fit_mean
-            uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
-            ly2.append(resolution)
-            ley2.append(uncertainty)
             m.resolution["set2"][m.energy_type][ene] = {}
-            m.resolution["set2"][m.energy_type][ene]["mean"] = resolution
-            m.resolution["set2"][m.energy_type][ene]["error"] = uncertainty
+            register_resolution(dy2[ene], ly2, ley2, m.resolution["set2"][m.energy_type][ene])
+
+            # fit_mean = dy1[ene]["mean"]
+            # fit_sigma = dy1[ene]["sigma"]
+            # fitError_mean  = dy1[ene]["error_mean"]
+            # fitError_sigma = dy1[ene]["error_sigma"]
+            # resolution = fit_sigma/fit_mean
+            # uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+            # ly1.append(resolution)
+            # ley1.append(uncertainty)
+            # m.resolution["set1"][m.energy_type][ene] = {}
+            # m.resolution["set1"][m.energy_type][ene]["mean"] = resolution
+            # m.resolution["set1"][m.energy_type][ene]["error"] = uncertainty
+
+            # fit_mean = dy2[ene]["mean"]
+            # fit_sigma = dy2[ene]["sigma"]
+            # fitError_mean  = dy2[ene]["error_mean"]
+            # fitError_sigma = dy2[ene]["error_sigma"]
+            # resolution = fit_sigma/fit_mean
+            # uncertainty = resolution * math.sqrt( math.pow(fitError_mean/fit_mean, 2) + math.pow(fitError_sigma/fit_sigma, 2) )
+            # ly2.append(resolution)
+            # ley2.append(uncertainty)
+            # m.resolution["set2"][m.energy_type][ene] = {}
+            # m.resolution["set2"][m.energy_type][ene]["mean"] = resolution
+            # m.resolution["set2"][m.energy_type][ene]["error"] = uncertainty
 
             # consistency check
             #if "MIP" in m.energy_type:
@@ -489,7 +528,7 @@ def run_summary(topic, dy1, dy2):
             perform_consistency_check_v2( ene, my_energy, my_energy_unc, my_sigma, my_sigma_unc )
 
         elif "bias" in topic:
-            # for E[MIP], use the average value of Eset1 and Eset2 as a reference value
+            # [DEPRECATED] for E[MIP], use the average value of Eset1 and Eset2 as a reference value
             if m.energy_type == "set1_set2_MIPs":
                 ref = ( dy1[ene]["mean"] + dy2[ene]["mean"] ) / 2.
                 rel_e1 = dy1[ene]["mean"] / ref
@@ -507,7 +546,7 @@ def run_summary(topic, dy1, dy2):
                 ley2.append(unc_rel_e2)
 
             # for E[GeV], use E_beam as a reference value
-            if m.energy_type == "set1_set2_MeV":
+            if m.energy_type=="set1_set2_MeV" or m.energy_type=="set1_set2_MIPs_slope":
                 rel_e1 = dy1[ene]["mean"] / float(ene.split("E")[1])
                 rel_e2 = dy2[ene]["mean"] / float(ene.split("E")[1])
                 unc_rel_e1 = dy1[ene]["error_mean"] / float(ene.split("E")[1])
@@ -527,9 +566,9 @@ def run_summary(topic, dy1, dy2):
 
         elif topic == "changes_in_resolution":
             res_mev = dy1["set1_set2_MeV"][ene]["mean"]
-            res_mip = dy1["set1_set2_MIPs"][ene]["mean"]
+            res_mip = dy1["set1_set2_MIPs_slope"][ene]["mean"]
             err_mev = dy1["set1_set2_MeV"][ene]["error"]
-            err_mip = dy1["set1_set2_MIPs"][ene]["error"]
+            err_mip = dy1["set1_set2_MIPs_slope"][ene]["error"]
             difference = (res_mev - res_mip) / res_mip
             ratio = res_mev / res_mip
             uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
@@ -538,9 +577,9 @@ def run_summary(topic, dy1, dy2):
             #print ">>>>> diff in set1 resolution: %.2f +/- %.2f (res_mev = %.5f, res_mip = %.5f)" % (difference, uncertainty, res_mev, res_mip)
 
             res_mev = dy2["set1_set2_MeV"][ene]["mean"]
-            res_mip = dy2["set1_set2_MIPs"][ene]["mean"]
+            res_mip = dy2["set1_set2_MIPs_slope"][ene]["mean"]
             err_mev = dy2["set1_set2_MeV"][ene]["error"]
-            err_mip = dy2["set1_set2_MIPs"][ene]["error"]
+            err_mip = dy2["set1_set2_MIPs_slope"][ene]["error"]
             difference = (res_mev - res_mip) / res_mip
             ratio = res_mev / res_mip
             uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
@@ -548,7 +587,9 @@ def run_summary(topic, dy1, dy2):
             ley2.append(uncertainty)
             #print ">>>>> diff in set2 resolution: %.2f +/- %.2f (res_mev = %.5f, res_mip = %.5f)" % (difference, uncertainty, res_mev, res_mip)
 
-    # graphs
+    #--------------------------------------------------
+    # generate graphs
+    #--------------------------------------------------
     gr1 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
     gr2 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly2, lex, ley2,  ROOT.kGreen+3)
 
@@ -573,7 +614,9 @@ def run_summary(topic, dy1, dy2):
     legend.AddEntry(gr1, m.labels[0], leg_option)
     legend.AddEntry(gr2, m.labels[1], leg_option)
 
+    #--------------------------------------------------
     # quantify difference
+    #--------------------------------------------------
     if draw_lower_pad:
         gr1.GetXaxis().SetLabelSize(0.00)
         gr1.GetXaxis().SetTitleSize(0.00)
@@ -652,8 +695,7 @@ def run_summary(topic, dy1, dy2):
             line.SetLineWidth(2)
             line.Draw()
 
-
-    else:
+    else: # no need of lower ratio pad
         gr1.GetXaxis().SetTitleSize(0.04)
 
         gr1.Draw("ap")

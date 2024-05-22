@@ -81,8 +81,10 @@ def run_fitters_and_summary():
     with open(m.json_fit_parameters, 'r') as f: fit_result = json.load(f)
     with open(m.json_fit_parameters_goodness, 'r') as f: fit_result_goodness = json.load(f)
 
+    #--------------------------------------------------
     # report
-    if True:
+    #--------------------------------------------------
+    if False:
         print "[INFO] report fit result:"
         for energyType in ["MIP", "SIM", "ENE"]:
             for tag in ["E20", "E60", "E100", "E175", "E225", "E300"]:
@@ -92,7 +94,9 @@ def run_fitters_and_summary():
                 print fit_result[energyType]["set2"][tag]
                 print ""
 
+    #--------------------------------------------------
     # linear fit
+    #--------------------------------------------------
     # x = E[MIP], y = E[GeV]
     #pl.run_linear_fit(output_directory, fit_result, "set0"     , fit_result["MIP"]["set0"], fit_result["ENE"]["set0"])
     #pl.run_linear_fit(output_directory, fit_result, "set0_set1", fit_result["MIP"]["set1"], fit_result["ENE"]["set1"])
@@ -103,7 +107,12 @@ def run_fitters_and_summary():
     pl.run_linear_fit(output_directory, fit_result, "set1_beam", 0, fit_result["MIP"]["set1"])
     pl.run_linear_fit(output_directory, fit_result, "set2_beam", 0, fit_result["MIP"]["set2"])
 
+    m.json_fit_parameters = "./toolbox/test.json"
+    run_register_fit_parameters(fit_result) # record fit result
+
+    #--------------------------------------------------
     # summary
+    #--------------------------------------------------
     if m.enable_check_odd_even:
         m.energy_type = "odd_even_MIPs"
         m.labels = ["E_odd_MIP", "E_even_MIP"]
@@ -111,18 +120,20 @@ def run_fitters_and_summary():
         pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["odd"], fit_result_goodness["MIP"]["even"])
         pl.run_summary(m.type_resolution, fit_result["MIP"]["odd"], fit_result["MIP"]["even"])
 
-    
-    m.energy_type = "set1_set2_MIPs"
-    m.labels = ["E_default_MIP", "E_alternative_MIP"]
+    # Remark: less meaningful to use resolution of E[MIP] directly
+    # Resolution of E reco from E[MIP] / slope
+    m.energy_type = "set1_set2_MIPs_slope"
+    m.labels = ["E_default_slope_method", "E_alternative_slope_method"]
     m.resolution["set1"][m.energy_type] = {}
     m.resolution["set2"][m.energy_type] = {}
     pl.run_summary("pvalue", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
     pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
-    pl.run_summary(m.type_resolution, fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
-    pl.run_summary(m.bias+"_MIP", fit_result["MIP"]["set1"], fit_result["MIP"]["set2"])
+    pl.run_summary(m.type_resolution, fit_result["E_slope_method"]["set1"], fit_result["E_slope_method"]["set2"])
+    pl.run_summary(m.bias+"_MIP", fit_result["E_slope_method"]["set1"], fit_result["E_slope_method"]["set2"])
 
+    # Resolution of E reco from the dE/dx method 
     m.energy_type = "set1_set2_MeV"
-    m.labels = ["E_default_MeV", "E_alternative_MeV"]
+    m.labels = ["E_default_dEdx_method", "E_alternative_dEdx_method"]
     m.resolution["set1"][m.energy_type] = {}
     m.resolution["set2"][m.energy_type] = {}
     pl.run_summary("pvalue", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
@@ -138,15 +149,16 @@ def run_fitters_and_summary():
 
 #----------------------------------------------------------------------------------------------------
 
-def run_register_fit_parameters():
+def run_register_fit_parameters(fit_result, fit_result_goodness=""):
 
     with open(m.json_fit_parameters, 'w') as f:
-        json.dump(pu.fit_result, f, sort_keys=True, indent=4)
+        json.dump(fit_result, f, sort_keys=True, indent=4)
         f.write("\n")
 
-    with open(m.json_fit_parameters_goodness, 'w') as f:
-        json.dump(pu.fit_result_goodness, f, sort_keys=True, indent=4)
-        f.write("\n")
+    if isinstance(fit_result_goodness, dict):
+        with open(m.json_fit_parameters_goodness, 'w') as f:
+            json.dump(fit_result_goodness, f, sort_keys=True, indent=4)
+            f.write("\n")
 
 #----------------------------------------------------------------------------------------------------
 
@@ -158,8 +170,8 @@ def run_manager(myfin, tags, fit_constraints):
     for tag in tags: pl.label[tag] = tag.split("E")[1] + " GeV" if "E" in tag else tag
 
     # runners
-    run_hit_analyzer()
-    run_hit_distribution()
-    run_logitudinal_profile()
+    # run_hit_analyzer()
+    # run_hit_distribution()
+    # run_logitudinal_profile()
     run_energy_resolution()
 

@@ -86,7 +86,7 @@ def perform_unclustered_study():
 
     target_directory = "R90To130_v1p6"
     target_directory = "R90To130_unclustered"
-    target_directory = "R90To130_unclustered_20240516"
+    target_directory = "R90To130_unclustered_20240523"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -104,11 +104,12 @@ def perform_unclustered_study():
         tags = ["E225", "E175", "E60"]
         fit_constraints = m.fit_constraints_v1p2
         ru.run_manager( m.input_files["R90To130_v1p2"], tags, fit_constraints )
-        ru.run_register_fit_parameters()
+        ru.run_register_fit_parameters(pu.fit_result, pu.fit_result_goodness)
 
     ru.run_fitters_and_summary()
 
 def perform_clustered_study():
+    """ the samples with the Anne-Marie tower-like algorithm are chosen for the analysis """
     m.type_resolution = "resolution_clustered"
     m.bias = "bias_clustered"
     m.json_fit_parameters = "./toolbox/clustered_fit_parameters.json"
@@ -117,7 +118,7 @@ def perform_clustered_study():
     target_directory = "R90To130_v2p6"
     target_directory = "20221005"
     target_directory = "R90To130_clustered"
-    target_directory = "R90To130_clustered_20240517"
+    target_directory = "R90To130_clustered_20240523"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -130,7 +131,7 @@ def perform_clustered_study():
         tags = ["E225", "E175", "E60"]
         fit_constraints = m.fit_constraints_v2p2
         ru.run_manager( m.input_files["R90To130_v2p2"], tags, fit_constraints )
-        ru.run_register_fit_parameters()
+        ru.run_register_fit_parameters(pu.fit_result, pu.fit_result_goodness)
 
     ru.run_fitters_and_summary()
 
@@ -138,8 +139,8 @@ def perform_clustered_study():
 
 if __name__ == "__main__":
     m.enable_check_odd_even = False
-    run_full_commands = True
     run_full_commands = False 
+    run_full_commands = True
     #perform_lognitudinal_only()
     perform_unclustered_study()
     #perform_clustered_study()
