@@ -70,7 +70,8 @@ draw_options_for_run_summary = {
     },
 
     "bias_unclustered_MIP": {
-        "ytitle"            : "Relative difference of E[MIP]",
+        #"ytitle"            : "Relative difference of E[MIP]",
+        "ytitle"            : "#frac{#LTE/m#GT#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.10, 0.15],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
@@ -92,7 +93,7 @@ draw_options_for_run_summary = {
     },
 
     "bias_clustered_MIP": {
-        "ytitle"            : "Bias",
+        "ytitle"            : "#frac{#LTE/m#GT#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.3, 0.3],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
@@ -103,7 +104,7 @@ draw_options_for_run_summary = {
     },
 
     "bias_clustered_MeV": {
-        "ytitle"            : "Bias",
+        "ytitle"            : "#frac{E_{reco.}#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.3, 0.3],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",

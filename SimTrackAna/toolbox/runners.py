@@ -124,7 +124,7 @@ def run_fitters_and_summary():
     # Remark: less meaningful to use resolution of E[MIP] directly
     # Resolution of E reco from E[MIP] / slope
     m.energy_type = "set1_set2_MIPs_slope"
-    m.labels = ["E_default_slope_method", "E_alternative_slope_method"]
+    m.labels = ["E_default_regression", "E_alternative_regression"]
     m.resolution["set1"][m.energy_type] = {}
     m.resolution["set2"][m.energy_type] = {}
     pl.run_summary("pvalue", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
@@ -134,7 +134,7 @@ def run_fitters_and_summary():
 
     # Resolution of E reco from the dE/dx method 
     m.energy_type = "set1_set2_MeV"
-    m.labels = ["E_default_dEdx_method", "E_alternative_dEdx_method"]
+    m.labels = ["E_default_dEdx", "E_alternative_dEdx"]
     m.resolution["set1"][m.energy_type] = {}
     m.resolution["set2"][m.energy_type] = {}
     pl.run_summary("pvalue", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])

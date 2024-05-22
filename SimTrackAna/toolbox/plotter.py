@@ -371,6 +371,10 @@ def run_linear_fit(dir_output, fit_result, label, dx, dy):
             result["resolution"] = resolution
             result["uncertainty_resolution"] = uncertainty
 
+            # print "[debug] %s mean of energy regression: %.4f pm %.4f" % (ene, result["mean"], result["error_mean"])
+            # print "[debug] %s sigma of energy regression: %.4f pm %.4f" % (ene, result["sigma"], result["error_sigma"])
+            # print "[debug] %s resolution of energy regression: %.4f pm %.4f" % (ene, resolution, uncertainty)
+
             fit_result["E_slope_method"][tag_set][ene] = result 
 
     # plotting
