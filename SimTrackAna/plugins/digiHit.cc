@@ -433,6 +433,8 @@ void DigiSim::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
                 efficiency_denominators[idx] += 1.;
                 if(pass_signal_region) efficiency_numerators[idx] += 1.;
 
+                if(!pass_signal_region) continue; // apply Anne-Marie algorithm by rejecting hits outside signal resions
+
                 // apply selection on signal region for histograms based on the lineaer track
                 //if(!pass_signal_region) continue;
 
