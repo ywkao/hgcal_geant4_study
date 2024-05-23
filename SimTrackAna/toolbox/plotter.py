@@ -396,9 +396,18 @@ def run_linear_fit(dir_output, fit_result, label, dx, dy):
     ROOT.gStyle.SetStatW(my_stat_pos[2])
     ROOT.gStyle.SetStatH(my_stat_pos[3])
 
+    myLabel = {
+        "set0_beam": "Reference",
+        "set1_beam": "Default",
+        "set2_beam": "Alternative",
+    }
+
     pu.annotate()
     if "beam" in label:
         output = dir_output + "/E_MIPs_" + label
+        latex = get_latex()
+        latex.SetTextSize(36)
+        latex.DrawLatex(0.60, 0.25, myLabel[label])
     else:
         output = dir_output + "/correction_generatedShowerEnergy_MIPs_" + label
     c1.SaveAs(output + ".png")
@@ -468,13 +477,16 @@ def run_summary(topic, dy1, dy2):
     c3.Clear()
 
     if topic=="pvalue" or topic=="chi2ndf":
-        c3.SetRightMargin(0.0)
+        c3.SetRightMargin(0.05)
     else:
-        c3.SetRightMargin(0.10)
+        c3.SetRightMargin(0.05)
+
     if "FIT" in topic:
         c3.SetBottomMargin(0.11)
+        ROOT.gStyle.SetOptFit(0)
     else:
         c3.SetBottomMargin(0.10)
+        ROOT.gStyle.SetOptFit(1111)
     #--------------------------------------------------
     # options and range
     #--------------------------------------------------
@@ -632,7 +644,6 @@ def run_summary(topic, dy1, dy2):
     #--------------------------------------------------
     resolution_fit_result = []
     if "FIT" in topic:
-        ROOT.gStyle.SetOptFit(0)
         func = fit_linear_function(gr1, [0.0, 0.25])
         result = {}
         result["func"]                = func
@@ -690,10 +701,7 @@ def run_summary(topic, dy1, dy2):
         gr_ratio.GetXaxis().SetLabelOffset(0.06)
 
         gr_ratio.GetYaxis().SetNdivisions(505)
-        if m.energy_type == "set1_set2_MIPs":
-            gr_ratio.GetYaxis().SetRangeUser(0.90, 1.70) # along Y
-        if m.energy_type == "set1_set2_MeV":
-            gr_ratio.GetYaxis().SetRangeUser(0.70, 1.30) # along Y
+        gr_ratio.GetYaxis().SetRangeUser(0.35, 1.65) # along Y
         gr_ratio.GetYaxis().SetTitleFont(42)
         gr_ratio.GetYaxis().SetTitleSize(0.10)
         gr_ratio.GetYaxis().SetTitleOffset(0.35)
@@ -701,6 +709,16 @@ def run_summary(topic, dy1, dy2):
         gr_ratio.GetYaxis().SetLabelSize(0.08)
         #gr_ratio.GetYaxis().SetLabelOffset(0.06)
 
+        # perform fit to quantify the level of difference
+        f0 = ROOT.TF1('f0', "[0]", 0., 350.)
+        gr_ratio.Fit(f0, "", "", 0., 350.)
+        func = gr_ratio.GetListOfFunctions().FindObject("f0")
+        func.SetLineColorAlpha(ROOT.kWhite, 0.0)
+        mean  = func.GetParameter(0)
+        error = func.GetParError(0)
+        print "[INFO] level of difference %s: %.2f pm %.2f %%\n" % (topic+"_"+m.energy_type, (mean-1.)*100., error*100.)
+
+        # two pads
         mainPad, ratPad = pu.init_pads()
 
         # main pad
@@ -761,7 +779,8 @@ def run_summary(topic, dy1, dy2):
 
             latex = get_latex()
             latex.SetTextColor(ROOT.kBlack)
-            latex.DrawLatex( 0.60, 0.20, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{E_{beam}} #oplus C" )
+            latex.SetTextSize(30)
+            latex.DrawLatex( 0.65, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{E_{beam}} #oplus C" )
 
         if draw_goodness:
             #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line

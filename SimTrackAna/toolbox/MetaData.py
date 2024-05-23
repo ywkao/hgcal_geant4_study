@@ -18,7 +18,7 @@ draw_options_for_run_summary = {
     "pvalue": {
         "ytitle"         : "p-value of gaussian fit",
         "yrange"         : [1e-3, 1.0],
-        "leg_pos"        : [0.62, 0.25, 0.85, 0.45],
+        "leg_pos"        : [0.62, 0.25, 0.90, 0.45],
         "leg_option"     : "p",
         "draw_goodness"  : True,
         "draw_lower_pad" : False,
@@ -29,7 +29,7 @@ draw_options_for_run_summary = {
     "chi2ndf": {
         "ytitle"         : "chi2/ndf of gaussian fit",
         "yrange"         : [0., 4.0],
-        "leg_pos"        : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"        : [0.62, 0.65, 0.90, 0.85],
         "leg_option"     : "p",
         "draw_goodness"  : True,
         "draw_lower_pad" : False,
@@ -42,7 +42,7 @@ draw_options_for_run_summary = {
         #"yrange"            : [0.018, 0.043],
         #"yrange"            : [0.010, 0.050],
         "yrange"            : [0.000, 0.160],
-        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"           : [0.62, 0.65, 0.90, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : True,
@@ -58,7 +58,7 @@ draw_options_for_run_summary = {
         "ytitle"            : "#sigma#left(E#right) / #LTE#GT",
         #"yrange"            : [0.000, 0.040],
         "yrange"            : [0.000, 0.160],
-        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"           : [0.62, 0.65, 0.90, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : True,
@@ -101,7 +101,7 @@ draw_options_for_run_summary = {
         #"ytitle"            : "Relative difference of E[MIP]",
         "ytitle"            : "#frac{#LTE/m#GT#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.10, 0.15],
-        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"           : [0.62, 0.65, 0.90, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : False,
@@ -112,7 +112,7 @@ draw_options_for_run_summary = {
     "bias_unclustered_MeV": {
         "ytitle"            : "#frac{E_{reco.}#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.06, 0.14],
-        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"           : [0.62, 0.65, 0.90, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : False,
@@ -123,7 +123,7 @@ draw_options_for_run_summary = {
     "bias_clustered_MIP": {
         "ytitle"            : "#frac{#LTE/m#GT#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.3, 0.3],
-        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"           : [0.62, 0.65, 0.90, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : False,
@@ -134,7 +134,7 @@ draw_options_for_run_summary = {
     "bias_clustered_MeV": {
         "ytitle"            : "#frac{E_{reco.}#minusE_{beam}}{E_{beam}}",
         "yrange"            : [-0.3, 0.3],
-        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"           : [0.62, 0.65, 0.90, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : False,
@@ -145,7 +145,7 @@ draw_options_for_run_summary = {
     "changes_in_resolution": {
         "ytitle"            : "#frac{Res.(after) #minus Res.(before)}{Res.(before)}",
         "yrange"            : [-0.5, 0.5],
-        "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
+        "leg_pos"           : [0.62, 0.65, 0.90, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : False,
@@ -185,12 +185,12 @@ linear_fit_parameter = {
 
     "set1_beam" : {
         "linear_fit_xrange" : [0, 350], # GeV
-        "linear_fit_yrange" : [0, 30000], # MIPs
+        "linear_fit_yrange" : [0, 15000], # MIPs
     },
 
     "set2_beam" : {
         "linear_fit_xrange" : [0, 350], # GeV
-        "linear_fit_yrange" : [0, 30000], # MIPs
+        "linear_fit_yrange" : [0, 15000], # MIPs
     },
 }
 
