@@ -213,6 +213,14 @@ def make_plot(varName, dir_output="", bool_make_logitudinal_profile=False):
 
 #----------------------------------------------------------------------------------------------------
 
+def get_latex():
+    latex = ROOT.TLatex()
+    latex.SetNDC()
+    latex.SetTextFont(43)
+    latex.SetTextAlign(11)
+    latex.SetTextSize(24)
+    return latex
+
 def make_simple_plot(energyType, dir_output, selection):
     global myRootfiles, fit_constraints
     
@@ -250,11 +258,7 @@ def make_simple_plot(energyType, dir_output, selection):
         max_values.append(v_hists[1].GetMaximum())
         max_value = max(max_values)
 
-        latex = ROOT.TLatex()
-        latex.SetNDC()
-        latex.SetTextFont(43)
-        latex.SetTextAlign(11)
-        latex.SetTextSize(24)
+        latex = get_latex()
 
         if not selection == "set0":
             #--------------------------------------------------
@@ -300,6 +304,12 @@ def make_simple_plot(energyType, dir_output, selection):
 
 #----------------------------------------------------------------------------------------------------
 
+def fit_linear_function(gr, x_range):
+    f1 = ROOT.TF1('f1', "[0] + [1]*x", x_range[0], x_range[1])
+    gr.Fit(f1, "", "", x_range[0], x_range[1])
+    func = gr.GetListOfFunctions().FindObject("f1")
+    return func
+
 def run_linear_fit(dir_output, fit_result, label, dx, dy):
     """ perform linear fit of E[MIP] w.r.t. E_beam & register E_reco from the fit method """
 
@@ -330,10 +340,12 @@ def run_linear_fit(dir_output, fit_result, label, dx, dy):
     gr.GetXaxis().SetLimits(x_range[0], x_range[1]) # along X
     gr.GetYaxis().SetRangeUser(y_range[0], y_range[1])
 
-    f1 = ROOT.TF1('f1', "[0] + [1]*x", x_range[0], x_range[1])
-    gr.Fit(f1, "", "", x_range[0], x_range[1])
+    # f1 = ROOT.TF1('f1', "[0] + [1]*x", x_range[0], x_range[1])
+    # gr.Fit(f1, "", "", x_range[0], x_range[1])
+    # func = gr.GetListOfFunctions().FindObject("f1")
 
-    func = gr.GetListOfFunctions().FindObject("f1")
+    func = fit_linear_function(gr, x_range)
+
     fit_intercept       = func.GetParameter(0)
     fit_slope           = func.GetParameter(1)
     fit_error_intercept = func.GetParError(0)
@@ -459,6 +471,10 @@ def run_summary(topic, dy1, dy2):
         c3.SetRightMargin(0.0)
     else:
         c3.SetRightMargin(0.10)
+    if "FIT" in topic:
+        c3.SetBottomMargin(0.11)
+    else:
+        c3.SetBottomMargin(0.10)
     #--------------------------------------------------
     # options and range
     #--------------------------------------------------
@@ -499,22 +515,27 @@ def run_summary(topic, dy1, dy2):
             ley1.append(0.)
             ley2.append(0.)
 
-        elif topic == "resolution_clustered" or topic == "resolution_unclustered":
+        elif "resolution_" in topic:
             m.resolution["set1"][m.energy_type][ene] = {}
             register_resolution(dy1[ene], ly1, ley1, m.resolution["set1"][m.energy_type][ene])
 
             m.resolution["set2"][m.energy_type][ene] = {}
             register_resolution(dy2[ene], ly2, ley2, m.resolution["set2"][m.energy_type][ene])
 
-            my_energy = [dy1[ene]["mean"], dy2[ene]["mean"]]
-            my_energy_unc = [dy1[ene]["error_mean"], dy2[ene]["error_mean"]]
-            my_res = [ly1[-1], ly2[-1]]
-            my_res_unc = [ley1[-1], ley2[-1]]
-            my_sigma = [dy1[ene]["sigma"], dy2[ene]["sigma"]]
-            my_sigma_unc = [dy1[ene]["error_sigma"], dy2[ene]["error_sigma"]]
+            if "FIT" in topic:
+                lx  = [ 1./math.sqrt(float(ene.split('E')[1])) for ene in Energy ]
+                lex = [0.]*6
 
-            #perform_consistency_check_v1( ene, my_energy, my_energy_unc, my_res, my_res_unc )
-            perform_consistency_check_v2( ene, my_energy, my_energy_unc, my_sigma, my_sigma_unc )
+            else:
+                my_energy = [dy1[ene]["mean"], dy2[ene]["mean"]]
+                my_energy_unc = [dy1[ene]["error_mean"], dy2[ene]["error_mean"]]
+                my_res = [ly1[-1], ly2[-1]]
+                my_res_unc = [ley1[-1], ley2[-1]]
+                my_sigma = [dy1[ene]["sigma"], dy2[ene]["sigma"]]
+                my_sigma_unc = [dy1[ene]["error_sigma"], dy2[ene]["error_sigma"]]
+
+                #perform_consistency_check_v1( ene, my_energy, my_energy_unc, my_res, my_res_unc )
+                perform_consistency_check_v2( ene, my_energy, my_energy_unc, my_sigma, my_sigma_unc )
 
         elif "bias" in topic:
             # [DEPRECATED] for E[MIP], use the average value of Eset1 and Eset2 as a reference value
@@ -535,7 +556,7 @@ def run_summary(topic, dy1, dy2):
                 ley2.append(unc_rel_e2)
 
             # for E[GeV], use E_beam as a reference value
-            if m.energy_type=="set1_set2_MeV" or m.energy_type=="set1_set2_MIPs_slope":
+            if m.energy_type=="set1_set2_MeV" or m.energy_type=="set1_set2_MIPs_regression":
                 rel_e1 = dy1[ene]["mean"] / float(ene.split("E")[1])
                 rel_e2 = dy2[ene]["mean"] / float(ene.split("E")[1])
                 unc_rel_e1 = dy1[ene]["error_mean"] / float(ene.split("E")[1])
@@ -555,9 +576,9 @@ def run_summary(topic, dy1, dy2):
 
         elif topic == "changes_in_resolution":
             res_mev = dy1["set1_set2_MeV"][ene]["mean"]
-            res_mip = dy1["set1_set2_MIPs_slope"][ene]["mean"]
+            res_mip = dy1["set1_set2_MIPs_regression"][ene]["mean"]
             err_mev = dy1["set1_set2_MeV"][ene]["error"]
-            err_mip = dy1["set1_set2_MIPs_slope"][ene]["error"]
+            err_mip = dy1["set1_set2_MIPs_regression"][ene]["error"]
             difference = (res_mev - res_mip) / res_mip
             ratio = res_mev / res_mip
             uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
@@ -566,9 +587,9 @@ def run_summary(topic, dy1, dy2):
             #print ">>>>> diff in set1 resolution: %.2f +/- %.2f (res_mev = %.5f, res_mip = %.5f)" % (difference, uncertainty, res_mev, res_mip)
 
             res_mev = dy2["set1_set2_MeV"][ene]["mean"]
-            res_mip = dy2["set1_set2_MIPs_slope"][ene]["mean"]
+            res_mip = dy2["set1_set2_MIPs_regression"][ene]["mean"]
             err_mev = dy2["set1_set2_MeV"][ene]["error"]
-            err_mip = dy2["set1_set2_MIPs_slope"][ene]["error"]
+            err_mip = dy2["set1_set2_MIPs_regression"][ene]["error"]
             difference = (res_mev - res_mip) / res_mip
             ratio = res_mev / res_mip
             uncertainty = ratio * math.sqrt( math.pow(err_mev/res_mev,2) + math.pow(err_mip/res_mip, 2) )
@@ -579,19 +600,22 @@ def run_summary(topic, dy1, dy2):
     #--------------------------------------------------
     # generate graphs
     #--------------------------------------------------
-    gr1 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
-    gr2 = pu.get_graph_from_list("Positron energy (GeV)", ytitle, lx, ly2, lex, ley2,  ROOT.kGreen+3)
+    xtitle = "Positron energy (GeV)" if "FIT" not in topic else "1/#sqrt{E_{beam} [GeV]}"
+    gr1 = pu.get_graph_from_list(xtitle, ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
+    gr2 = pu.get_graph_from_list(xtitle, ytitle, lx, ly2, lex, ley2,  ROOT.kGreen+3)
 
     #print gr1, gr2
     #print ly1, ly2
     #print ley1, ley2
+
+    myXrange = [0, 350] if "FIT" not in topic else [0.0, 0.25]
 
     gr1.SetLineWidth(2)
     gr1.SetMarkerStyle(20)
     gr1.SetMarkerSize(1.25)
     gr1.GetYaxis().SetTitleSize(0.05)
     gr1.GetYaxis().SetTitleOffset(1.0)
-    gr1.GetXaxis().SetLimits(0, 350) # along X
+    gr1.GetXaxis().SetLimits(myXrange[0], myXrange[1]) # along X
     gr1.GetYaxis().SetRangeUser(yrange[0], yrange[1]) # along Y
 
     gr2.SetLineWidth(2)
@@ -606,6 +630,27 @@ def run_summary(topic, dy1, dy2):
     #--------------------------------------------------
     # Linear fit for resolution: S/sqrt(E) + C
     #--------------------------------------------------
+    resolution_fit_result = []
+    if "FIT" in topic:
+        ROOT.gStyle.SetOptFit(0)
+        func = fit_linear_function(gr1, [0.0, 0.25])
+        result = {}
+        result["func"]                = func
+        result["fit_intercept"]       = func.GetParameter(0)
+        result["fit_slope"]           = func.GetParameter(1)
+        result["fit_error_intercept"] = func.GetParError(0)
+        result["fit_error_slope"]     = func.GetParError(1)
+        resolution_fit_result.append(result)
+
+        func = fit_linear_function(gr2, [0.0, 0.25])
+        result = {}
+        result["func"]                = func
+        result["fit_intercept"]       = func.GetParameter(0)
+        result["fit_slope"]           = func.GetParameter(1)
+        result["fit_error_intercept"] = func.GetParError(0)
+        result["fit_error_slope"]     = func.GetParError(1)
+        resolution_fit_result.append(result)
+
 
     #--------------------------------------------------
     # quantify difference
@@ -696,6 +741,28 @@ def run_summary(topic, dy1, dy2):
         legend.Draw("same")
         pu.annotate(0.12)
 
+        if "FIT" in topic:
+            resolution_fit_result[0]["func"].SetLineStyle(2)
+            resolution_fit_result[0]["func"].SetLineColorAlpha(ROOT.kBlue, 0.80)
+            resolution_fit_result[0]["func"].Draw("same")
+            resolution_fit_result[1]["func"].SetLineStyle(2)
+            resolution_fit_result[1]["func"].SetLineColorAlpha(ROOT.kGreen+3, 0.80)
+            resolution_fit_result[1]["func"].Draw("same")
+
+            legend.Clear()
+            legend.SetLineWidth(0)
+            legend.SetFillColorAlpha(ROOT.kWhite, 0)
+
+            legend.AddEntry(gr1, m.labels[0], leg_option)
+            add_legend_entry(legend, resolution_fit_result[0])
+            legend.AddEntry(gr2, m.labels[1], leg_option)
+            add_legend_entry(legend, resolution_fit_result[1])
+            legend.Draw("same")
+
+            latex = get_latex()
+            latex.SetTextColor(ROOT.kBlack)
+            latex.DrawLatex( 0.60, 0.20, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{E_{beam}} #oplus C" )
+
         if draw_goodness:
             #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
             line = ROOT.TLine( c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line )
@@ -704,8 +771,19 @@ def run_summary(topic, dy1, dy2):
             line.SetLineWidth(2)
             line.Draw()
 
-    token = topic if not "resolution" in topic else "resolution"
+    token = topic #if not "resolution" in topic else "resolution"
     output = dir_output + "/summary_" + token + "_" + m.energy_type
     c3.SaveAs(output + ".png")
     c3.SaveAs(output + ".pdf")
 
+def add_legend_entry(legend, resolution_fit_result):
+    f  = resolution_fit_result["func"]
+    mc = 100*resolution_fit_result["fit_intercept"]
+    ec = 100*resolution_fit_result["fit_error_intercept"]
+    ms = 100*resolution_fit_result["fit_slope"]
+    es = 100*resolution_fit_result["fit_error_slope"]
+
+    message = "S = %.1f #pm %.1f%% #sqrt{GeV}" % (ms, es)
+    legend.AddEntry(f, message, 'l')
+    message = "C = %.2f #pm %.2f%%" % (mc, ec)
+    legend.AddEntry(f, message, '')

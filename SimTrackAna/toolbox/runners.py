@@ -108,7 +108,7 @@ def run_fitters_and_summary():
     pl.run_linear_fit(output_directory, fit_result, "set1_beam", 0, fit_result["MIP"]["set1"])
     pl.run_linear_fit(output_directory, fit_result, "set2_beam", 0, fit_result["MIP"]["set2"])
 
-    m.json_fit_parameters = "./toolbox/test.json"
+    m.json_fit_parameters = "./toolbox/test_%s.json" % m.type_resolution
     run_register_fit_parameters(fit_result) # record fit result
 
     #--------------------------------------------------
@@ -123,7 +123,7 @@ def run_fitters_and_summary():
 
     # Remark: less meaningful to use resolution of E[MIP] directly
     # Resolution of E reco from E[MIP] / slope
-    m.energy_type = "set1_set2_MIPs_slope"
+    m.energy_type = "set1_set2_MIPs_regression"
     m.labels = ["E_default_regression", "E_alternative_regression"]
     m.resolution["set1"][m.energy_type] = {}
     m.resolution["set2"][m.energy_type] = {}
@@ -131,6 +131,7 @@ def run_fitters_and_summary():
     pl.run_summary("chi2ndf", fit_result_goodness["MIP"]["set1"], fit_result_goodness["MIP"]["set2"])
     pl.run_summary(m.type_resolution, fit_result["E_slope_method"]["set1"], fit_result["E_slope_method"]["set2"])
     pl.run_summary(m.bias+"_MIP", fit_result["E_slope_method"]["set1"], fit_result["E_slope_method"]["set2"])
+    pl.run_summary(m.type_resolution+"_FIT", fit_result["E_slope_method"]["set1"], fit_result["E_slope_method"]["set2"])
 
     # Resolution of E reco from the dE/dx method 
     m.energy_type = "set1_set2_MeV"
@@ -141,6 +142,7 @@ def run_fitters_and_summary():
     pl.run_summary("chi2ndf", fit_result_goodness["ENE"]["set1"], fit_result_goodness["ENE"]["set2"])
     pl.run_summary(m.type_resolution, fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
     pl.run_summary(m.bias+"_MeV", fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
+    pl.run_summary(m.type_resolution+"_FIT", fit_result["ENE"]["set1"], fit_result["ENE"]["set2"])
 
     m.energy_type = "changes_in_resolution"
     m.labels = ["E_default", "E_alternative"]

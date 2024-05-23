@@ -38,7 +38,7 @@ draw_options_for_run_summary = {
     },
 
     "resolution_unclustered": {
-        "ytitle"            : "#sigma#left(E#right) / #bar{E}",
+        "ytitle"            : "#sigma#left(E#right) / #LTE#GT",
         #"yrange"            : [0.018, 0.043],
         #"yrange"            : [0.010, 0.050],
         "yrange"            : [0.000, 0.160],
@@ -55,13 +55,41 @@ draw_options_for_run_summary = {
     },
 
     "resolution_clustered": {
-        "ytitle"            : "#sigma#left(E#right) / #bar{E}",
+        "ytitle"            : "#sigma#left(E#right) / #LTE#GT",
         #"yrange"            : [0.000, 0.040],
         "yrange"            : [0.000, 0.160],
         "leg_pos"           : [0.62, 0.65, 0.85, 0.85],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
         "draw_lower_pad"    : True,
+        "reference_line"    : 1.0,
+        "useLog"            : 0,
+
+        "linear_fit_yrange" : [0, 400],
+        "use_bin_width"     : False,
+    },
+
+    "resolution_unclustered_FIT": {
+        "ytitle"            : "#sigma#left(E#right) / #LTE#GT",
+        "yrange"            : [0.00, 0.10],
+        "leg_pos"           : [0.15, 0.45, 0.40, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : False,
+        "draw_lower_pad"    : False,
+        "reference_line"    : 1.0,
+        "useLog"            : 0,
+
+        "linear_fit_yrange" : [0, 400],
+        "use_bin_width"     : False,
+    },
+
+    "resolution_clustered_FIT": {
+        "ytitle"            : "#sigma#left(E#right) / #LTE#GT",
+        "yrange"            : [0.00, 0.10],
+        "leg_pos"           : [0.15, 0.45, 0.40, 0.85],
+        "leg_option"        : "ep",
+        "draw_goodness"     : True,
+        "draw_lower_pad"    : False,
         "reference_line"    : 1.0,
         "useLog"            : 0,
 
@@ -325,28 +353,40 @@ input_files = {
     ],
 
     "R90To130_v1p1" : [
-        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20240522_R90To130/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20240522_R90To130/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20240522_R90To130/geantoutput_D86_R90To130_E20.root",
+        #"rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E300.root",
+        #"rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E100.root",
+        #"rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v1p2" : [
-        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20240522_R90To130/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20240522_R90To130/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20240522_R90To130/geantoutput_D86_R90To130_E60.root",
+        #"rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E225.root",
+        #"rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E175.root",
+        #"rootfiles_hit_position/20221011_R90To130/geantoutput_D86_R90To130_E60.root",
     ],
 
     # v2: SR = linear track
     "R90To130_v2p1" : [
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
+        "rootfiles_hit_position/20240522_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
+        "rootfiles_hit_position/20240522_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
+        "rootfiles_hit_position/20240522_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
+        #"rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E300.root",
+        #"rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E100.root",
+        #"rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E20.root",
     ],
 
     "R90To130_v2p2" : [
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
-        "rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
+        "rootfiles_hit_position/20240522_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
+        "rootfiles_hit_position/20240522_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
+        "rootfiles_hit_position/20240522_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
+        #"rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E225.root",
+        #"rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E175.root",
+        #"rootfiles_hit_position/20220929_R90To130_AM_algorithm/geantoutput_D86_R90To130_E60.root",
     ],
 
     "R80To130" : [
