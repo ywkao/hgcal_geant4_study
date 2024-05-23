@@ -24,11 +24,11 @@ c2.SetLeftMargin(0.)
 c2.SetRightMargin(0.)
 c2.Divide(7,4)
 
-c3 = ROOT.TCanvas("c3", "", 1200, 600)
+c3 = ROOT.TCanvas("c3", "", 800, 600)
 c3.SetGrid()
 c3.SetTicks(1,1)
-c3.SetLeftMargin(0.12)
-c3.SetRightMargin(0.08)
+c3.SetLeftMargin(0.11)
+c3.SetRightMargin(0.05)
 
 import toolbox.plot_utils as pu
 import toolbox.MetaData as m
@@ -473,20 +473,6 @@ def run_summary(topic, dy1, dy2):
     dir_output = m.specified_directory
     options = m.draw_options_for_run_summary[topic]
 
-    c3.cd()
-    c3.Clear()
-
-    if topic=="pvalue" or topic=="chi2ndf":
-        c3.SetRightMargin(0.05)
-    else:
-        c3.SetRightMargin(0.05)
-
-    if "FIT" in topic:
-        c3.SetBottomMargin(0.11)
-        ROOT.gStyle.SetOptFit(0)
-    else:
-        c3.SetBottomMargin(0.10)
-        ROOT.gStyle.SetOptFit(1111)
     #--------------------------------------------------
     # options and range
     #--------------------------------------------------
@@ -499,6 +485,19 @@ def run_summary(topic, dy1, dy2):
     leg_option     = options["leg_option"]
     c3.SetLogy(options["useLog"])
     print topic, "yrange = ", yrange
+
+    #--------------------------------------------------
+    # set up canvas
+    #--------------------------------------------------
+    c3.cd()
+    c3.Clear()
+
+    if "FIT" in topic or draw_lower_pad:
+        c3.SetBottomMargin(0.11)
+        ROOT.gStyle.SetOptFit(0)
+    else:
+        c3.SetBottomMargin(0.10)
+        ROOT.gStyle.SetOptFit(1111)
 
     #--------------------------------------------------
     # create data points in terms of x and y lists
@@ -730,7 +729,7 @@ def run_summary(topic, dy1, dy2):
         gr1.Draw("ap")
         gr2.Draw("p;same")
         legend.Draw("same")
-        pu.annotate(0.12)
+        pu.annotate()
 
         # ratio pad
         c3.cd()
@@ -757,7 +756,7 @@ def run_summary(topic, dy1, dy2):
         gr1.Draw("ap")
         gr2.Draw("p;same")
         legend.Draw("same")
-        pu.annotate(0.12)
+        pu.annotate()
 
         if "FIT" in topic:
             resolution_fit_result[0]["func"].SetLineStyle(2)
