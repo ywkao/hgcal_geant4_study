@@ -779,7 +779,7 @@ def run_summary(topic, dy1, dy2):
             latex = get_latex()
             latex.SetTextColor(ROOT.kBlack)
             latex.SetTextSize(30)
-            latex.DrawLatex( 0.65, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{E_{beam}} #oplus C" )
+            latex.DrawLatex( 0.65, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus C" )
 
         if draw_goodness:
             #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
