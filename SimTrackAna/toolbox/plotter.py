@@ -855,14 +855,14 @@ def add_legend_entry(legend, resolution_fit_result):
     ms = 100*resolution_fit_result["fit_slope"]
     es = 100*resolution_fit_result["fit_error_slope"]
 
-    message = "S = %.1f #pm %.1f%% #sqrt{GeV}" % (ms, es)
+    message = "S = (%.1f #pm %.1f)%% #sqrt{GeV}" % (ms, es)
     legend.AddEntry(f, message, 'l')
-    message = "C = %.2f #pm %.2f%%" % (mc, ec)
+    message = "C = (%.2f #pm %.2f)%%" % (mc, ec)
     legend.AddEntry(f, message, '')
 
     if m.nParameters==3:
         mn = 100*resolution_fit_result["fit_noise"]
         en = 100*resolution_fit_result["fit_error_noise"]
-        message = "N = %.2f #pm %.2f%% GeV" % (mn, en)
+        message = "N = (%.2f #pm %.2f)%% GeV" % (mn, en)
         legend.AddEntry(f, message, '')
 
