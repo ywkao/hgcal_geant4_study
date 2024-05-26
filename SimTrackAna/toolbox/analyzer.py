@@ -14,7 +14,7 @@ class HitAnalyzer:
         self.output_directory = directory
         self.tags = tags
 
-        self.canvas = ROOT.TCanvas("canvas", "", 800, 600)
+        self.canvas = ROOT.TCanvas("canvas", "", 800, 800)
         self.canvas.SetGrid()
         self.canvas.SetTicks(1,1)
         self.canvas.SetLeftMargin(0.12)
@@ -52,7 +52,7 @@ class HitAnalyzer:
             self.check_individual_event = True
 
             self.flag_make_plots = True
-            for evtNo in range(0, 5):
+            for evtNo in range(1, 3):
                 self.evtNo = evtNo 
                 self.output_pdf_file = self.output_directory + "/output_hits_" + self.tags[i] + "_evtNo%d.pdf" % self.evtNo
                 self.__retrieve_hit_plots(tree)

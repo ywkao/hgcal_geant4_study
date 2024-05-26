@@ -124,6 +124,13 @@ def perform_clustered_study():
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
 
+    # # NOTE: temporary for hit analyzer
+    # tags = ["E300", "E100", "E20"]
+    # fit_constraints = m.fit_constraints_v2p1
+    # ru.run_manager( m.input_files["R90To130_v2p1"], tags, fit_constraints )
+    # exit()
+    # # end of tmp
+
     if run_full_commands:
         tags = ["E300", "E100", "E20"]
         fit_constraints = m.fit_constraints_v2p1
@@ -140,8 +147,8 @@ def perform_clustered_study():
 
 if __name__ == "__main__":
     m.enable_check_odd_even = False
-    run_full_commands = True
     run_full_commands = False 
+    run_full_commands = True
     #perform_lognitudinal_only()
     perform_unclustered_study()
     perform_clustered_study()

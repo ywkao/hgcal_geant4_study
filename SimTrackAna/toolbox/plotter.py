@@ -278,9 +278,9 @@ def make_simple_plot(energyType, dir_output, selection):
             # result
             #--------------------------------------------------
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("def.", "def.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
+            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #LTE_{%s}#GT = %.4f #pm %.4f" % ("def.", "def.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
             latex.SetTextColor(ROOT.kGreen+3)
-            latex.DrawLatex( 0.47, 0.20, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("alt.", "alt.", pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
+            latex.DrawLatex( 0.47, 0.20, "#sigma#left(E_{%s}#right) / #LTE_{%s}#GT = %.4f #pm %.4f" % ("alt.", "alt.", pu.sigmaEoverE[1], pu.error_sigmaEoverE[1]) )
             latex.SetTextColor(ROOT.kBlack)
             latex.SetTextSize(30)
             latex.DrawLatex( 0.30, 0.82, tags[i].replace('E','E = ')+" GeV")
@@ -291,7 +291,7 @@ def make_simple_plot(energyType, dir_output, selection):
             pu.draw_and_fit_a_histogram(c1, v_hists[0], [energyType, tags[i], labels[0]] , xtitle, max_value, xRanges[i], ROOT.kBlue  , [0.60, 0.66, 0.88, 0.86] )
 
             latex.SetTextColor(ROOT.kBlue)
-            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #bar{E}_{%s} = %.4f #pm %.4f" % ("tot.", "tot.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
+            latex.DrawLatex( 0.47, 0.30, "#sigma#left(E_{%s}#right) / #LTE_{%s}#GT = %.4f #pm %.4f" % ("tot.", "tot.", pu.sigmaEoverE[0], pu.error_sigmaEoverE[0]) )
             latex.SetTextColor(ROOT.kBlack)
             latex.SetTextSize(30)
             latex.DrawLatex( 0.30, 0.82, tags[i].replace('E','E = ')+" GeV")
