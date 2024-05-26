@@ -304,6 +304,17 @@ def make_simple_plot(energyType, dir_output, selection):
 
 #----------------------------------------------------------------------------------------------------
 
+def resolution_function(x, p):
+    c, s, n = p[0], p[1], p[2]
+    return math.sqrt(c*c + pow(s*x[0], 2) + pow(n*x[0]*x[0], 2))
+
+def fit_resolution_function(gr, x_range):
+    f3 = ROOT.TF1('f3', resolution_function, x_range[0], x_range[1], m.nParameters)
+    # f3 = ROOT.TF1('f3', "[0] + [1]*x + [2]*x*x", x_range[0], x_range[1])
+    result = gr.Fit(f3, "S", "", x_range[0], x_range[1])
+    func = gr.GetListOfFunctions().FindObject("f3")
+    return func, result
+
 def fit_linear_function(gr, x_range):
     f1 = ROOT.TF1('f1', "[0] + [1]*x", x_range[0], x_range[1])
     gr.Fit(f1, "", "", x_range[0], x_range[1])
@@ -634,33 +645,48 @@ def run_summary(topic, dy1, dy2):
     gr2.SetMarkerSize(1.25)
 
     legend = ROOT.TLegend(leg_pos[0], leg_pos[1], leg_pos[2], leg_pos[3])
-    legend.SetTextSize(0.04)
+    textsize = 0.04 if "FIT" not in topic else 0.03
+    legend.SetTextSize(textsize)
     legend.AddEntry(gr1, m.labels[0], leg_option)
     legend.AddEntry(gr2, m.labels[1], leg_option)
 
     #--------------------------------------------------
     # Linear fit for resolution: S/sqrt(E) + C
     #--------------------------------------------------
-    resolution_fit_result = []
+    resolution_fit_result = {} 
     if "FIT" in topic:
-        func = fit_linear_function(gr1, [0.0, 0.25])
+        m.nParameters = 3 # S, N, C
+        func, goodness = fit_resolution_function(gr1, [0.0, 0.25])
         result = {}
         result["func"]                = func
         result["fit_intercept"]       = func.GetParameter(0)
         result["fit_slope"]           = func.GetParameter(1)
         result["fit_error_intercept"] = func.GetParError(0)
         result["fit_error_slope"]     = func.GetParError(1)
-        resolution_fit_result.append(result)
+        result["chi2"]                = goodness.Chi2()
+        result["ndf"]                 = goodness.Ndf()
+        result["pvalue"]              = goodness.Prob()
+        if m.nParameters==3:
+            result["fit_noise"]       = func.GetParameter(2)
+            result["fit_error_noise"] = func.GetParError(2)
+        resolution_fit_result["set1"] = result
 
-        func = fit_linear_function(gr2, [0.0, 0.25])
+        func, goodness = fit_resolution_function(gr2, [0.0, 0.25])
         result = {}
         result["func"]                = func
         result["fit_intercept"]       = func.GetParameter(0)
         result["fit_slope"]           = func.GetParameter(1)
         result["fit_error_intercept"] = func.GetParError(0)
         result["fit_error_slope"]     = func.GetParError(1)
-        resolution_fit_result.append(result)
+        result["chi2"]                = goodness.Chi2()
+        result["ndf"]                 = goodness.Ndf()
+        result["pvalue"]              = goodness.Prob()
+        if m.nParameters==3:
+            result["fit_noise"]       = func.GetParameter(2)
+            result["fit_error_noise"] = func.GetParError(2)
+        resolution_fit_result["set2"] = result
 
+        m.resolution_fit_result[topic] = resolution_fit_result
 
     #--------------------------------------------------
     # quantify difference
@@ -759,27 +785,28 @@ def run_summary(topic, dy1, dy2):
         pu.annotate()
 
         if "FIT" in topic:
-            resolution_fit_result[0]["func"].SetLineStyle(2)
-            resolution_fit_result[0]["func"].SetLineColorAlpha(ROOT.kBlue, 0.80)
-            resolution_fit_result[0]["func"].Draw("same")
-            resolution_fit_result[1]["func"].SetLineStyle(2)
-            resolution_fit_result[1]["func"].SetLineColorAlpha(ROOT.kGreen+3, 0.80)
-            resolution_fit_result[1]["func"].Draw("same")
+            resolution_fit_result["set1"]["func"].SetLineStyle(2)
+            resolution_fit_result["set1"]["func"].SetLineColorAlpha(ROOT.kBlue, 0.80)
+            resolution_fit_result["set1"]["func"].Draw("same")
+            resolution_fit_result["set2"]["func"].SetLineStyle(2)
+            resolution_fit_result["set2"]["func"].SetLineColorAlpha(ROOT.kGreen+3, 0.80)
+            resolution_fit_result["set2"]["func"].Draw("same")
 
             legend.Clear()
             legend.SetLineWidth(0)
             legend.SetFillColorAlpha(ROOT.kWhite, 0)
 
             legend.AddEntry(gr1, m.labels[0], leg_option)
-            add_legend_entry(legend, resolution_fit_result[0])
+            add_legend_entry(legend, resolution_fit_result["set1"])
             legend.AddEntry(gr2, m.labels[1], leg_option)
-            add_legend_entry(legend, resolution_fit_result[1])
+            add_legend_entry(legend, resolution_fit_result["set2"])
             legend.Draw("same")
 
             latex = get_latex()
             latex.SetTextColor(ROOT.kBlack)
             latex.SetTextSize(30)
-            latex.DrawLatex( 0.65, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus C" )
+            #latex.DrawLatex( 0.65, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus C" )
+            latex.DrawLatex( 0.35, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus #frac{N}{E_{beam}} #oplus C" )
 
         if draw_goodness:
             #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
@@ -794,6 +821,11 @@ def run_summary(topic, dy1, dy2):
     c3.SaveAs(output + ".png")
     c3.SaveAs(output + ".pdf")
 
+    if "FIT" in topic:
+        """ set value of func as 0 because json cannot serilizable them """
+        resolution_fit_result["set1"]["func"] = 0
+        resolution_fit_result["set2"]["func"] = 0
+
 def add_legend_entry(legend, resolution_fit_result):
     f  = resolution_fit_result["func"]
     mc = 100*resolution_fit_result["fit_intercept"]
@@ -805,3 +837,10 @@ def add_legend_entry(legend, resolution_fit_result):
     legend.AddEntry(f, message, 'l')
     message = "C = %.2f #pm %.2f%%" % (mc, ec)
     legend.AddEntry(f, message, '')
+
+    if m.nParameters==3:
+        mn = 100*resolution_fit_result["fit_noise"]
+        en = 100*resolution_fit_result["fit_error_noise"]
+        message = "N = %.2f #pm %.2f%%" % (mn, en)
+        legend.AddEntry(f, message, '')
+
