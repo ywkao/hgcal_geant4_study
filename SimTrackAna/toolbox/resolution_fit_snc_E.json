@@ -1,0 +1,106 @@
+{
+    "resolution_clustered_FIT_set1_set2_MIPs_regression": {
+        "set1": {
+            "chi2": 6.197367871929328, 
+            "fit_error_intercept": 0.001915310723172642, 
+            "fit_error_noise": 1.7725487461925085, 
+            "fit_error_slope": 0.017082676578599854, 
+            "fit_intercept": 0.017250808843354018, 
+            "fit_noise": -1.2729115059975822e-05, 
+            "fit_slope": 0.3175373153255336, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.10239287930080926
+        }, 
+        "set2": {
+            "chi2": 3.4461881999092663, 
+            "fit_error_intercept": 0.0025379218815789035, 
+            "fit_error_noise": 0.8892307187491642, 
+            "fit_error_slope": 0.02855166813826904, 
+            "fit_intercept": 0.02845317869778821, 
+            "fit_noise": -1.8935214753737343e-05, 
+            "fit_slope": 0.3939775206663582, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.3278086868997034
+        }
+    }, 
+    "resolution_clustered_FIT_set1_set2_MeV": {
+        "set1": {
+            "chi2": 12.349195353144331, 
+            "fit_error_intercept": 0.002029753644403094, 
+            "fit_error_noise": 0.6568628490747063, 
+            "fit_error_slope": 0.020508397112259106, 
+            "fit_intercept": 0.014788902211655424, 
+            "fit_noise": 0.2444253497769533, 
+            "fit_slope": 0.3110964031922266, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.006277854023891832
+        }, 
+        "set2": {
+            "chi2": 2.1245102896513903, 
+            "fit_error_intercept": 0.00210957672857671, 
+            "fit_error_noise": 0.4627037082931955, 
+            "fit_error_slope": 0.01081062678982976, 
+            "fit_intercept": 0.011686929468972295, 
+            "fit_noise": 0.0003461732423560536, 
+            "fit_slope": 0.37782340281923255, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.5469701019828634
+        }
+    }, 
+    "resolution_unclustered_FIT_set1_set2_MIPs_regression": {
+        "set1": {
+            "chi2": 2.90667744457099, 
+            "fit_error_intercept": 0.0018215750350594278, 
+            "fit_error_noise": 0.9296965687484127, 
+            "fit_error_slope": 0.015806953311252453, 
+            "fit_intercept": 0.015282099594007552, 
+            "fit_noise": 0.00025550192534404444, 
+            "fit_slope": 0.3011577768731768, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.4062386062174389
+        }, 
+        "set2": {
+            "chi2": 1.319518933274453, 
+            "fit_error_intercept": 0.0021158052371811477, 
+            "fit_error_noise": 0.8389498275430206, 
+            "fit_error_slope": 0.025123330658534018, 
+            "fit_intercept": 0.02792085596947753, 
+            "fit_noise": -2.1084255378171193e-05, 
+            "fit_slope": 0.3447893021875281, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.7245034135747834
+        }
+    }, 
+    "resolution_unclustered_FIT_set1_set2_MeV": {
+        "set1": {
+            "chi2": 3.4416046971546965, 
+            "fit_error_intercept": 0.0016008003563546722, 
+            "fit_error_noise": 0.5894422336192833, 
+            "fit_error_slope": 0.008861426620402041, 
+            "fit_intercept": 0.010952714966798194, 
+            "fit_noise": 3.5636953865432084e-06, 
+            "fit_slope": 0.3138203150949575, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.32841514391570575
+        }, 
+        "set2": {
+            "chi2": 5.011695126002482, 
+            "fit_error_intercept": 0.0017154917280250012, 
+            "fit_error_noise": 1.1575818409789111, 
+            "fit_error_slope": 0.009716659300888896, 
+            "fit_intercept": 0.012120017112930223, 
+            "fit_noise": 1.7838525383329345e-05, 
+            "fit_slope": 0.3356436788865303, 
+            "func": 0, 
+            "ndf": 3, 
+            "pvalue": 0.17094277006539155
+        }
+    }
+}

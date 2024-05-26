@@ -86,8 +86,8 @@ def perform_unclustered_study():
 
     target_directory = "R90To130_v1p6"
     target_directory = "R90To130_unclustered"
-    target_directory = "R90To130_unclustered_20240523"
     target_directory = "R90To130_unclustered_20240526"
+    target_directory = "R90To130_unclustered_20240523"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -120,8 +120,8 @@ def perform_clustered_study():
     target_directory = "R90To130_v2p6"
     target_directory = "20221005"
     target_directory = "R90To130_clustered"
-    target_directory = "R90To130_clustered_20240523"
     target_directory = "R90To130_clustered_20240526"
+    target_directory = "R90To130_clustered_20240523"
     output_directory = eos + "/" + target_directory
     m.specified_directory = output_directory
     pu.create_directory( m.specified_directory )
@@ -150,6 +150,8 @@ def perform_clustered_study():
 if __name__ == "__main__":
     m.enable_check_odd_even = False
     m.resolution_fit_result = {} # to record result for resolution FIT
+    m.change_x_axis_when_fitting_resolution = True
+    m.change_x_axis_when_fitting_resolution = False
 
     run_full_commands = True
     run_full_commands = False 
@@ -161,5 +163,6 @@ if __name__ == "__main__":
     m.json_fit_parameters = "./toolbox/resolution_fit_snc.json"
     m.json_fit_parameters = "./toolbox/resolution_fit_sc.json"
     m.json_fit_parameters = "./toolbox/resolution_fit_linear.json"
+    m.json_fit_parameters = "./toolbox/resolution_fit_snc_E.json"
     ru.run_register_fit_parameters(m.resolution_fit_result) # record fit result
 

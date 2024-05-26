@@ -71,11 +71,12 @@ draw_options_for_run_summary = {
 
     "resolution_unclustered_FIT": {
         "ytitle"            : "#sigma#left(E#right) / #LTE#GT",
-        "yrange"            : [0.00, 0.12],
-        "leg_pos"           : [0.15, 0.47, 0.40, 0.87],
+        "yrange"            : [0.00, 0.15],
+        "leg_pos"           : [0.37, 0.67, 0.87, 0.87],
+        #"leg_pos"           : [0.15, 0.47, 0.40, 0.87],
         "leg_option"        : "ep",
-        "draw_goodness"     : False,
-        "draw_lower_pad"    : False,
+        "draw_goodness"     : True,
+        "draw_lower_pad"    : True,
         "reference_line"    : 1.0,
         "useLog"            : 0,
 
@@ -85,11 +86,11 @@ draw_options_for_run_summary = {
 
     "resolution_clustered_FIT": {
         "ytitle"            : "#sigma#left(E#right) / #LTE#GT",
-        "yrange"            : [0.00, 0.12],
-        "leg_pos"           : [0.15, 0.47, 0.40, 0.87],
+        "yrange"            : [0.00, 0.15],
+        "leg_pos"           : [0.37, 0.67, 0.87, 0.87],
         "leg_option"        : "ep",
         "draw_goodness"     : True,
-        "draw_lower_pad"    : False,
+        "draw_lower_pad"    : True,
         "reference_line"    : 1.0,
         "useLog"            : 0,
 

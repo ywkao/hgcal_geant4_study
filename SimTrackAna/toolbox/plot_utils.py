@@ -340,7 +340,7 @@ def get_strings_for_simple_plot(energyType, selection):
 #----------------------------------------------------------------------------------------------------
 
 def init_pads():
-    mainPad = ROOT.TPad("p_main", "p_main", 0.0, 0.3, 1.0, 1.0)
+    mainPad = ROOT.TPad("p_main", "p_main", 0.0, 0.25, 1.0, 1.0)
     mainPad.SetTopMargin(0.11)
     mainPad.SetBottomMargin(0.012)
     mainPad.SetRightMargin(0.05)
@@ -348,7 +348,7 @@ def init_pads():
     #mainPad.SetLogy()
     mainPad.SetGrid()
 
-    ratPad = ROOT.TPad( "p_rat", "p_rat", 0.0, 0.0, 1.0, 0.3)
+    ratPad = ROOT.TPad( "p_rat", "p_rat", 0.0, 0.0, 1.0, 0.25)
     ratPad.SetTopMargin(0.10)
     ratPad.SetBottomMargin(0.30)
     ratPad.SetRightMargin(0.05)

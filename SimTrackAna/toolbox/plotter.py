@@ -305,11 +305,17 @@ def make_simple_plot(energyType, dir_output, selection):
 #----------------------------------------------------------------------------------------------------
 
 def resolution_function(x, p):
-    c, s = p[0], p[1]
-    return c+s*x[0]
-    #return math.sqrt(c*c + pow(s*x[0], 2))
-    #c, s, n = p[0], p[1], p[2]
-    #return math.sqrt(c*c + pow(s*x[0], 2) + pow(n*x[0]*x[0], 2))
+    c, s, n = p[0], p[1], p[2]
+    return math.sqrt(c*c + pow(s/math.sqrt(x[0]), 2) + pow(n/x[0], 2))
+    # if m.change_x_axis_when_fitting_resolution:
+    #     #c, s = p[0], p[1]
+    #     #return c+s*x[0]
+    #     #return math.sqrt(c*c + pow(s*x[0], 2))
+    #     c, s, n = p[0], p[1], p[2]
+    #     return math.sqrt(c*c + pow(s*x[0], 2) + pow(n*x[0]*x[0], 2))
+    # else:
+    #     c, s, n = p[0], p[1], p[2]
+    #     return math.sqrt(c*c + pow(s/math.sqrt(x[0]), 2) + pow(n/x[0], 2))
 
 def fit_resolution_function(gr, x_range):
     f3 = ROOT.TF1('f3', resolution_function, x_range[0], x_range[1], m.nParameters)
@@ -547,8 +553,9 @@ def run_summary(topic, dy1, dy2):
             register_resolution(dy2[ene], ly2, ley2, m.resolution["set2"][m.energy_type][ene])
 
             if "FIT" in topic:
-                lx  = [ 1./math.sqrt(float(ene.split('E')[1])) for ene in Energy ]
-                lex = [0.]*6
+                if m.change_x_axis_when_fitting_resolution:
+                    lx  = [ 1./math.sqrt(float(ene.split('E')[1])) for ene in Energy ]
+                    lex = [0.]*6
 
             else:
                 my_energy = [dy1[ene]["mean"], dy2[ene]["mean"]]
@@ -624,7 +631,7 @@ def run_summary(topic, dy1, dy2):
     #--------------------------------------------------
     # generate graphs
     #--------------------------------------------------
-    xtitle = "Positron energy (GeV)" if "FIT" not in topic else "1/#sqrt{E_{beam} [GeV]}"
+    xtitle = "Positron energy (GeV)" if "FIT" not in topic or m.change_x_axis_when_fitting_resolution is False else "1/#sqrt{E_{beam} [GeV]}"
     gr1 = pu.get_graph_from_list(xtitle, ytitle, lx, ly1, lex, ley1,  ROOT.kBlue)
     gr2 = pu.get_graph_from_list(xtitle, ytitle, lx, ly2, lex, ley2,  ROOT.kGreen+3)
 
@@ -632,7 +639,7 @@ def run_summary(topic, dy1, dy2):
     #print ly1, ly2
     #print ley1, ley2
 
-    myXrange = [0, 350] if "FIT" not in topic else [0.0, 0.25]
+    myXrange = [0, 350] if "FIT" not in topic or m.change_x_axis_when_fitting_resolution is False else [0.0, 0.25]
 
     gr1.SetLineWidth(2)
     gr1.SetMarkerStyle(20)
@@ -647,7 +654,7 @@ def run_summary(topic, dy1, dy2):
     gr2.SetMarkerSize(1.25)
 
     legend = ROOT.TLegend(leg_pos[0], leg_pos[1], leg_pos[2], leg_pos[3])
-    textsize = 0.04 if "FIT" not in topic else 0.03
+    textsize = 0.04 # if "FIT" not in topic else 0.03
     legend.SetTextSize(textsize)
     legend.AddEntry(gr1, m.labels[0], leg_option)
     legend.AddEntry(gr2, m.labels[1], leg_option)
@@ -657,9 +664,12 @@ def run_summary(topic, dy1, dy2):
     #--------------------------------------------------
     resolution_fit_result = {} 
     if "FIT" in topic:
-        m.nParameters = 3 # S, N, C
         m.nParameters = 2 # S, C
-        func, goodness = fit_resolution_function(gr1, [0.0, 0.25])
+        m.nParameters = 3 # S, N, C
+
+        myXrange = [5, 350] if "FIT" not in topic or m.change_x_axis_when_fitting_resolution is False else [0.0, 0.25]
+        
+        func, goodness = fit_resolution_function(gr1, myXrange)
         result = {}
         result["func"]                = func
         result["fit_intercept"]       = func.GetParameter(0)
@@ -674,7 +684,7 @@ def run_summary(topic, dy1, dy2):
             result["fit_error_noise"] = func.GetParError(2)
         resolution_fit_result["set1"] = result
 
-        func, goodness = fit_resolution_function(gr2, [0.0, 0.25])
+        func, goodness = fit_resolution_function(gr2, myXrange)
         result = {}
         result["func"]                = func
         result["fit_intercept"]       = func.GetParameter(0)
@@ -689,7 +699,7 @@ def run_summary(topic, dy1, dy2):
             result["fit_error_noise"] = func.GetParError(2)
         resolution_fit_result["set2"] = result
 
-        m.resolution_fit_result[topic] = resolution_fit_result
+        m.resolution_fit_result[topic+"_"+m.energy_type] = resolution_fit_result
 
     #--------------------------------------------------
     # quantify difference
@@ -779,15 +789,10 @@ def run_summary(topic, dy1, dy2):
             line.SetLineWidth(2)
             line.Draw()
 
-    else: # no need of lower ratio pad
-        gr1.GetXaxis().SetTitleSize(0.04)
-
-        gr1.Draw("ap")
-        gr2.Draw("p;same")
-        legend.Draw("same")
-        pu.annotate()
-
         if "FIT" in topic:
+            c3.cd()
+            mainPad.cd()
+
             resolution_fit_result["set1"]["func"].SetLineStyle(2)
             resolution_fit_result["set1"]["func"].SetLineColorAlpha(ROOT.kBlue, 0.80)
             resolution_fit_result["set1"]["func"].Draw("same")
@@ -799,25 +804,39 @@ def run_summary(topic, dy1, dy2):
             legend.SetLineWidth(0)
             legend.SetFillColorAlpha(ROOT.kWhite, 0)
 
-            legend.AddEntry(gr1, m.labels[0], leg_option)
-            add_legend_entry(legend, resolution_fit_result["set1"])
-            legend.AddEntry(gr2, m.labels[1], leg_option)
-            add_legend_entry(legend, resolution_fit_result["set2"])
-            legend.Draw("same")
+            leg1 = ROOT.TLegend(0.20, 0.59, 0.45, 0.84)
+            leg1.SetTextSize(textsize)
+            leg1.SetTextColor(ROOT.kBlue)
+            leg1.SetLineWidth(0)
+            leg1.SetFillColorAlpha(ROOT.kWhite, 0)
+            leg1.AddEntry(gr1, m.labels[0], leg_option)
+            add_legend_entry(leg1, resolution_fit_result["set1"])
+
+            leg2 = ROOT.TLegend(0.56, 0.59, 0.81, 0.84)
+            leg2.SetTextSize(textsize)
+            leg2.SetTextColor(ROOT.kGreen+3)
+            leg2.SetLineWidth(0)
+            leg2.SetFillColorAlpha(ROOT.kWhite, 0)
+            leg2.AddEntry(gr2, m.labels[1], leg_option)
+            add_legend_entry(leg2, resolution_fit_result["set2"])
+
+            leg1.Draw("same")
+            leg2.Draw("same")
 
             latex = get_latex()
             latex.SetTextColor(ROOT.kBlack)
-            latex.SetTextSize(30)
+            latex.SetTextSize(26)
             #latex.DrawLatex( 0.65, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus C" )
-            latex.DrawLatex( 0.50, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus #frac{N}{E_{beam}} #oplus C" )
+            #latex.DrawLatex( 0.50, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus #frac{N}{E_{beam}} #oplus C" )
+            latex.DrawLatex( 0.40, 0.45, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus C #oplus #frac{N}{E_{beam}}" )
 
-        if draw_goodness:
-            #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
-            line = ROOT.TLine( c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line )
-            line.SetLineColor(ROOT.kRed)
-            line.SetLineStyle(2)
-            line.SetLineWidth(2)
-            line.Draw()
+    else: # no need of lower ratio pad
+        gr1.GetXaxis().SetTitleSize(0.04)
+
+        gr1.Draw("ap")
+        gr2.Draw("p;same")
+        legend.Draw("same")
+        pu.annotate()
 
     token = topic #if not "resolution" in topic else "resolution"
     output = dir_output + "/summary_" + token + "_" + m.energy_type
@@ -844,6 +863,6 @@ def add_legend_entry(legend, resolution_fit_result):
     if m.nParameters==3:
         mn = 100*resolution_fit_result["fit_noise"]
         en = 100*resolution_fit_result["fit_error_noise"]
-        message = "N = %.2f #pm %.2f%%" % (mn, en)
+        message = "N = %.2f #pm %.2f%% GeV" % (mn, en)
         legend.AddEntry(f, message, '')
 
