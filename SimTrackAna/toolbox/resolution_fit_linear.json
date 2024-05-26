@@ -1,0 +1,46 @@
+{
+    "resolution_clustered_FIT": {
+        "set1": {
+            "chi2": 11.754156487599873, 
+            "fit_error_intercept": 0.0011721011592145452, 
+            "fit_error_slope": 0.013492103077009373, 
+            "fit_intercept": 0.006443069014378968, 
+            "fit_slope": 0.28637242837860816, 
+            "func": 0, 
+            "ndf": 4, 
+            "pvalue": 0.019276195156678465
+        }, 
+        "set2": {
+            "chi2": 1.6509523030636275, 
+            "fit_error_intercept": 0.0013012410403865982, 
+            "fit_error_slope": 0.015483481929035486, 
+            "fit_intercept": 0.003727727108168464, 
+            "fit_slope": 0.3614089718606774, 
+            "func": 0, 
+            "ndf": 4, 
+            "pvalue": 0.7996067028971392
+        }
+    }, 
+    "resolution_unclustered_FIT": {
+        "set1": {
+            "chi2": 2.750917359903662, 
+            "fit_error_intercept": 0.0011154557206685095, 
+            "fit_error_slope": 0.013054456023904232, 
+            "fit_intercept": 0.0039656995638884685, 
+            "fit_slope": 0.29554271469591936, 
+            "func": 0, 
+            "ndf": 4, 
+            "pvalue": 0.6003345878889997
+        }, 
+        "set2": {
+            "chi2": 5.764079605244218, 
+            "fit_error_intercept": 0.0012271360606040547, 
+            "fit_error_slope": 0.014379354675609024, 
+            "fit_intercept": 0.004240689682592122, 
+            "fit_slope": 0.3176333801534824, 
+            "func": 0, 
+            "ndf": 4, 
+            "pvalue": 0.21747332822897916
+        }
+    }
+}

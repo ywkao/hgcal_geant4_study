@@ -159,5 +159,7 @@ if __name__ == "__main__":
 
     # when perform resolution study
     m.json_fit_parameters = "./toolbox/resolution_fit_snc.json"
+    m.json_fit_parameters = "./toolbox/resolution_fit_sc.json"
+    m.json_fit_parameters = "./toolbox/resolution_fit_linear.json"
     ru.run_register_fit_parameters(m.resolution_fit_result) # record fit result
 

@@ -305,12 +305,14 @@ def make_simple_plot(energyType, dir_output, selection):
 #----------------------------------------------------------------------------------------------------
 
 def resolution_function(x, p):
-    c, s, n = p[0], p[1], p[2]
-    return math.sqrt(c*c + pow(s*x[0], 2) + pow(n*x[0]*x[0], 2))
+    c, s = p[0], p[1]
+    return c+s*x[0]
+    #return math.sqrt(c*c + pow(s*x[0], 2))
+    #c, s, n = p[0], p[1], p[2]
+    #return math.sqrt(c*c + pow(s*x[0], 2) + pow(n*x[0]*x[0], 2))
 
 def fit_resolution_function(gr, x_range):
     f3 = ROOT.TF1('f3', resolution_function, x_range[0], x_range[1], m.nParameters)
-    # f3 = ROOT.TF1('f3', "[0] + [1]*x + [2]*x*x", x_range[0], x_range[1])
     result = gr.Fit(f3, "S", "", x_range[0], x_range[1])
     func = gr.GetListOfFunctions().FindObject("f3")
     return func, result
@@ -656,6 +658,7 @@ def run_summary(topic, dy1, dy2):
     resolution_fit_result = {} 
     if "FIT" in topic:
         m.nParameters = 3 # S, N, C
+        m.nParameters = 2 # S, C
         func, goodness = fit_resolution_function(gr1, [0.0, 0.25])
         result = {}
         result["func"]                = func
@@ -806,7 +809,7 @@ def run_summary(topic, dy1, dy2):
             latex.SetTextColor(ROOT.kBlack)
             latex.SetTextSize(30)
             #latex.DrawLatex( 0.65, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus C" )
-            latex.DrawLatex( 0.35, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus #frac{N}{E_{beam}} #oplus C" )
+            latex.DrawLatex( 0.50, 0.25, "#frac{#sigma_{E}}{#LTE#GT} = #frac{S}{#sqrt{E_{beam}}} #oplus #frac{N}{E_{beam}} #oplus C" )
 
         if draw_goodness:
             #print ">>>>> check line positions", c3.GetUxmin(), reference_line, c3.GetUxmax(), reference_line
